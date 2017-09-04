@@ -29,6 +29,9 @@ module.exports = class MessengerLine {
             return Promise.resolve();
         }
 
+        debug(to);
+        debug(messages);
+
         return this.sdk.multicast(to, messages);
     }
     /*

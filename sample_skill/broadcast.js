@@ -7,10 +7,9 @@ let Promise = require("bluebird");
 
 /*
 ** Just forward the original message to all users.
-** Supported messenger is LINE Only.
 ** Supported message types are text, sticker and location.
 */
-const SUPPORTED_MESSENGERS = ["line"];
+const SUPPORTED_MESSENGERS = ["line", "facebook"];
 const SUPPORTED_MESSAGE_TYPES = ["text", "sticker", "location"];
 
 module.exports = class SkillBroadcast {
@@ -36,29 +35,44 @@ module.exports = class SkillBroadcast {
             return resolve();
         }
 
-        let user_ids = [];
+        let line_user_ids = [];
+        let facebook_user_ids = [];
         bot_user.get_list().then(
             (users) => {
-                // Broadcast message !!!! We need to call multicast every 150 users. !!!!
+                // Create target user list based on messenger. !!!! We need to call multicast every 150 users. !!!!
                 for (let user of users){
                     // Skip myself.
                     if (user.user_id == bot.extract_sender_id()){
                         continue;
                     }
-                    user_ids.push(user.user_id);
+                    if (user.messenger == "line"){
+                        line_user_ids.push(user.user_id);
+                    } else if (user.messenger == "facebook"){
+                        facebook_user_ids.push(user.user_id);
+                    }
                 }
 
                 // We copy original message and just remove id.
                 let orig_message = JSON.parse(JSON.stringify(event.message));
                 delete orig_message.id;
 
-                return bot.multicast(user_ids, orig_message);
+                let sent_messages = [];
+
+                // Send message to LINE users.
+                let lined_message = bot.compile_message(orig_message, "line");
+                sent_messages.push(bot.sdk.line.multicast(line_user_ids, lined_message));
+
+                // Send message to Facebook users.
+                let facebooked_message = bot.compile_message(orig_message, "facebook");
+                sent_messages.push(bot.sdk.facebook.multicast(facebook_user_ids, facebooked_message));
+
+                return Promise.all(sent_messages);
             }
         ).then(
             (response) => {
                 return bot.reply([{
                     type: "text",
-                    text: user_ids.length + "人にメッセージを送信しました。"
+                    text: line_user_ids.length + "人のLINEユーザー、および" + facebook_user_ids.length + "人のFacebookユーザーにメッセージを送信しました。"
                 }]);
             },
             (response) => {

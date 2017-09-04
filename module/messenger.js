@@ -257,20 +257,30 @@ module.exports = class Messenger {
     * @returns {Promise.<MessageObject>} - Compiled message object.
     */
     compile_message(message){
-        let message_format = this._identify_message_format(message);
-        debug(`Identified message format is ${message_format}.`);
+        return this.compile_message(message, this.type);
+    }
+
+    /**
+    * Compile message format to the specified format.
+    * @param {MessageObject} message - Message object to compile.
+    * @param {String} format - Target format to compile. It can be "line" or "facebook".
+    * @returns {Promise.<MessageObject>} - Compiled message object.
+    */
+    compile_message(message, format){
+        let source_format = this._identify_message_format(message);
+        debug(`Identified message format is ${source_format}.`);
 
         let compiled_message;
 
-        if (this.type != message_format){
-            debug(`Compiling message from ${message_format} to ${this.type}...`);
+        if (format != source_format){
+            debug(`Compiling message from ${source_format} to ${format}...`);
 
             // Identify message type.
-            let message_type = this.Messenger_classes[message_format].identify_message_type(message);
+            let message_type = this.Messenger_classes[source_format].identify_message_type(message);
             debug(`message type is ${message_type}`);
 
             // Compile message
-            compiled_message = this.Messenger_classes[this.type].compile_message(message_format, message_type, message);
+            compiled_message = this.Messenger_classes[format].compile_message(source_format, message_type, message);
             debug(`Compiled message is following.`);
             debug(compiled_message);
         } else {

@@ -14,6 +14,20 @@ module.exports = class MessengerFacebook {
         this._page_access_token = options.facebook_page_access_token;
     }
 
+    multicast(event, to_list, messages){
+        // If this is test, we will not actually issue call out.
+        if (process.env.BOT_EXPRESS_ENV == "test"){
+            debug("This is test so we skip the actual call out.");
+            return Promise.resolve();
+        }
+
+        let sent_messages;
+        for (let to of to_list){
+            sent_messages.push(this.send(event, to, messages));
+        }
+        return Promise.all(sent_messages);
+    }
+
     send(event, to, messages){
         // If this is test, we will not actually issue call out.
         if (process.env.BOT_EXPRESS_ENV == "test"){

@@ -63,6 +63,8 @@ module.exports = class SkillBroadcast {
                     sent_messages.push(
                         bot.compile_message(orig_message, "line").then(
                             (response) => {
+                                debug("Going to multicast following message.");
+                                debug(response);
                                 return bot.plugin.line.multicast(line_user_ids, response);
                             }
                         )

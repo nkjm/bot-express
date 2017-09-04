@@ -276,6 +276,8 @@ module.exports = class Messenger {
             debug(compiled_message);
         } else {
             compiled_message = JSON.parse(JSON.stringify(message));
+            debug(`Compiled message is following.`);
+            debug(compiled_message);
         }
 
         if (this.translater){

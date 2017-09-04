@@ -58,7 +58,8 @@ module.exports = class SkillBroadcast {
 
                 let sent_messages = [];
 
-                debug(Object.getOwnPropertyNames(bot));
+                debug(Object.getOwnPropertyNames(bot.sdk));
+                debug(bot.sdk);
 
                 // Send message to LINE users.
                 sent_messages.push(

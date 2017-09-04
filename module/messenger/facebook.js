@@ -12,7 +12,7 @@ module.exports = class MessengerFacebook {
     constructor(options){
         this._app_secret = options.facebook_app_secret;
         this._page_access_token = options.facebook_page_access_token;
-        this.sdk = null; // TBD
+        this.sdk = null; // TBC
     }
 
     multicast(event, to_list, messages){

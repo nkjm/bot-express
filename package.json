@@ -26,6 +26,7 @@
   "author": "Kazuki Nakajima <nkjm.kzk@gmail.com>",
   "dependencies": {
     "@google-cloud/translate": "^0.8.2",
+    "@line/bot-sdk": "^2.0.0",
     "apiai": "^4.0.2",
     "bluebird": "^3.5.0",
     "body-parser": "~1.13.2",

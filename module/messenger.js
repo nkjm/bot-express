@@ -17,6 +17,7 @@ module.exports = class Messenger {
         this.context = null; // Will be set later in webhook
         this.bot_event = bot_event;
         this.skill = null; // Will be set in flow constructor
+        this.sdk = {};
 
         // Load messenger libraries located under messenger directory.
         let messenger_scripts = fs.readdirSync(__dirname + "/messenger");
@@ -24,6 +25,7 @@ module.exports = class Messenger {
             debug("Loading " + messenger_script + "...");
             messenger_script = messenger_script.replace(".js", "");
             this.Messenger_classes[messenger_script] = require("./messenger/" + messenger_script);
+            this.sdk[messenger_script] = this.Messenger_classes[messenger_script].sdk;
         }
         this.service = new this.Messenger_classes[this.type](options);
 

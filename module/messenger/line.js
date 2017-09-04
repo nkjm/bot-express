@@ -1,9 +1,10 @@
 'use strict';
 
-let Promise = require('bluebird');
-let request = require('request');
-let crypto = require('crypto');
+let Promise = require("bluebird");
+let request = require("request");
+let crypto = require("crypto");
 let debug = require("debug")("bot-express:messenger");
+let line_bot_sdk = require("@line/bot-sdk");
 
 Promise.promisifyAll(request);
 
@@ -13,8 +14,24 @@ module.exports = class MessengerLine {
         this._channel_id = options.line_channel_id;
         this._channel_secret = options.line_channel_secret;
         this._channel_access_token = options.line_channel_access_token;
+
+        const sdk_config = {
+            channelAccessToken: this._channel_access_token,
+            channelSecret: this._channel_secret
+        };
+        this.sdk = new line_bot_sdk.Client(sdk_config);
     }
 
+    multicast(event, to, messages){
+        // If this is test, we will not actually issue call out.
+        if (process.env.BOT_EXPRESS_ENV == "test"){
+            debug("This is test so we skip the actual call out.");
+            return Promise.resolve();
+        }
+
+        return this.sdk.multicast(to, messages);
+    }
+    /*
     multicast(event, to, messages){
         // If this is test, we will not actually issue call out.
         if (process.env.BOT_EXPRESS_ENV == "test"){
@@ -58,7 +75,19 @@ module.exports = class MessengerLine {
             }
         );
     }
+    */
 
+    send(event, to, messages){
+        // If this is test, we will not actually issue call out.
+        if (process.env.BOT_EXPRESS_ENV == "test"){
+            debug("This is test so we skip the actual call out.");
+            return Promise.resolve();
+        }
+
+        return this.sdk.pushMessage(to, messages);
+    }
+
+    /*
     send(event, to, messages){
         // If this is test, we will not actually issue call out.
         if (process.env.BOT_EXPRESS_ENV == "test"){
@@ -102,7 +131,19 @@ module.exports = class MessengerLine {
             }
         );
     }
+    */
 
+    reply(event, messages){
+        // If this is test, we will not actually issue call out.
+        if (process.env.BOT_EXPRESS_ENV == "test"){
+            debug("This is test so we skip the actual call out.");
+            return Promise.resolve();
+        }
+
+        return this.sdk.replyMessage(event.replyToken, messages);
+    }
+
+    /*
     reply(event, messages){
         // If this is test, we will not actually issue call out.
         if (process.env.BOT_EXPRESS_ENV == "test"){
@@ -146,6 +187,7 @@ module.exports = class MessengerLine {
             }
         );
     }
+    */
 
     validate_signature(req){
         // If this is test, we will not actually validate the signature.

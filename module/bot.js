@@ -10,6 +10,7 @@ class Bot {
         @prop {String} type - Type of messenger. The value can be "line" or "facebook".
         */
         this.type = messenger.type;
+        this.sdk = messenger.sdk;
         this._messenger = messenger;
     }
 

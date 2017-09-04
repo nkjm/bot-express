@@ -25,7 +25,7 @@ module.exports = class Messenger {
             debug("Loading " + messenger_script + "...");
             messenger_script = messenger_script.replace(".js", "");
             this.Messenger_classes[messenger_script] = require("./messenger/" + messenger_script);
-            this.sdk[messenger_script] = this.Messenger_classes[messenger_script].sdk;
+            this.sdk[messenger_script] = new this.Messenger_classes[messenger_script](options).sdk;
         }
         this.service = new this.Messenger_classes[this.type](options);
 

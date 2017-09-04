@@ -114,5 +114,15 @@ class Bot {
     identify_message_type(message){
         return this._messenger.identify_message_type(message);
     }
+
+    /**
+    * Compile message format to the specified format.
+    * @param {MessageObject} message - Message object to compile.
+    * @param {String} format - Target format to compile. It can be "line" or "facebook".
+    * @returns {Promise.<MessageObject>} - Compiled message object.
+    */
+    compile_message(message, format = this.type){
+        return this._messenger.compile_message(message, format);
+    }
 }
 module.exports = Bot;

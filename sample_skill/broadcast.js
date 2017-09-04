@@ -58,26 +58,27 @@ module.exports = class SkillBroadcast {
 
                 let sent_messages = [];
 
-                debug(Object.getOwnPropertyNames(bot.sdk));
-                debug(bot.sdk);
-
                 // Send message to LINE users.
-                sent_messages.push(
-                    bot.compile_message(orig_message, "line").then(
-                        (response) => {
-                            return bot.sdk.line.multicast(line_user_ids, response);
-                        }
-                    )
-                );
+                if (line_user_ids.length > 0){
+                    sent_messages.push(
+                        bot.compile_message(orig_message, "line").then(
+                            (response) => {
+                                return bot.plugin.line.multicast(line_user_ids, response);
+                            }
+                        )
+                    );
+                }
 
                 // Send message to Facebook users.
-                sent_messages.push(
-                    bot.compile_message(orig_message, "facebook").then(
-                        (response) => {
-                            return bot.sdk.facebook.multicast(facebook_user_ids, response);
-                        }
-                    )
-                );
+                if (facebook_user_ids.length > 0){
+                    sent_messages.push(
+                        bot.compile_message(orig_message, "facebook").then(
+                            (response) => {
+                                return bot.plugin.facebook.multicast(facebook_user_ids, response);
+                            }
+                        )
+                    );
+                }
 
                 return Promise.all(sent_messages);
             }

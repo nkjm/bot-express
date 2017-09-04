@@ -65,7 +65,7 @@ module.exports = class SkillBroadcast {
                 sent_messages.push(
                     bot.compile_message(orig_message, "line").then(
                         (response) => {
-                            return bot.sdk.line.multicast(line_user_ids, lined_message);
+                            return bot.sdk.line.multicast(line_user_ids, response);
                         }
                     )
                 );
@@ -74,7 +74,7 @@ module.exports = class SkillBroadcast {
                 sent_messages.push(
                     bot.compile_message(orig_message, "facebook").then(
                         (response) => {
-                            return bot.sdk.facebook.multicast(facebook_user_ids, lined_message);
+                            return bot.sdk.facebook.multicast(facebook_user_ids, response);
                         }
                     )
                 );

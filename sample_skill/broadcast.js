@@ -65,7 +65,7 @@ module.exports = class SkillBroadcast {
                             (response) => {
                                 debug("Going to multicast following message.");
                                 debug(response);
-                                return bot.plugin.line.multicast(line_user_ids, response);
+                                return bot.plugin.line.multicast(event, line_user_ids, response);
                             }
                         )
                     );
@@ -76,7 +76,7 @@ module.exports = class SkillBroadcast {
                     sent_messages.push(
                         bot.compile_message(orig_message, "facebook").then(
                             (response) => {
-                                return bot.plugin.facebook.multicast(facebook_user_ids, response);
+                                return bot.plugin.facebook.multicast(event, facebook_user_ids, response);
                             }
                         )
                     );

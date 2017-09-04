@@ -59,12 +59,22 @@ module.exports = class SkillBroadcast {
                 let sent_messages = [];
 
                 // Send message to LINE users.
-                let lined_message = bot.compile_message(orig_message, "line");
-                sent_messages.push(bot.sdk.line.multicast(line_user_ids, lined_message));
+                sent_messages.push(
+                    bot.compile_message(orig_message, "line").then(
+                        (response) => {
+                            return bot.sdk.line.multicast(line_user_ids, lined_message);
+                        }
+                    )
+                );
 
                 // Send message to Facebook users.
-                let facebooked_message = bot.compile_message(orig_message, "facebook");
-                sent_messages.push(bot.sdk.facebook.multicast(facebook_user_ids, facebooked_message));
+                sent_messages.push(
+                    bot.compile_message(orig_message, "facebook").then(
+                        (response) => {
+                            return bot.sdk.facebook.multicast(facebook_user_ids, lined_message);
+                        }
+                    )
+                );
 
                 return Promise.all(sent_messages);
             }

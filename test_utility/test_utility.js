@@ -129,15 +129,11 @@ module.exports = class Test_Utility {
     }
 
     static line_create_postback_event_payload(payload){
-        return {
-            data: payload
-        }
+        return payload;
     }
 
     static facebook_create_postback_event_payload(payload){
-        return {
-            payload: payload
-        };
+        return payload;
     }
 
     static line_create_beacon_event_payload(payload){

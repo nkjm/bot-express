@@ -52,7 +52,7 @@ describe("compile-message-test - from line", function(){
                             ]
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {data:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -100,7 +100,7 @@ describe("compile-message-test - from line", function(){
                             ]
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {data:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -126,7 +126,7 @@ describe("compile-message-test - from line", function(){
                             ]
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {data:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -187,7 +187,7 @@ describe("compile-message-test - from line", function(){
                             }]
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {data:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -285,7 +285,7 @@ describe("compile-message-test - from line", function(){
                             ]
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {data:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -317,7 +317,7 @@ describe("compile-message-test - from line", function(){
                             ]
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {data:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -359,7 +359,7 @@ describe("compile-message-test - from line", function(){
                             }]
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {data:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -428,7 +428,7 @@ describe("compile-message-test - from facebook", function(){
                             {content_type:"text",title:"クワトロフォルマッジ",payload:"クワトロフォルマッジ"}
                         ]
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {payload:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -472,7 +472,7 @@ describe("compile-message-test - from facebook", function(){
                             }
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {payload:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -544,7 +544,7 @@ describe("compile-message-test - from facebook", function(){
                             }
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {payload:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -643,7 +643,7 @@ describe("compile-message-test - from facebook", function(){
                             }
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {payload:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -676,7 +676,7 @@ describe("compile-message-test - from facebook", function(){
                             }
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {payload:"マルゲリータ"}));
                 }
             ).then(
                 function(response){
@@ -719,7 +719,7 @@ describe("compile-message-test - from facebook", function(){
                             }
                         }
                     });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "マルゲリータ"));
+                    return webhook.run(Util.create_req(message_platform, "postback", user_id, {payload:"マルゲリータ"}));
                 }
             ).then(
                 function(response){

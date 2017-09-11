@@ -171,7 +171,7 @@ module.exports = class MessengerFacebook {
             }
         } else if (event.postback){
             // This is Postback
-            param_value = event.postback.payload;
+            param_value = event.postback;
         }
         return param_value;
     }

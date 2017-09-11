@@ -103,7 +103,7 @@ module.exports = class MessengerLine {
                 }
             break;
             case "postback":
-                param_value = event.postback.data;
+                param_value = event.postback;
             break;
         }
         return param_value;

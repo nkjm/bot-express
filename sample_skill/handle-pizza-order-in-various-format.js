@@ -26,6 +26,17 @@ module.exports = class SkillCompileMessage {
                             {type:"postback",label:"クワトロフォルマッジ",data:"クワトロフォルマッジ"}
                         ]
                     }
+                },
+                parser: (postback, context, resolve, reject) => {
+                    if (typeof postback == "string"){
+                        return resolve(postback);
+                    }
+                    if (bot.type == "line"){
+                        return resolve(postback.data);
+                    } else if (bot.type == "facebook"){
+                        return resolve(postback.payload);
+                    }
+                    return reject();
                 }
             },
             line_template_button_message: { // Will be quick reply in facebook.
@@ -57,6 +68,17 @@ module.exports = class SkillCompileMessage {
                             {type:"uri", label: "すべてのメニュー", uri:"https://www.dominos.jp/order/pizza/search/"}
                         ]
                     }
+                },
+                parser: (postback, context, resolve, reject) => {
+                    if (typeof postback == "string"){
+                        return resolve(postback);
+                    }
+                    if (bot.type == "line"){
+                        return resolve(postback.data);
+                    } else if (bot.type == "facebook"){
+                        return resolve(postback.payload);
+                    }
+                    return reject();
                 }
             },
             line_template_button_uri_more_than_3: { // Will catch exception in facebook.
@@ -73,6 +95,17 @@ module.exports = class SkillCompileMessage {
                             {type:"uri", label: "すべてのメニュー", uri:"https://www.dominos.jp/order/pizza/search/"}
                         ]
                     }
+                },
+                parser: (postback, context, resolve, reject) => {
+                    if (typeof postback == "string"){
+                        return resolve(postback);
+                    }
+                    if (bot.type == "line"){
+                        return resolve(postback.data);
+                    } else if (bot.type == "facebook"){
+                        return resolve(postback.payload);
+                    }
+                    return reject();
                 }
             },
             line_template_confirm: { // Will be quick reply in facebook.
@@ -111,6 +144,17 @@ module.exports = class SkillCompileMessage {
                             ]
                         }]
                     }
+                },
+                parser: (postback, context, resolve, reject) => {
+                    if (typeof postback == "string"){
+                        return resolve(postback);
+                    }
+                    if (bot.type == "line"){
+                        return resolve(postback.data);
+                    } else if (bot.type == "facebook"){
+                        return resolve(postback.payload);
+                    }
+                    return reject();
                 }
             },
             /*
@@ -190,6 +234,17 @@ module.exports = class SkillCompileMessage {
                             ]
                         }
                     }
+                },
+                parser: (postback, context, resolve, reject) => {
+                    if (typeof postback == "string"){
+                        return resolve(postback);
+                    }
+                    if (bot.type == "line"){
+                        return resolve(postback.data);
+                    } else if (bot.type == "facebook"){
+                        return resolve(postback.payload);
+                    }
+                    return reject();
                 }
             },
             facebook_template_button_web_url: { // Will be template button postback and uri in line.
@@ -206,6 +261,17 @@ module.exports = class SkillCompileMessage {
                             ]
                         }
                     }
+                },
+                parser: (postback, context, resolve, reject) => {
+                    if (typeof postback == "string"){
+                        return resolve(postback);
+                    }
+                    if (bot.type == "line"){
+                        return resolve(postback.data);
+                    } else if (bot.type == "facebook"){
+                        return resolve(postback.payload);
+                    }
+                    return reject();
                 }
             },
             facebook_template_generic: { // Will be template carousel in line.
@@ -231,6 +297,17 @@ module.exports = class SkillCompileMessage {
                             }]
                         }
                     }
+                },
+                parser: (postback, context, resolve, reject) => {
+                    if (typeof postback == "string"){
+                        return resolve(postback);
+                    }
+                    if (bot.type == "line"){
+                        return resolve(postback.data);
+                    } else if (bot.type == "facebook"){
+                        return resolve(postback.payload);
+                    }
+                    return reject();
                 }
             }
             /*

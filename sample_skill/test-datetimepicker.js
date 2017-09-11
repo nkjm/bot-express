@@ -18,7 +18,9 @@ module.exports = class SkillTestDatetimepicker {
                         text: "テストケースを選択してください。",
                         actions: [
                             {type: "message", label: "buttons_date_only", text: "buttons_date_only"},
-                            {type: "message", label: "buttons_date_and_url", text: "buttons_date_and_url"}
+                            {type: "message", label: "buttons_date_and_url", text: "buttons_date_and_url"},
+                            {type: "message", label: "carousel_date_only", text: "carousel_date_only"},
+                            {type: "message", label: "carousel_date_and_url", text: "carousel_date_and_url"}
                         ]
                     }
                 },

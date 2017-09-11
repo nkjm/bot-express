@@ -69,7 +69,7 @@ describe("Parser Test", function(){
         });
     });
     describe("# There is corresponding parameter and parser. If parse fails,", function(){
-        it("will does not apply the value and ask samke question once again.", function(){
+        it("does not apply the value and ask samke question once again.", function(){
             this.timeout(5000);
 
             let options = Util.create_options();

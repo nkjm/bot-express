@@ -390,11 +390,17 @@ module.exports = class MessengerFacebook {
             }
             case "buttons_template": {// -> to text(w quick reply) or button tempalte
                 let uri_included = false;
+                let datetimepicker_included = false;
+
                 for (let action of message.template.actions){
                     if (action.type == "uri"){
                         uri_included = true;
                     }
+                    if (action.type == "datetimepicker"){
+                        datetimepicker_included = true;
+                    }
                 }
+
                 if (uri_included){
                     // This template message include uri button so we use template message in facebook as well.
                     if (message.template.actions.length > 3){
@@ -435,26 +441,38 @@ module.exports = class MessengerFacebook {
                                 payload: action.text
                             });
                         }
+                        // We remove datetimepicker button since its not supported in facebook.
                     }
                 } else {
-                    // This template message does not include uri. Can be postback or message so we use quick reply.
-                    compiled_message = {
-                        text: message.template.text,
-                        quick_replies: []
-                    }
-                    for (let action of message.template.actions){
-                        if (action.type == "postback"){
-                            compiled_message.quick_replies.push({
-                                content_type: "text",
-                                title: action.label,
-                                payload: action.data
-                            });
-                        } else if (action.type == "message"){
-                            compiled_message.quick_replies.push({
-                                content_type: "text",
-                                title: action.label,
-                                payload: action.text
-                            });
+                    // This template message does not include uri.
+                    // If the number of button is just 1 and it is datetimepicker, we create plane text message.
+                    // Otherwise, it can be postback or message so we use quick reply.
+
+                    if (datetimepicker_included && message.template.actions.length == 1){
+                        // Message has datetimepicker which is not supported in facebook.
+                        // We compile this message to plane text.
+                        compiled_message = {
+                            text: message.altText
+                        }
+                    } else {
+                        compiled_message = {
+                            text: message.template.text,
+                            quick_replies: []
+                        }
+                        for (let action of message.template.actions){
+                            if (action.type == "postback"){
+                                compiled_message.quick_replies.push({
+                                    content_type: "text",
+                                    title: action.label,
+                                    payload: action.data
+                                });
+                            } else if (action.type == "message"){
+                                compiled_message.quick_replies.push({
+                                    content_type: "text",
+                                    title: action.label,
+                                    payload: action.text
+                                });
+                            }
                         }
                     }
                 }
@@ -462,11 +480,17 @@ module.exports = class MessengerFacebook {
             }
             case "confirm_template": {// -> to text(w quick reply) or button tempalte
                 let uri_included = false;
+                let datetimepicker_included = false;
+
                 for (let action of message.template.actions){
                     if (action.type == "uri"){
                         uri_included = true;
                     }
+                    if (action.type == "datetimepicker"){
+                        datetimepicker_included = true;
+                    }
                 }
+
                 if (uri_included){
                     // This template message include uri button so we use template message in facebook as well.
                     if (message.template.actions.length > 3){
@@ -504,24 +528,35 @@ module.exports = class MessengerFacebook {
 
                     }
                 } else {
-                    // This template message does not include uri. Can be postback or message so we use quick reply.
-                    compiled_message = {
-                        text: message.template.text,
-                        quick_replies: []
-                    }
-                    for (let action of message.template.actions){
-                        if (action.type == "postback"){
-                            compiled_message.quick_replies.push({
-                                content_type: "text",
-                                title: action.label,
-                                payload: action.data
-                            });
-                        } else if (action.type == "message"){
-                            compiled_message.quick_replies.push({
-                                content_type: "text",
-                                title: action.label,
-                                payload: action.text
-                            });
+                    // This template message does not include uri.
+                    // If the number of button is just 1 and it is datetimepicker, we create plane text message.
+                    // Otherwise, it can be postback or message so we use quick reply.
+
+                    if (datetimepicker_included && message.template.actions.length == 1){
+                        // Message has datetimepicker which is not supported in facebook.
+                        // We compile this message to plane text.
+                        compiled_message = {
+                            text: message.altText
+                        }
+                    } else {
+                        compiled_message = {
+                            text: message.template.text,
+                            quick_replies: []
+                        }
+                        for (let action of message.template.actions){
+                            if (action.type == "postback"){
+                                compiled_message.quick_replies.push({
+                                    content_type: "text",
+                                    title: action.label,
+                                    payload: action.data
+                                });
+                            } else if (action.type == "message"){
+                                compiled_message.quick_replies.push({
+                                    content_type: "text",
+                                    title: action.label,
+                                    payload: action.text
+                                });
+                            }
                         }
                     }
                 }
@@ -543,12 +578,19 @@ module.exports = class MessengerFacebook {
                         image_url: column.thumbnailImageUrl,
                         buttons: []
                     }
+
                     let uri_included = false;
+                    let datetimepicker_included = false;
+
                     for (let action of column.actions){
                         if (action.type == "uri"){
                             uri_included = true;
                         }
+                        if (action.type == "datetimepicker"){
+                            datetimepicker_included = true;
+                        }
                     }
+
                     if (uri_included){
                         if (column.actions.length > 3){
                             // Not supported since facebook does not allow template message including more than 3 buttons. line's threshold is 3, too.
@@ -558,6 +600,13 @@ module.exports = class MessengerFacebook {
                             }
                             break;
                         }
+                    }
+                    if (datetimepicker_included && column.actions.length == 1){
+                        debug(`Compiling template message including just 1 button which is datetimepicker is not supported.`);
+                        compiled_message = {
+                            text: message.altText + " *Compiling template message including just 1 button which is datetimepicker is not supported."
+                        }
+                        break;
                     }
                     for (let action of column.actions){
                         if (action.type == "postback"){
@@ -579,6 +628,7 @@ module.exports = class MessengerFacebook {
                                 title: action.label
                             });
                         }
+                        // We remove datetimepicker since it's not supported in facebook.
                     }
                     compiled_message.attachment.payload.elements.push(element);
                 }

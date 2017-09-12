@@ -155,13 +155,15 @@ module.exports = class Flow {
     Check parameter type.
     @private
     @param {String} key - Parameter name.
-    @returns {String} "required_parameter" | "optional_parameter" | "not_applicable"
+    @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
     */
     _check_parameter_type(key){
         if (!!this.skill.required_parameter && !!this.skill.required_parameter[key]){
             return "required_parameter";
         } else if (!!this.skill.optional_parameter && !!this.skill.optional_parameter[key]){
             return "optional_parameter";
+        } else if (!!this.context.to_confirm){
+            if (this.context.to_confirm.find(to_confirm => to_confirm.name === key)) return "dynamic_parameter";
         }
         return "not_applicable";
     }
@@ -182,6 +184,14 @@ module.exports = class Flow {
             // We define new reject just for parse.
             let parse_reject = (message) => {
                 return reject(new BotExpressParseError(message));
+            }
+
+            if (type == "dynamic_parameter"){
+                let dynamic_parameter = this.context.to_confirm.find(param => param.name === key);
+                if (!!dynamic_parameter.parser){
+                    debug("Parse method found in parameter definition.");
+                    return dynamic_parameter.parser(value, this.context, resolve, parse_reject);
+                }
             }
 
             if (!!this.skill[type][key].parser){

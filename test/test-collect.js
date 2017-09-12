@@ -82,6 +82,7 @@ describe("Collect Test", function(){
             );
         });
     });
+
     describe("Claim city is incorrect", function(){
         it("will go bcck to zip code question.", function(){
             this.timeout(8000);
@@ -172,6 +173,40 @@ describe("Collect Test", function(){
                         street: "2-5-8"
                     });
                     response.to_confirm.should.have.lengthOf(0);
+                }
+            );
+        });
+    });
+
+    describe("collect by collect_by_param", function(){
+        it("will successfully add new param to skill.optional_parameter and to_confirm.", function(){
+            this.timeout(8000);
+
+            let options = Util.create_options();
+            let webhook = new Webhook(options);
+            return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                function(response){
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "住民票を申請したい"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now asking juminhyo type
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "本人だけ"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now asking name.
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "中嶋一樹です"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now confirming if name is correct.
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "はい"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now asking zip code.
+                    response.should.have.property("confirming", "zip_code");
                 }
             );
         });

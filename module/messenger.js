@@ -353,8 +353,9 @@ module.exports = class Messenger {
         }
 
         // Add this param to skill as optional parameter since apply_parameter searches for param in skill.
-        if (this.skill.optional_parameter == undefined) this.skill.optional_parameter = {};
+        if (this.skill.optional_parameter === undefined) this.skill.optional_parameter = {};
         Object.assign(this.skill.optional_parameter, parameter);
+        debug(this.skill);
 
         let param_to_collect = {
             name: Object.keys(parameter)[0],

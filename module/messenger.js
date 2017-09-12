@@ -352,6 +352,10 @@ module.exports = class Messenger {
             throw("Malformed parameter.");
         }
 
+        // Add this param to skill as optional parameter since apply_parameter searches for param in skill.
+        if (this.skill.optional_parameter == undefined) this.skill.optional_parameter = {};
+        Object.assign(this.skill.optional_parameter, parameter);
+
         let param_to_collect = {
             name: Object.keys(parameter)[0],
             label: parameter[Object.keys(parameter)[0]].label,

@@ -179,9 +179,8 @@ describe("Collect Test", function(){
         });
     });
 
-
     describe("collect by collect_by_param", function(){
-        it("will successfully add new param to skill.optional_parameter and to_confirm.", function(){
+        it("will successfully add new param to skill.dynamic_parameter and to_confirm.", function(){
             this.timeout(8000);
 
             let options = Util.create_options();
@@ -209,6 +208,51 @@ describe("Collect Test", function(){
                 function(response){
                     // Bot is now asking zip code.
                     response.should.have.property("confirming", "zip_code");
+                }
+            );
+        });
+    });
+
+    describe("collect existing parameter by collect_by_param", function(){
+        it("will successfully add modify param of skill.required_parameter and add it to_confirm.", function(){
+            this.timeout(8000);
+
+            let options = Util.create_options();
+            let webhook = new Webhook(options);
+            return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                function(response){
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "住民票を申請したい"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now asking juminhyo type
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "本人だけ"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now asking name.
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "中嶋一樹です"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now confirming if name is correct.
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "はい"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now asking zip code.
+                    response.previous.message[0].message.text.should.equal("次にご住所ですが、郵便番号を教えていただけますか？");
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "107-0061"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now asking if city is correct.
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "いいえ"));
+                }
+            ).then(
+                function(response){
+                    // Bot is now asking zip code once again.
+                    response.previous.message[0].message.text.should.equal("なんと。お手数ですが郵便番号を再度教えてもらえますか？");
                 }
             );
         });

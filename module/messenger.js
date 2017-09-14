@@ -221,21 +221,6 @@ module.exports = class Messenger {
     }
 
     /**
-    * Collect specified parameter.
-    * @param {String|SkillParameterObject} arg - Name of the parameter to collect or parameter object to collect.
-    * @returns {Null}
-    */
-    collect(arg){
-        if (typeof arg == "string"){
-            return this._collect_by_parameter_name(arg);
-        } else if (typeof arg == "object"){
-            return this._collect_by_param(arg);
-        } else {
-            throw("Invalid argument for messenger.collect()");
-        }
-    }
-
-    /**
     * Change the message to collect specified parameter.
     * @param {String} parameter_key - Name of the parameter to collect.
     * @param {MessageObject} message - The message object.
@@ -304,13 +289,29 @@ module.exports = class Messenger {
         return Promise.resolve(compiled_message);
     }
 
+
+    /**
+    * Collect specified parameter.
+    * @param {String|SkillParameterObject} arg - Name of the parameter to collect or parameter object to collect.
+    * @returns {Null}
+    */
+    collect(arg){
+        if (typeof arg == "string"){
+            return this._collect_by_parameter_key(arg);
+        } else if (typeof arg == "object"){
+            return this._collect_by_parameter_obj(arg);
+        } else {
+            throw("Invalid argument for messenger.collect()");
+        }
+    }
+
     /**
     * Collect specified parameter.
     * @private
     * @param {String} parameter_key - Name of the parameter to collect.
     * @returns {Null}
     */
-    _collect_by_parameter_name(parameter_key){
+    _collect_by_parameter_key(parameter_key){
         debug("Going to collect parameter. Message should be defined in skill.");
 
         // If there is confirmed parameter, we remove it to re-confirm.
@@ -335,18 +336,26 @@ module.exports = class Messenger {
     * @param {SkillParameterObject} parameter - The parameter object to collect.
     * @returns {Null}
     */
-    _collect_by_param(parameter){
+    _collect_by_parameter_obj(parameter){
         debug("Going to collect parameter. Message should be enveloped in the argument.");
 
         if (Object.keys(parameter).length != 1){
             throw("Malformed parameter.");
         }
 
-        // Add this param to skill as optional parameter since apply_parameter searches for param in skill.
-        if (this.context.skill.dynamic_parameter === undefined) this.context.skill.dynamic_parameter = {};
-        Object.assign(this.context.skill.dynamic_parameter, parameter);
-
         let param_key = Object.keys(parameter)[0];
+
+        if (this.context.skill.required_parameter && this.context.skill.required_parameter[param_key]){
+            // If we have parameter of same parameter key, override it.
+            Object.assign(this.context.skill.required_parameter, parameter);
+        } else if (this.context.skill.optional_parameter && this.context.skill.optional_parameter[param_key]){
+            // If we have parameter of same parameter key, override it.
+            Object.assign(this.context.skill.optional_parameter, parameter);
+        } else {
+            // If we do not have parameter of same parameter key, add it as dynamic parameter.
+            if (this.context.skill.dynamic_parameter === undefined) this.context.skill.dynamic_parameter = {};
+            Object.assign(this.context.skill.dynamic_parameter, parameter);
+        }
 
         // If there is confirmed parameter, we remove it to re-confirm.
         if (this.context.confirmed[param_key]){

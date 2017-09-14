@@ -14,9 +14,8 @@ module.exports = class Messenger {
         this.type = options.message_platform_type;
         this.options = options;
         this.Messenger_classes = {};
-        this.context = null; // Will be set later in webhook
+        this.context = null; // Will be set later in flow.
         this.bot_event = bot_event;
-        this.skill = null; // Will be set in flow constructor
         this.plugin = {};
 
         // Load messenger libraries located under messenger directory.
@@ -238,17 +237,28 @@ module.exports = class Messenger {
 
     /**
     * Change the message to collect specified parameter.
-    * @param {String} parameter_name - Name of the parameter to collect.
+    * @param {String} parameter_key - Name of the parameter to collect.
     * @param {MessageObject} message - The message object.
     * @returns {Null}
     */
-    change_message_to_confirm(parameter_name, message){
-        let param_index = this.context.to_confirm.findIndex(param => param.name === parameter_name);
-        if (param_index === undefined){
-            debug("The parameter to change message to confirm not found.");
-            throw("The parameter to change message to confirm not found.");
+    change_message_to_confirm(parameter_key, message){
+        let param_type;
+        if (!!this.context.skill.required_parameter && !!this.context.skill.required_parameter[parameter_key]){
+            param_type = "required_parameter";
+        } else if (!!this.context.skill.optional_parameter && !!this.context.skill.optional_parameter[parameter_key]){
+            param_type = "optional_parameter";
+        } else if (!!this.context.skill.dynamic_parameter && !!this.context.skill.dynamic_parameter[parameter_key]){
+            param_type = "dynamic_parameter";
+        } else {
+            param_type = "not_applicable";
         }
-        this.context.to_confirm[param_index].message_to_confirm = message;
+
+        if (param_type == "not_applicable"){
+            debug("The parameter to change message not found.");
+            throw new Error("The parameter to change message not found.")
+        }
+
+        this.context.skill[param_type][parameter_key].message_to_confirm = message;
     }
 
     /**
@@ -297,46 +307,26 @@ module.exports = class Messenger {
     /**
     * Collect specified parameter.
     * @private
-    * @param {String} parameter_name - Name of the parameter to collect.
+    * @param {String} parameter_key - Name of the parameter to collect.
     * @returns {Null}
     */
-    _collect_by_parameter_name(parameter_name){
+    _collect_by_parameter_name(parameter_key){
         debug("Going to collect parameter. Message should be defined in skill.");
 
-        let param_to_collect;
-        if (!!this.skill.required_parameter && !!this.skill.required_parameter[parameter_name]){
-            param_to_collect = {
-                name: parameter_name,
-                label: this.skill.required_parameter[parameter_name].label,
-                message_to_confirm: this.skill.required_parameter[parameter_name].message_to_confirm,
-                parser: this.skill.required_parameter[parameter_name].parser,
-                reaction: this.skill.required_parameter[parameter_name].reaction
-            }
-        } else if (!!this.skill.optional_parameter && !!this.skill.optional_parameter[parameter_name]){
-            param_to_collect = {
-                name: parameter_name,
-                label: this.skill.optional_parameter[parameter_name].label,
-                message_to_confirm: this.skill.optional_parameter[parameter_name].message_to_confirm,
-                parser: this.skill.optional_parameter[parameter_name].parser,
-                reaction: this.skill.optional_parameter[parameter_name].reaction
-            }
-        } else {
-            debug(`Spedified parameter not found in skill.`);
-            throw(`Spedified parameter not found in skill.`);
+        // If there is confirmed parameter, we remove it to re-confirm.
+        if (this.context.confirmed[parameter_key]){
+            delete this.context.confirmed[parameter_key];
         }
 
-        if (this.context.confirmed[param_to_collect.name]){
-            delete this.context.confirmed[param_to_collect.name];
-        }
-
-        let index_to_remove = this.context.to_confirm.findIndex(param => param.name === param_to_collect.name);
+        // If the parameter is already in the to_confirm list, we remove it to avoid duplicate.
+        let index_to_remove = this.context.to_confirm.indexOf(parameter_key);
         if (index_to_remove !== -1){
-            debug(`Removing ${param_to_collect.name} from to_confirm.`);
+            debug(`Removing ${parameter_key} from to_confirm.`);
             this.context.to_confirm.splice(index_to_remove, 1);
         }
 
-        debug(`We add optional parameter "${parameter_name}" to the top of to_confirm list.`);
-        this.context.to_confirm.unshift(param_to_collect);
+        debug(`We add optional parameter "${parameter_key}" to the top of to_confirm list.`);
+        this.context.to_confirm.unshift(parameter_key);
     }
 
     /**
@@ -353,30 +343,25 @@ module.exports = class Messenger {
         }
 
         // Add this param to skill as optional parameter since apply_parameter searches for param in skill.
-        if (this.skill.optional_parameter === undefined) this.skill.optional_parameter = {};
-        Object.assign(this.skill.optional_parameter, parameter);
-        debug(this.skill);
+        if (this.context.skill.dynamic_parameter === undefined) this.context.skill.dynamic_parameter = {};
+        Object.assign(this.context.skill.dynamic_parameter, parameter);
 
-        let param_to_collect = {
-            name: Object.keys(parameter)[0],
-            label: parameter[Object.keys(parameter)[0]].label,
-            message_to_confirm: parameter[Object.keys(parameter)[0]].message_to_confirm,
-            parser: parameter[Object.keys(parameter)[0]].parser,
-            reaction: parameter[Object.keys(parameter)[0]].reaction
+        let param_key = Object.keys(parameter)[0];
+
+        // If there is confirmed parameter, we remove it to re-confirm.
+        if (this.context.confirmed[param_key]){
+            delete this.context.confirmed[param_key];
         }
 
-        if (this.context.confirmed[param_to_collect.name]){
-            delete this.context.confirmed[param_to_collect.name];
-        }
-
-        let index_to_remove = this.context.to_confirm.findIndex(param => param.name === param_to_collect.name);
+        // If the parameter is already in the to_confirm list, we remove it to avoid duplicate.
+        let index_to_remove = this.context.to_confirm.indexOf(param_key);
         if (index_to_remove !== -1){
-            debug(`Removing ${param_to_collect.name} from to_confirm.`);
+            debug(`Removing ${param_key} from to_confirm.`);
             this.context.to_confirm.splice(index_to_remove, 1);
         }
 
-        debug(`We add optional parameter "${param_to_collect.name}" to the top of to_confirm list.`);
-        this.context.to_confirm.unshift(param_to_collect);
+        debug(`We add dynamic parameter "${param_key}" to the top of to_confirm list.`);
+        this.context.to_confirm.unshift(param_key);
     }
 
     /**

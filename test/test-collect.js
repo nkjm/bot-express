@@ -12,8 +12,9 @@ let should = chai.should();
 
 
 describe("Collect Test", function(){
-    let message_platform = "facebook";
+    let message_platform = "line";
     let user_id = "collect";
+
     describe("City is correct", function(){
         it("will go through all questions 1 by 1.", function(){
             this.timeout(8000);
@@ -30,9 +31,9 @@ describe("Collect Test", function(){
                     response.should.have.property("confirming", "zip_code");
                     response.confirmed.should.deep.equal({});
                     response.to_confirm.should.have.lengthOf(3);
-                    response.to_confirm[0].name.should.equal("zip_code");
-                    response.to_confirm[1].name.should.equal("city");
-                    response.to_confirm[2].name.should.equal("street");
+                    response.to_confirm[0].should.equal("zip_code");
+                    response.to_confirm[1].should.equal("city");
+                    response.to_confirm[2].should.equal("street");
                     return webhook.run(Util.create_req(message_platform, "message", user_id, "107-0061"));
                 }
             ).then(
@@ -46,8 +47,8 @@ describe("Collect Test", function(){
                         }
                     });
                     response.to_confirm.should.have.lengthOf(2);
-                    response.to_confirm[0].name.should.equal("city");
-                    response.to_confirm[1].name.should.equal("street");
+                    response.to_confirm[0].should.equal("city");
+                    response.to_confirm[1].should.equal("street");
                     return webhook.run(Util.create_req(message_platform, "postback", user_id, "東京都港区北青山"));
                 }
             ).then(
@@ -62,7 +63,7 @@ describe("Collect Test", function(){
                         city: "東京都港区北青山"
                     });
                     response.to_confirm.should.have.lengthOf(1);
-                    response.to_confirm[0].name.should.equal("street");
+                    response.to_confirm[0].should.equal("street");
                     return webhook.run(Util.create_req(message_platform, "message", user_id, "2-5-8"));
                 }
             ).then(
@@ -99,9 +100,9 @@ describe("Collect Test", function(){
                     response.should.have.property("confirming", "zip_code");
                     response.confirmed.should.deep.equal({});
                     response.to_confirm.should.have.lengthOf(3);
-                    response.to_confirm[0].name.should.equal("zip_code");
-                    response.to_confirm[1].name.should.equal("city");
-                    response.to_confirm[2].name.should.equal("street");
+                    response.to_confirm[0].should.equal("zip_code");
+                    response.to_confirm[1].should.equal("city");
+                    response.to_confirm[2].should.equal("street");
                     return webhook.run(Util.create_req(message_platform, "message", user_id, "1070061"));
                 }
             ).then(
@@ -115,8 +116,8 @@ describe("Collect Test", function(){
                         }
                     });
                     response.to_confirm.should.have.lengthOf(2);
-                    response.to_confirm[0].name.should.equal("city");
-                    response.to_confirm[1].name.should.equal("street");
+                    response.to_confirm[0].should.equal("city");
+                    response.to_confirm[1].should.equal("street");
                     return webhook.run(Util.create_req(message_platform, "postback", user_id, "いいえ"));
                 }
             ).then(
@@ -125,9 +126,9 @@ describe("Collect Test", function(){
                     response.should.have.property("confirming", "zip_code");
                     response.confirmed.should.deep.equal({});
                     response.to_confirm.should.have.lengthOf(3);
-                    response.to_confirm[0].name.should.equal("zip_code");
-                    response.to_confirm[1].name.should.equal("city");
-                    response.to_confirm[2].name.should.equal("street");
+                    response.to_confirm[0].should.equal("zip_code");
+                    response.to_confirm[1].should.equal("city");
+                    response.to_confirm[2].should.equal("street");
                     return webhook.run(Util.create_req(message_platform, "message", user_id, "1070062"));
                 }
             ).then(
@@ -141,8 +142,8 @@ describe("Collect Test", function(){
                         }
                     });
                     response.to_confirm.should.have.lengthOf(2);
-                    response.to_confirm[0].name.should.equal("city");
-                    response.to_confirm[1].name.should.equal("street");
+                    response.to_confirm[0].should.equal("city");
+                    response.to_confirm[1].should.equal("street");
                     return webhook.run(Util.create_req(message_platform, "postback", user_id, "東京都港区南青山"));
                 }
             ).then(
@@ -157,7 +158,7 @@ describe("Collect Test", function(){
                         city: "東京都港区南青山"
                     });
                     response.to_confirm.should.have.lengthOf(1);
-                    response.to_confirm[0].name.should.equal("street");
+                    response.to_confirm[0].should.equal("street");
                     return webhook.run(Util.create_req(message_platform, "message", user_id, "2-5-8"));
                 }
             ).then(
@@ -177,6 +178,7 @@ describe("Collect Test", function(){
             );
         });
     });
+
 
     describe("collect by collect_by_param", function(){
         it("will successfully add new param to skill.optional_parameter and to_confirm.", function(){

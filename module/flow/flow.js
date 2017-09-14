@@ -14,14 +14,15 @@ module.exports = class Flow {
         this.options = options;
         this.context = context;
 
-        if (this.context.intent){
-            this.skill = this.instantiate_skill(this.context.intent.name);
-            this.messenger.skill = this.skill;
+        if (this.context.intent && this.context.intent.name){
+            if (!this.context.skill){
+                this.context.skill = this.instantiate_skill(this.context.intent.name);
+            }
 
             // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
             // After that, we depend on context.to_confirm to identify to_confirm parameters.
             if (this.context.to_confirm.length == 0){
-                this.context.to_confirm = this.identify_to_confirm_parameter(this.skill.required_parameter, this.context.confirmed);
+                this.context.to_confirm = this.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
             }
             debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
         }
@@ -64,9 +65,9 @@ module.exports = class Flow {
     }
 
     identify_to_confirm_parameter(required_parameter, confirmed){
-        let to_confirm = [];
+        let to_confirm = []; // Array of parameter names.
 
-        // If there is no required_parameter, we just return empty object as confirmed.
+        // If there is no required_parameter, we just return empty array.
         if (!required_parameter){
             return to_confirm;
         }
@@ -74,6 +75,8 @@ module.exports = class Flow {
         // Scan confirmed parameters and if missing required parameters found, we add them to to_confirm.
         for (let req_param_key of Object.keys(required_parameter)){
             if (typeof confirmed[req_param_key] == "undefined"){
+                to_confirm.push(req_param_key);
+                /*
                 to_confirm.push({
                     name: req_param_key,
                     label: required_parameter[req_param_key].label,
@@ -81,6 +84,7 @@ module.exports = class Flow {
                     parser: required_parameter[req_param_key].parser,
                     reaction: required_parameter[req_param_key].reaction
                 });
+                */
             }
         }
         return to_confirm;
@@ -102,23 +106,24 @@ module.exports = class Flow {
             return Promise.reject();
         }
         let message;
+        let param_key = this.context.to_confirm[0];
+        let param_type = this._check_parameter_type(param_key);
 
-        if (!!this.context.to_confirm[0].message_to_confirm[this.messenger.type]){
+        if (!!this.context.skill[param_type][param_key].message_to_confirm[this.messenger.type]){
             // Found message platform specific message object.
             debug("Found message platform specific message object.");
-            message = this.context.to_confirm[0].message_to_confirm[this.messenger.type];
-        } else if (!!this.context.to_confirm[0].message_to_confirm){
+            message = this.context.skill[param_type][param_key].message_to_confirm[this.messenger.type];
+        } else if (!!this.context.skill[param_type][param_key].message_to_confirm){
             // Found common message object. We compile this message object to get message platform specific message object.
             debug("Found common message object.");
-            message = this.context.to_confirm[0].message_to_confirm;
+            message = this.context.skill[param_type][param_key].message_to_confirm;
         } else {
             debug("While we need to send a message to confirm parameter, the message not found.");
             return Promise.reject();
         }
-        debug(message);
 
         // Set confirming.
-        this.context.confirming = this.context.to_confirm[0].name;
+        this.context.confirming = param_key;
 
         // Send question to the user.
         return this.messenger.reply([message]);
@@ -158,12 +163,12 @@ module.exports = class Flow {
     @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
     */
     _check_parameter_type(key){
-        if (!!this.skill.required_parameter && !!this.skill.required_parameter[key]){
+        if (!!this.context.skill.required_parameter && !!this.context.skill.required_parameter[key]){
             return "required_parameter";
-        } else if (!!this.skill.optional_parameter && !!this.skill.optional_parameter[key]){
+        } else if (!!this.context.skill.optional_parameter && !!this.context.skill.optional_parameter[key]){
             return "optional_parameter";
-        } else if (!!this.context.to_confirm){
-            if (this.context.to_confirm.find(to_confirm => to_confirm.name === key)) return "dynamic_parameter";
+        } else if (!!this.context.skill.dynamic_parameter && !!this.context.skill.dynamic_parameter[key]){
+            return "dynamic_parameter";
         }
         return "not_applicable";
     }
@@ -186,20 +191,12 @@ module.exports = class Flow {
                 return reject(new BotExpressParseError(message));
             }
 
-            if (type == "dynamic_parameter"){
-                let dynamic_parameter = this.context.to_confirm.find(param => param.name === key);
-                if (!!dynamic_parameter.parser){
-                    debug("Parse method found in parameter definition.");
-                    return dynamic_parameter.parser(value, this.context, resolve, parse_reject);
-                }
-            }
-
-            if (!!this.skill[type][key].parser){
+            if (!!this.context.skill[type][key].parser){
                 debug("Parse method found in parameter definition.");
-                return this.skill[type][key].parser(value, this.context, resolve, parse_reject);
-            } else if (!!this.skill["parse_" + key]){
+                return this.context.skill[type][key].parser(value, this.context, resolve, parse_reject);
+            } else if (!!this.context.skill["parse_" + key]){
                 debug("Parse method found in default parser function name.");
-                return this.skill["parse_" + key](value, this.context, resolve, parse_reject);
+                return this.context.skill["parse_" + key](value, this.context, resolve, parse_reject);
             } else {
                 if (strict){
                     return parse_reject("PARSER NOT FOUND");
@@ -228,7 +225,7 @@ module.exports = class Flow {
         }
 
         // Remove item from to_confirm.
-        let index_to_remove = this.context.to_confirm.findIndex(param => param.name === key);
+        let index_to_remove = this.context.to_confirm.indexOf(key);
         if (index_to_remove !== -1){
             debug(`Removing ${key} from to_confirm.`);
             this.context.to_confirm.splice(index_to_remove, 1);
@@ -243,35 +240,22 @@ module.exports = class Flow {
 
     react(error, key, value){
         return new Promise((resolve, reject) => {
-            if (this.skill.required_parameter && this.skill.required_parameter[key]){
-                if (!!this.skill.required_parameter[key].reaction){
-                    // This parameter has reaction. So do it and return its promise.
-                    debug(`Perform reaction for required parameter ${key}`);
-                    return this.skill.required_parameter[key].reaction(error, value, this.context, resolve, reject);
-                } else if (!!this.skill["reaction_" + key]){
-                    // This parameter has reaction. So do it and return its promise.
-                    debug(`Perform reaction for required parameter ${key}`);
-                    return this.skill["reaction_" + key](error, value, this.context, resolve, reject);
+            let param_type = this._check_parameter_type(key);
+
+            if (this.context.skill[param_type] && this.context.skill[param_type][key]){
+                if (this.context.skill[param_type][key].reaction){
+                    debug(`Reaction for ${key} found. Performing reaction...`);
+                    return this.context.skill[param_type][key].reaction(error, value, this.context, resolve, reject);
+                } else if (this.context.skill["reaction_" + key]){
+                    debug(`Reaction for ${key} found. Performing reaction...`);
+                    return this.context.skill["reaction_" + key](error, value, this.context, resolve, reject);
                 } else {
                     // This parameter does not have reaction so do nothing.
-                    debug(`Reaction is not set for required parameter ${key}.`);
-                    return resolve();
-                }
-            } else if (this.skill.optional_parameter && this.skill.optional_parameter[key]){
-                if (!!this.skill.optional_parameter[key].reaction){
-                    // This parameter has reaction. So do it and return its promise.
-                    debug(`Perform reaction for optional parameter ${key}`);
-                    return this.skill.optional_parameter[key].reaction(error, value, this.context, resolve, reject);
-                } else if (!!this.skill["reaction_" + key]){
-                    // This parameter has reaction. So do it and return its promise.
-                    debug(`Perform reaction for optional parameter ${key}`);
-                    return this.skill["reaction_" + key](error, value, this.context, resolve, reject);
-                } else {
-                    // This parameter does not have reaction so do nothing.
-                    debug(`Reaction is not set for optional parameter ${key}.`);
+                    debug(`Reaction for ${key} not found.`);
                     return resolve();
                 }
             } else {
+                debug(`There is no parameter we should care about. So skip reaction.`);
                 return resolve(`There is no parameter we should care about. So skip reaction.`);
             }
         });
@@ -336,11 +320,11 @@ module.exports = class Flow {
                 debug("We could not identify intent so this can be change parameter or no idea.");
                 let is_fit = false;
                 let all_param_keys = [];
-                if (this.skill.required_parameter){
-                    all_param_keys = all_param_keys.concat(Object.keys(this.skill.required_parameter));
+                if (this.context.skill.required_parameter){
+                    all_param_keys = all_param_keys.concat(Object.keys(this.context.skill.required_parameter));
                 }
-                if (this.skill.optional_parameter){
-                    all_param_keys = all_param_keys.concat(Object.keys(this.skill.optional_parameter));
+                if (this.context.skill.optional_parameter){
+                    all_param_keys = all_param_keys.concat(Object.keys(this.context.skill.optional_parameter));
                 }
                 debug("all_param_keys are following.");
                 debug(all_param_keys);
@@ -433,10 +417,15 @@ module.exports = class Flow {
         }
         this.context._message_queue = [];
 
+        // Re-instantiate skill since some params might been added dynamically.
+        if (this.context.intent && this.context.intent.name){
+            this.context.skill = this.instantiate_skill(this.context.intent.name);
+        }
+
         // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
         // After that, we depend on context.to_confirm to identify to_confirm parameters.
         if (this.context.to_confirm.length == 0){
-            this.context.to_confirm = this.identify_to_confirm_parameter(this.skill.required_parameter, this.context.confirmed);
+            this.context.to_confirm = this.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
         }
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
@@ -476,13 +465,15 @@ module.exports = class Flow {
         this.context.confirming = null;
         this.context.intent = intent;
 
-        this.skill = this.instantiate_skill(this.context.intent.name);
-        this.messenger.skill = this.skill;
+        // Re-instantiate skill since some params might been added dynamically.
+        if (this.context.intent && this.context.intent.name){
+            this.context.skill = this.instantiate_skill(this.context.intent.name);
+        }
 
         // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
         // After that, we depend on context.to_confirm to identify to_confirm parameters.
         if (this.context.to_confirm.length == 0){
-            this.context.to_confirm = this.identify_to_confirm_parameter(this.skill.required_parameter, this.context.confirmed);
+            this.context.to_confirm = this.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
         }
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
@@ -536,7 +527,7 @@ module.exports = class Flow {
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
         debug("Going to perform final action.");
         let finished = new Promise((resolve, reject) => {
-            this.skill.finish(this.bot, this.bot_event, this.context, resolve, reject);
+            this.context.skill.finish(this.bot, this.bot_event, this.context, resolve, reject);
         });
 
         return finished.then(
@@ -549,7 +540,7 @@ module.exports = class Flow {
                 }
 
                 debug("Final action done. Wrapping up.");
-                if (this.skill.clear_context_on_finish && this.context.to_confirm.length == 0){
+                if (this.context.skill.clear_context_on_finish && this.context.to_confirm.length == 0){
                     debug(`Clearing context.`);
                     this.context = null;
                 }

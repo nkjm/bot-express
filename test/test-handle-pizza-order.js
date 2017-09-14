@@ -29,10 +29,10 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "pizza");
                         response.should.have.property("to_confirm").have.lengthOf(4);
-                        response.to_confirm[0].should.have.property("name").and.equal("pizza");
-                        response.to_confirm[1].should.have.property("name").and.equal("size");
-                        response.to_confirm[2].should.have.property("name").and.equal("address");
-                        response.to_confirm[3].should.have.property("name").and.equal("name");
+                        response.to_confirm[0].should.equal("pizza");
+                        response.to_confirm[1].should.equal("size");
+                        response.to_confirm[2].should.equal("address");
+                        response.to_confirm[3].should.equal("name");
                         response.previous.confirmed.should.deep.equal([]);
                         response.previous.message.should.have.lengthOf(2);
                     }
@@ -50,10 +50,10 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "pizza");
                         response.should.have.property("to_confirm").have.lengthOf(4);
-                        response.to_confirm[0].should.have.property("name").and.equal("pizza");
-                        response.to_confirm[1].should.have.property("name").and.equal("size");
-                        response.to_confirm[2].should.have.property("name").and.equal("address");
-                        response.to_confirm[3].should.have.property("name").and.equal("name");
+                        response.to_confirm[0].should.equal("pizza");
+                        response.to_confirm[1].should.equal("size");
+                        response.to_confirm[2].should.equal("address");
+                        response.to_confirm[3].should.equal("name");
                         response.previous.confirmed.should.deep.equal([]);
                         response.previous.message.should.have.lengthOf(4);
                     }
@@ -71,9 +71,9 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({pizza:"マルゲリータ"});
                         response.should.have.property("confirming", "size");
                         response.should.have.property("to_confirm").have.lengthOf(3);
-                        response.to_confirm[0].should.have.property("name").and.equal("size");
-                        response.to_confirm[1].should.have.property("name").and.equal("address");
-                        response.to_confirm[2].should.have.property("name").and.equal("name");
+                        response.to_confirm[0].should.equal("size");
+                        response.to_confirm[1].should.equal("address");
+                        response.to_confirm[2].should.equal("name");
                         response.previous.confirmed.should.deep.equal(["pizza"]);
                         response.previous.message.should.have.lengthOf(7);
                     }
@@ -91,8 +91,8 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({pizza:"マルゲリータ", size:"M"});
                         response.should.have.property("confirming", "address");
                         response.should.have.property("to_confirm").have.lengthOf(2);
-                        response.to_confirm[0].should.have.property("name").and.equal("address");
-                        response.to_confirm[1].should.have.property("name").and.equal("name");
+                        response.to_confirm[0].should.equal("address");
+                        response.to_confirm[1].should.equal("name");
                         response.previous.confirmed.should.deep.equal(["size","pizza"]);
                     }
                 );
@@ -117,7 +117,7 @@ for (let message_platform of message_platform_list){
                         });
                         response.should.have.property("confirming", "name");
                         response.should.have.property("to_confirm").have.lengthOf(1);
-                        response.to_confirm[0].should.have.property("name").and.equal("name");
+                        response.to_confirm[0].should.equal("name");
                         response.previous.confirmed.should.deep.equal(["address","size","pizza"]);
                     }
                 );
@@ -154,8 +154,8 @@ for (let message_platform of message_platform_list){
                         });
                         response.should.have.property("confirming", "address");
                         response.should.have.property("to_confirm").have.lengthOf(2);
-                        response.to_confirm[0].should.have.property("name").and.equal("address");
-                        response.to_confirm[1].should.have.property("name").and.equal("name");
+                        response.to_confirm[0].should.equal("address");
+                        response.to_confirm[1].should.equal("name");
                         response.previous.confirmed.should.deep.equal(["size","pizza"]);
                     }
                 );
@@ -205,7 +205,7 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.have.property("address").and.have.property("longitude").and.equal(139.70372892916203);
                         response.should.have.property("confirming", "name");
                         response.should.have.property("to_confirm").have.lengthOf(1);
-                        response.to_confirm[0].should.have.property("name").and.equal("name");
+                        response.to_confirm[0].should.equal("name");
                         response.previous.confirmed.should.deep.equal(["address","size","pizza"]);
                     }
                 );

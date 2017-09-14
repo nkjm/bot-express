@@ -49,10 +49,10 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "satisfaction");
                         response.should.have.property("to_confirm").have.lengthOf(4);
-                        response.to_confirm[0].should.have.property("name").and.equal("satisfaction");
-                        response.to_confirm[1].should.have.property("name").and.equal("difficulty");
-                        response.to_confirm[2].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[3].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("satisfaction");
+                        response.to_confirm[1].should.equal("difficulty");
+                        response.to_confirm[2].should.equal("free_comment");
+                        response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                     }
                 );

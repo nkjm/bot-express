@@ -147,20 +147,9 @@ class Webhook {
                 }
                 debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
 
-                // Instantiate the conversation object. This will be saved as Bot Memory.
-                context = {
-                    intent: {name: this.options.beacon_skill[beacon_event_type]},
-                    confirmed: {},
-                    to_confirm: [],
-                    confirming: null,
-                    previous: {
-                        confirmed: [],
-                        message: []
-                    }
-                };
                 messenger.context = context;
                 try {
-                    flow = new beacon_flow(messenger, bot_event, context, this.options);
+                    flow = new beacon_flow(messenger, bot_event, this.options, beacon_event_type);
                 } catch(err) {
                     return Promise.reject(err);
                 }

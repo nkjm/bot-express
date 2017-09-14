@@ -66,7 +66,7 @@ module.exports = class SkillJuminhyo {
                     if (value && value.lastname && value.firstname){
                         // We got Lastname & Firstname so going to check with user if this is correct.
                         bot.collect({
-                            is_name_collect: {
+                            is_name_correct: {
                                 message_to_confirm: {
                                     type: "template",
                                     altText: `一応ご確認を。${value.lastname} ${value.firstname}さんでよかったでしょうか？`,

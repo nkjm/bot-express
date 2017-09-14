@@ -9,10 +9,6 @@ let Flow = require("./flow");
 let Nlp = require("../nlp");
 
 module.exports = class FollowFlow extends Flow {
-    /*
-    ** ### Follow Flow ###
-    ** -> Run final action.
-    */
 
     constructor(messenger, bot_event, options) {
         let context = {

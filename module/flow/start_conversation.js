@@ -52,8 +52,7 @@ module.exports = class StartConversationFlow extends Flow {
             this.context.intent = {
                 name: this.options.default_intent
             }
-            this.skill = super.instantiate_skill(this.context.intent.name);
-            this.messenger.skill = this.skill;
+            this.context.skill = super.instantiate_skill(this.context.intent.name);
 
             return super.finish();
         }
@@ -99,13 +98,13 @@ module.exports = class StartConversationFlow extends Flow {
             (intent) => {
                 // ### Instantiate Skill ###
                 this.context.intent = intent;
-                this.skill = super.instantiate_skill(this.context.intent.name);
-                this.messenger.skill = this.skill;
+                this.context.skill = super.instantiate_skill(this.context.intent.name);
+                this.messenger.skill = this.context.skill;
 
                 // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
                 // After that, we depend on context.to_confirm to identify to_confirm parameters.
                 if (this.context.to_confirm.length == 0){
-                    this.context.to_confirm = super.identify_to_confirm_parameter(this.skill.required_parameter, this.context.confirmed);
+                    this.context.to_confirm = super.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
                 }
                 debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 

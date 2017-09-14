@@ -29,10 +29,10 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "satisfaction");
                         response.should.have.property("to_confirm").have.lengthOf(4);
-                        response.to_confirm[0].should.have.property("name").and.equal("satisfaction");
-                        response.to_confirm[1].should.have.property("name").and.equal("difficulty");
-                        response.to_confirm[2].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[3].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("satisfaction");
+                        response.to_confirm[1].should.equal("difficulty");
+                        response.to_confirm[2].should.equal("free_comment");
+                        response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                         return webhook.run(Util.create_req(message_platform, event_type, user_id, "5"));
                     }
@@ -41,9 +41,9 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({satisfaction: 5});
                         response.should.have.property("confirming", "difficulty");
                         response.should.have.property("to_confirm").have.lengthOf(3);
-                        response.to_confirm[0].should.have.property("name").and.equal("difficulty");
-                        response.to_confirm[1].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[2].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("difficulty");
+                        response.to_confirm[1].should.equal("free_comment");
+                        response.to_confirm[2].should.equal("mail");
                         response.previous.confirmed.should.deep.equal(["satisfaction"]);
                         return webhook.run(Util.create_req(message_platform, event_type, user_id, "難しい"));
                     }
@@ -55,8 +55,8 @@ for (let message_platform of message_platform_list){
                         });
                         response.should.have.property("confirming", "free_comment");
                         response.should.have.property("to_confirm").have.lengthOf(2);
-                        response.to_confirm[0].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[1].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("free_comment");
+                        response.to_confirm[1].should.equal("mail");
                         response.previous.confirmed.should.deep.equal(["difficulty","satisfaction"]);
                         return webhook.run(Util.create_req(message_platform, event_type, user_id, "とても有意義でした。"));
                     }
@@ -69,7 +69,7 @@ for (let message_platform of message_platform_list){
                         });
                         response.should.have.property("confirming", "mail");
                         response.should.have.property("to_confirm").have.lengthOf(1);
-                        response.to_confirm[0].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("mail");
                         response.previous.confirmed.should.deep.equal(["free_comment","difficulty","satisfaction"]);
                         return webhook.run(Util.create_req(message_platform, event_type, user_id, "nakajima@hoge.com"));
                     }
@@ -104,10 +104,10 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "satisfaction");
                         response.should.have.property("to_confirm").have.lengthOf(4);
-                        response.to_confirm[0].should.have.property("name").and.equal("satisfaction");
-                        response.to_confirm[1].should.have.property("name").and.equal("difficulty");
-                        response.to_confirm[2].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[3].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("satisfaction");
+                        response.to_confirm[1].should.equal("difficulty");
+                        response.to_confirm[2].should.equal("free_comment");
+                        response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                         // Answer the value which is out of range.
                         return webhook.run(Util.create_req(message_platform, event_type, user_id, "6"));
@@ -118,10 +118,10 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "satisfaction");
                         response.should.have.property("to_confirm").have.lengthOf(4);
-                        response.to_confirm[0].should.have.property("name").and.equal("satisfaction");
-                        response.to_confirm[1].should.have.property("name").and.equal("difficulty");
-                        response.to_confirm[2].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[3].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("satisfaction");
+                        response.to_confirm[1].should.equal("difficulty");
+                        response.to_confirm[2].should.equal("free_comment");
+                        response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                         // Answer the value of unacceptable data type.
                         return webhook.run(Util.create_req(message_platform, event_type, user_id, "良い"));
@@ -132,10 +132,10 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "satisfaction");
                         response.should.have.property("to_confirm").have.lengthOf(4);
-                        response.to_confirm[0].should.have.property("name").and.equal("satisfaction");
-                        response.to_confirm[1].should.have.property("name").and.equal("difficulty");
-                        response.to_confirm[2].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[3].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("satisfaction");
+                        response.to_confirm[1].should.equal("difficulty");
+                        response.to_confirm[2].should.equal("free_comment");
+                        response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                     }
                 );
@@ -157,10 +157,10 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "satisfaction");
                         response.should.have.property("to_confirm").have.lengthOf(4);
-                        response.to_confirm[0].should.have.property("name").and.equal("satisfaction");
-                        response.to_confirm[1].should.have.property("name").and.equal("difficulty");
-                        response.to_confirm[2].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[3].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("satisfaction");
+                        response.to_confirm[1].should.equal("difficulty");
+                        response.to_confirm[2].should.equal("free_comment");
+                        response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                         // Answer the value which is out of range.
                         return webhook.run(Util.create_req(message_platform, event_type, user_id, "５"));
@@ -170,9 +170,9 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({satisfaction: 5});
                         response.should.have.property("confirming", "difficulty");
                         response.should.have.property("to_confirm").have.lengthOf(3);
-                        response.to_confirm[0].should.have.property("name").and.equal("difficulty");
-                        response.to_confirm[1].should.have.property("name").and.equal("free_comment");
-                        response.to_confirm[2].should.have.property("name").and.equal("mail");
+                        response.to_confirm[0].should.equal("difficulty");
+                        response.to_confirm[1].should.equal("free_comment");
+                        response.to_confirm[2].should.equal("mail");
                         response.previous.confirmed.should.deep.equal(["satisfaction"]);
                     }
                 );

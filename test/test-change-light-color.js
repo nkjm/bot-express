@@ -29,7 +29,7 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("confirmed").and.deep.equal({});
                         response.should.have.property("confirming", "color");
                         response.should.have.property("to_confirm").have.lengthOf(1);
-                        response.to_confirm[0].should.have.property("name").and.equal("color");
+                        response.to_confirm[0].should.equal("color");
                         response.previous.confirmed.should.deep.equal([]);
                     }
                 );

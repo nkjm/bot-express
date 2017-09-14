@@ -30,9 +30,9 @@ describe("Parser Test", function(){
                     response.should.have.property("confirming", "zip_code");
                     response.confirmed.should.deep.equal({});
                     response.to_confirm.should.have.lengthOf(3);
-                    response.to_confirm[0].name.should.equal("zip_code");
-                    response.to_confirm[1].name.should.equal("city");
-                    response.to_confirm[2].name.should.equal("street");
+                    response.to_confirm[0].should.equal("zip_code");
+                    response.to_confirm[1].should.equal("city");
+                    response.to_confirm[2].should.equal("street");
                 }
             )
         });

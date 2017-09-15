@@ -241,7 +241,7 @@ describe("Collect Test", function(){
             ).then(
                 function(response){
                     // Bot is now asking zip code.
-                    response.previous.message[0].message.text.should.equal("次にご住所ですが、郵便番号を教えていただけますか？");
+                    response.previous.message[0].message.text.should.equal("郵便番号を教えていただけますか？");
                     return webhook.run(Util.create_req(message_platform, "message", user_id, "107-0061"));
                 }
             ).then(
@@ -252,7 +252,7 @@ describe("Collect Test", function(){
             ).then(
                 function(response){
                     // Bot is now asking zip code once again.
-                    response.previous.message[0].message.text.should.equal("なんと。お手数ですが郵便番号を再度教えてもらえますか？");
+                    response.previous.message[0].message.text.should.equal("なんと。もう一度郵便番号うかがってもいいですか？");
                 }
             );
         });

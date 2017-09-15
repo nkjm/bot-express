@@ -114,7 +114,7 @@ module.exports = class SkillJuminhyo {
             zip_code: {
                 message_to_confirm: {
                     type: "text",
-                    text: "次にご住所ですが、郵便番号を教えていただけますか？"
+                    text: "郵便番号を教えていただけますか？"
                 },
                 parser: (value, context, resolve, reject) => {
                     return zip_code.search(value).then(
@@ -140,60 +140,81 @@ module.exports = class SkillJuminhyo {
                     );
                 },
                 reaction: (error, value, context, resolve, reject) => {
-                    if (error) return resolve();
+                    if (error){
+                        if (error.message == "zip code format is incorrect."){
+                            // Provide zip code is incorrect.
+                            bot.change_message_to_confirm("zip_code", {
+                                type: "text",
+                                text: "なんだか郵便番号が正しくないような気がします。もう一度教えていただいてもいいですか？"
+                            });
+                            return resolve();
+                        } else {
+                            // While provided zip code is correct, zip code search is not working.
+                            bot.queue({
+                                type: "text",
+                                text: "すみません、郵便番号検索が不調のようで該当する住所を探せませんでした。"
+                            });
+                            bot.collect("address");
+                            return resolve();
+                        }
+                    }
 
-                    if (value.resolved_address){
-                        // Set resolved address as city.
-                        context.confirmed.city = context.confirmed.zip_code.resolved_address;
-
-                        bot.collect({
-                            is_city_correct: {
-                                message_to_confirm: {
-                                    type: "template",
-                                    altText: `住所は「${context.confirmed.zip_code.resolved_address}」で間違いないですか？（はい・いいえ）`,
-                                    template: {
-                                        type: "confirm",
-                                        text: `住所は「${context.confirmed.zip_code.resolved_address}」で間違いないですか？`,
-                                        actions: [
-                                            {type:"message", label:"はい", text:"はい"},
-                                            {type:"message", label:"いいえ", text:"いいえ"}
-                                        ]
-                                    }
-                                },
-                                parser: (value, context, resolve, reject) => {
-                                    const acceptable_values = ["はい", "いいえ"];
-                                    if (acceptable_values.indexOf(value) >= 0){
-                                        return resolve(value);
-                                    }
-                                    return reject();
-                                },
-                                reaction: (error, value, context, resolve, reject) => {
-                                    if (error) return resolve();
-
-                                    if (value == "はい"){
-                                        // Going to collect remaining street address.
-                                        bot.collect("street");
-                                    } else if (value == "いいえ"){
-                                        bot.collect({
-                                            zip_code: {
-                                                message_to_confirm: {
-                                                    type: "text",
-                                                    text: "なんと。お手数ですが郵便番号を再度教えてもらえますか？"
-                                                }
-                                            }
-                                        });
-                                    }
-                                    return resolve();
-                                }
-                            }
-                        });
-                    } else {
+                    if (!value.resolved_address){
+                        // While provided zip code seems correct, we could not find the address.
                         bot.queue({
                             type: "text",
                             text: "すみません、郵便番号に該当する住所が見つかりませんでした。"
                         });
                         bot.collect("address");
+                        return resolve();
                     }
+
+                    // It seems we could find the corresponding address.
+
+                    // Set resolved address as city.
+                    context.confirmed.city = context.confirmed.zip_code.resolved_address;
+
+                    bot.collect({
+                        is_city_correct: {
+                            message_to_confirm: {
+                                type: "template",
+                                altText: `住所は「${context.confirmed.zip_code.resolved_address}」で間違いないですか？（はい・いいえ）`,
+                                template: {
+                                    type: "confirm",
+                                    text: `住所は「${context.confirmed.zip_code.resolved_address}」で間違いないですか？`,
+                                    actions: [
+                                        {type:"message", label:"はい", text:"はい"},
+                                        {type:"message", label:"いいえ", text:"いいえ"}
+                                    ]
+                                }
+                            },
+                            parser: (value, context, resolve, reject) => {
+                                const acceptable_values = ["はい", "いいえ"];
+                                if (acceptable_values.indexOf(value) >= 0){
+                                    return resolve(value);
+                                }
+                                return reject();
+                            },
+                            reaction: (error, value, context, resolve, reject) => {
+                                if (error) return resolve();
+
+                                if (value == "はい"){
+                                    // Going to collect remaining street address.
+                                    bot.collect("street");
+                                } else if (value == "いいえ"){
+                                    bot.collect({
+                                        zip_code: {
+                                            message_to_confirm: {
+                                                type: "text",
+                                                text: "なんと。もう一度郵便番号うかがってもいいですか？"
+                                            }
+                                        }
+                                    });
+                                }
+                                return resolve();
+                            }
+                        }
+                    });
                     return resolve();
                 }
             },
@@ -255,9 +276,10 @@ module.exports = class SkillJuminhyo {
         } else {
             name = context.confirmed.lastname + " " + context.confirmed.firstname;
         }
-        let messages = [{
+        let messages = {
+            type: "text",
             text: `${name}さん、完璧です。${address}が身分証のご住所と一致しているか担当者がチェックし、問題なければご住所に住民票をお届けしますね。手数料は代引きで300円です。`
-        }];
+        };
         return bot.reply(messages).then(
             (response) => {
                 return resolve();

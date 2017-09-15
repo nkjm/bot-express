@@ -187,7 +187,13 @@ module.exports = class Flow {
             debug(`Parsing parameter {${key}: "${value}"}`);
 
             // We define new reject just for parse.
-            let parse_reject = (message) => {
+            let parse_reject = (e) => {
+                let message;
+                if (e instanceof Error){
+                    message = e.message;
+                } else {
+                    message = e;
+                }
                 return reject(new BotExpressParseError(message));
             }
 

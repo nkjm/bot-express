@@ -31,7 +31,10 @@ module.exports = class BeaconFlow extends Flow {
     run(){
         debug("### This is Beacon Flow. ###");
 
-        // Will collect missing parameter or run the final action.
-        return super.finish();
-    } // End of run()
+        return super.begin().then(
+            (response) => {
+                return super.finish();
+            }
+        );
+    }
 };

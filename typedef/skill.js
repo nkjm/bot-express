@@ -51,6 +51,17 @@ Constructor of skill class. Required/optional parameters can be defined in this 
 */
 
 /**
+Function which is triggerd at first.
+@typedef {Function} Skill#begin
+@param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
+@param {Object} event - Event object which triggers this flow.
+@param {context} context - Context information.
+@param {Function} resolve - Method to call when this action succeeds.
+@param {Function} reject - Method to call when this aciton fails.
+@return {Promise} You have to return the response either from resolve or reject function.
+*/
+
+/**
 Function which is triggerd when all the required parameters are collected.
 @typedef {Function} Skill#finish
 @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.

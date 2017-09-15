@@ -435,35 +435,38 @@ module.exports = class Flow {
         }
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
-
-        // If we find some parameters from initial message, add them to the conversation.
-        let parameters_processed = [];
-        if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
-            for (let param_key of Object.keys(this.context.intent.parameters)){
-                // Parse and Add parameters using skill specific logic.
-                parameters_processed.push(
-                    this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
-                        (applied_parameter) => {
-                            if (applied_parameter == null){
-                                debug("Parameter was not applicable. We skip reaction and go to finish.");
-                                return;
-                            }
-                            return this.react(null, applied_parameter.key, applied_parameter.value);
-                        }
-                    ).catch(
-                        (error) => {
-                            if (error.name == "BotExpressParseError"){
-                                debug("Parser rejected the value.");
-                                return this.react(error, param_key, this.context.intent.parameters[param_key]);
-                            } else {
-                                return Promise.reject(error);
-                            }
-                        }
-                    )
-                );
+        return this.begin().then(
+            (response) => {
+                // If we find some parameters from initial message, add them to the conversation.
+                let parameters_processed = [];
+                if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
+                    for (let param_key of Object.keys(this.context.intent.parameters)){
+                        // Parse and Add parameters using skill specific logic.
+                        parameters_processed.push(
+                            this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
+                                (applied_parameter) => {
+                                    if (applied_parameter == null){
+                                        debug("Parameter was not applicable. We skip reaction and go to finish.");
+                                        return;
+                                    }
+                                    return this.react(null, applied_parameter.key, applied_parameter.value);
+                                }
+                            ).catch(
+                                (error) => {
+                                    if (error.name == "BotExpressParseError"){
+                                        debug("Parser rejected the value.");
+                                        return this.react(error, param_key, this.context.intent.parameters[param_key]);
+                                    } else {
+                                        return Promise.reject(error);
+                                    }
+                                }
+                            )
+                        );
+                    }
+                }
+                return Promise.all(parameters_processed);
             }
-        }
-        return Promise.all(parameters_processed);
+        );
     }
 
     change_intent(intent){
@@ -483,35 +486,52 @@ module.exports = class Flow {
         }
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
-        // If we find some parameters from initial message, add them to the conversation.
-        let all_parameters_processed = [];
-        if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
-            for (let param_key of Object.keys(this.context.intent.parameters)){
-                // Parse and Add parameters using skill specific logic.
-                all_parameters_processed.push(
-                    this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
-                        (applied_parameter) => {
-                            if (applied_parameter == null){
-                                debug("Parameter was not applicable. We skip reaction and go to finish.");
-                                return;
-                            }
-                            return this.react(null, applied_parameter.key, applied_parameter.value);
-                        }
-                    ).catch(
-                        (error) => {
-                            if (error.name == "BotExpressParseError"){
-                                debug("Parser rejected the value.");
-                                return this.react(error, param_key, this.context.intent.parameters[param_key]);
-                            } else {
-                                return Promise.reject(error);
-                            }
-                        }
-                    )
-                );
+        return this.begin().then(
+            (response) => {
+                // If we find some parameters from initial message, add them to the conversation.
+                let all_parameters_processed = [];
+                if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
+                    for (let param_key of Object.keys(this.context.intent.parameters)){
+                        // Parse and Add parameters using skill specific logic.
+                        all_parameters_processed.push(
+                            this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
+                                (applied_parameter) => {
+                                    if (applied_parameter == null){
+                                        debug("Parameter was not applicable. We skip reaction and go to finish.");
+                                        return;
+                                    }
+                                    return this.react(null, applied_parameter.key, applied_parameter.value);
+                                }
+                            ).catch(
+                                (error) => {
+                                    if (error.name == "BotExpressParseError"){
+                                        debug("Parser rejected the value.");
+                                        return this.react(error, param_key, this.context.intent.parameters[param_key]);
+                                    } else {
+                                        return Promise.reject(error);
+                                    }
+                                }
+                            )
+                        );
+                    }
+                }
+                return Promise.all(all_parameters_processed);
             }
+        );
+    }
+
+    begin(){
+        if (!this.context.skill.begin){
+            debug(`Beginning action not found. Skipping.`)
+            return Promise.resolve();
         }
 
-        return Promise.all(all_parameters_processed);
+        debug("Going to perform beginning action.");
+        let begun = new Promise((resolve, reject) => {
+            this.context.skill.begin(this.bot, this.bot_event, this.context, resolve, reject);
+        });
+
+        return begun;
     }
 
     finish(){

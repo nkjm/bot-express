@@ -54,7 +54,11 @@ module.exports = class StartConversationFlow extends Flow {
             }
             this.context.skill = super.instantiate_skill(this.context.intent.name);
 
-            return super.finish();
+            return super.begin().then(
+                (response) => {
+                    return super.finish();
+                }
+            );
         }
 
         let message_text = this.messenger.extract_message_text();
@@ -108,7 +112,10 @@ module.exports = class StartConversationFlow extends Flow {
                 }
                 debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
-
+                return super.begin();
+            }
+        ).then(
+            (response) => {
                 // ### Process Parameters ###
                 // If we find some parameters from initial message, add them to the conversation.
                 let parameters_processed = [];

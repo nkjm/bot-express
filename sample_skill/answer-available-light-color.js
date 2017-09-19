@@ -3,9 +3,8 @@
 let Promise = require('bluebird');
 let debug = require("debug")("bot-express:skill");
 
-module.exports = class SkillAnswerAvailableColor {
+module.exports = class SkillAnswerAvailableLightColor {
 
-    // IFTTT経由でHueのカラーを変更する
     finish(bot, event, context, resolve, reject){
         return bot.reply({
             type: "text",

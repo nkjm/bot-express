@@ -21,7 +21,7 @@
     "postinstall": "node script/postinstall.js"
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": "6.11.3"
   },
   "author": "Kazuki Nakajima <nkjm.kzk@gmail.com>",
   "dependencies": {
@@ -30,7 +30,6 @@
     "apiai": "^4.0.2",
     "bluebird": "^3.5.0",
     "body-parser": "~1.13.2",
-    "crypto": "0.0.3",
     "debug": "^2.6.1",
     "express": "~4.15.2",
     "memory-cache": "^0.1.6",

@@ -41,7 +41,7 @@ module.exports = class SkillChangeLightColor {
                     }
                     return resolve();
                 },
-                sub_skill: ["answer-available-color"]
+                sub_skill: ["answer-available-light-color"]
             }
         };
     }

@@ -267,16 +267,9 @@ module.exports = class Flow {
         });
     }
 
-    ask_retry(message_text){
-        let messages = [{
-            text: message_text
-        }];
-        return this.messenger.reply(messages);
-    }
-
     /**
     Identify what the user like to achieve.
-    @param {MessageObject} message - Message from which we try to identify what the user like to achieve.
+    @param {String|MessageObject} payload - Data from which we try to identify what the user like to achieve.
     @returns {Object} response
     @returns {String} response.result - "restart_conversation", "change_intent", "change_parameter" or "no_idea"
     @returns {Object} response.intent - Intent object.
@@ -284,10 +277,10 @@ module.exports = class Flow {
     @returns {String} response.parameter.key - Parameter name.
     @returns {String|Object} response.parameter.value - Parameter value.
     */
-    what_you_want(data){
+    what_you_want(payload){
         let intent_identified;
-        if (typeof data !== "string"){
-            debug("The data is not string so we skip identifying intent.");
+        if (typeof payload !== "string"){
+            debug("The payload is not string so we skip identifying intent.");
             let intent = {
                 name: this.options.default_intent
             }
@@ -295,7 +288,7 @@ module.exports = class Flow {
         } else {
             debug("Going to check if we can identify the intent.");
             let nlp = new Nlp(this.options.nlp, this.options.nlp_options);
-            intent_identified = nlp.identify_intent(data, {
+            intent_identified = nlp.identify_intent(payload, {
                 session_id: this.messenger.extract_sender_id()
             });
         }
@@ -303,8 +296,24 @@ module.exports = class Flow {
         return intent_identified.then(
             (intent) => {
                 if (intent.name != this.options.default_intent){
-                    // This is change intent or restart conversation.
-                    debug("This is change intent or restart conversation.");
+                    // This is dig, change intent or restart conversation.
+
+                    // Check if this is dig.
+                    if (this.context._flow == "reply" && this.context.confirming){
+                        let param_type = this._check_parameter_type(this.context.confirming);
+                        if (this.context.skill[param_type][this.context.confirming].sub_skill &&
+                            this.context.skill[param_type][this.context.confirming].sub_skill.indexOf(intent.name) !== -1){
+                            // This is dig.
+                            debug("We conclude this is dig.");
+                            return {
+                                result: "dig",
+                                intent: intent
+                            }
+                        }
+                    }
+
+                    // Check if this is restart conversation.
+                    debug("This is dig, change intent or restart conversation.");
                     if (intent.name == this.context.intent.name){
                         // This is restart conversation.
                         debug("We conclude this is restart conversation.");
@@ -336,9 +345,9 @@ module.exports = class Flow {
                 debug(all_param_keys);
                 let parameters_parsed = [];
                 for (let param_key of all_param_keys){
-                    debug(`Check if "${data}" is suitable for ${param_key}.`);
+                    debug(`Check if "${payload}" is suitable for ${param_key}.`);
                     parameters_parsed.push(
-                        this._parse_parameter(this._check_parameter_type(param_key), param_key, data, true).then(
+                        this._parse_parameter(this._check_parameter_type(param_key), param_key, payload, true).then(
                             (response) => {
                                 debug(`Value fits to ${param_key}.`);
                                 return {
@@ -354,7 +363,7 @@ module.exports = class Flow {
                                     return {
                                         is_fit: false,
                                         key: param_key,
-                                        value: data
+                                        value: payload
                                     }
                                 } else {
                                     return Promise.reject(error);
@@ -410,6 +419,19 @@ module.exports = class Flow {
                 );
             }
         );
+    }
+
+    dig(intent){
+        this.context.parent = {
+            intent: this.context.intent,
+            to_confirm: this.context.to_confirm,
+            confirming: this.context.confirming,
+            confirmed: this.context.confirmed,
+            previous: this.context.previous,
+            skill: this.context.skill,
+            sender_language: this.context.sender_language
+        }
+        return this.restart_conversation(intent);
     }
 
     restart_conversation(intent){
@@ -566,6 +588,16 @@ module.exports = class Flow {
                 }
 
                 debug("Final action done. Wrapping up.");
+
+                // If this is sub skill, we get parent context back.
+                if (this.context.parent){
+                    debug(`We finished sub skill and get back to parent skill "${this.context.parent.intent.name}".`);
+                    this.context.parent.previous.message = this.context.previous.message.concat(this.context.parent.previous.message);
+                    this.context = this.context.parent;
+                    return response;
+                }
+
+                // This is Root Skill. We clear context depeding on the configuration and return.
                 if (this.context.skill.clear_context_on_finish && this.context.to_confirm.length == 0){
                     debug(`Clearing context.`);
                     this.context = null;

@@ -78,7 +78,9 @@ module.exports = class ReplyFlow extends Flow {
 
                     return super.what_you_want(translated_param_value).then(
                         (response) => {
-                            if (response.result == "restart_conversation"){
+                            if (response.result == "dig"){
+                                return super.dig(response.intent);
+                            } else if (response.result == "restart_conversation"){
                                 return super.restart_conversation(response.intent);
                             } else if (response.result == "change_intent"){
                                 return super.change_intent(response.intent);

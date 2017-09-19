@@ -11,6 +11,7 @@ Object which defines how this parameter should be collected, parsed, and reacted
 @prop {Object} message_to_confirm - Message Object to ask for users the value of this parameter. As for message format, you can use either LINE or Facebook Messenger.
 @prop {parser} parser - Function to parse the message from user.
 @prop {reaction} reaction - Function to react to the message from user. Reaction runs right after paser returns.
+@prop {Array.<String>} sub_skill - List of sub skills. If user intends these skills in the middle of the conversation, we switch context to new intent and get back once finished.
 */
 
 /**

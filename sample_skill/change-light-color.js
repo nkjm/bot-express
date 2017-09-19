@@ -40,7 +40,8 @@ module.exports = class SkillChangeLightColor {
                         }
                     }
                     return resolve();
-                }
+                },
+                sub_skill: ["answer-available-color"]
             }
         };
     }

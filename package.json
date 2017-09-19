@@ -2,7 +2,7 @@
   "description": "Chatbot builder framework to develop tailor-made chatbot at lightning fast.",
   "main": "index.js",
   "name": "bot-express",
-  "version": "0.0.123",
+  "version": "0.0.124",
   "private": false,
   "repository": {
     "type": "git",
@@ -21,7 +21,7 @@
     "postinstall": "node script/postinstall.js"
   },
   "engines": {
-    "node": "6.11.3"
+    "node": ">=6"
   },
   "author": "Kazuki Nakajima <nkjm.kzk@gmail.com>",
   "dependencies": {

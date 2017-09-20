@@ -32,6 +32,7 @@ router.use(body_parser.json({
 * @param {String} options.facebook_page_access_token.page_id - Facebook Page Id.
 * @param {String} options.facebook_page_access_token.page_access_token - Facebook Page Access Token.
 * @param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
+* @param {String} [options.nlp="apiai"] - NLP Service you like to use. Default is api.ai.
 * @param {Object} options.nlp_options - NLP Configuration.
 * @param {String} options.nlp_options.client_access_token - Token to access to NLP service.
 * @param {String} [options.nlp_options.language="ja"] - Language to recognize.
@@ -41,6 +42,8 @@ router.use(body_parser.json({
 * @param {String} [options.beacon_skill.leave] - Skill to be used when bot receives beacon leave event.
 * @param {String} [options.follow_skill] - Skill to be used when bot receives follow event.
 * @param {String} [options.unfollow_skill] - Skill to be used when bot receives unfollow event.
+* @param {String} [options.join_skill] - Skill to be used when bot receives join event.
+* @param {String} [options.leave_skill] - Skill to be used when bot receives leave event.
 * @param {String} [options.default_intent="input.unknown"] - Intent name to be returned by NLP when it cannot identify the intent.
 * @param {Number} [options.memory_retention=6000] - Period to retain context data in bot memory in milli-seconds.
 * @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.

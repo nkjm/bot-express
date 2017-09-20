@@ -6,7 +6,7 @@ let Webhook = require('../module/webhook');
 let Util = require("../test_utility/test_utility");
 
 chai.use(chaiAsPromised);
-chai.should();
+let should = chai.should();
 
 describe("follow flow test from LINE", function(){
     let user_id = "follow-flow";
@@ -25,7 +25,7 @@ describe("follow flow test from LINE", function(){
                 }
             ).then(
                 function(response){
-                    response.should.equal("This is follow flow but follow_skill not found so skip.");
+                    should.not.exist(response);
                 }
             );
         });

@@ -31,6 +31,37 @@ module.exports = class SkillChangeLightColor {
                         ]
                     }
                 },
+                parser: (payload, context, resolve, reject) => {
+                    let requested_color;
+                    if (bot.type == "line"){
+                        if (typeof payload == "string"){
+                            requested_color = payload;
+                        } else if (typeof payload == "object"){
+                            requested_color = payload.data;
+                        }
+                    } else if (bot.type == "facebook"){
+                        if (typeof payload == "string"){
+                            requested_color = payload;
+                        } else if (typeof payload == "object"){
+                            requested_color = payload.payload;
+                        }
+                    }
+                    if (requested_color == null || requested_color == ""){
+                        return reject();
+                    }
+                    let found_color = false;
+                    let parsed_value;
+                    for (let color_mapping of COLOR_MAPPINGS){
+                        if (requested_color.replace("色", "") == color_mapping.label){
+                            parsed_value = color_mapping.code;
+                            found_color = true;
+                        }
+                    }
+                    if (!found_color){
+                        return reject();
+                    }
+                    return resolve(parsed_value);
+                },
                 reaction: (error, parsed_value, context, resolve, reject) => {
                     if (!error){
                         if (parsed_value == "赤"){
@@ -44,27 +75,6 @@ module.exports = class SkillChangeLightColor {
                 sub_skill: ["answer-available-light-color"]
             }
         };
-    }
-
-    // サポートする色かどうかを判別しカラーコードに変化する
-    parse_color(value, context, resolve, reject){
-        if (value === null || value == ""){
-            return reject();
-        }
-
-        let parsed_value = {};
-
-        let found_color = false;
-        for (let color_mapping of COLOR_MAPPINGS){
-            if (value.replace("色", "") == color_mapping.label){
-                parsed_value = color_mapping.code;
-                found_color = true;
-            }
-        }
-        if (!found_color){
-            return reject();
-        }
-        return resolve(parsed_value);
     }
 
     // IFTTT経由でHueのカラーを変更する

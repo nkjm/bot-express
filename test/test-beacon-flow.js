@@ -22,11 +22,14 @@ for (let message_platform of message_platform_list){
                 let webhook = new Webhook(options);
                 return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
                     function(response){
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, null));
+                        return webhook.run(Util.create_req(message_platform, event_type, user_id, {
+                            "hwid": "d41d8cd98f",
+                            "type": "enter"
+                        }));
                     }
                 ).then(
                     function(response){
-                        response.should.equal(`This is beacon flow but beacon_skill["enter"] not found so skip.`);
+                        should.not.exist(response);
                     }
                 );
             });

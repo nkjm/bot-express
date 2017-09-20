@@ -6,7 +6,6 @@
 let Promise = require('bluebird');
 let debug = require("debug")("bot-express:flow");
 let Flow = require("./flow");
-let Nlp = require("../nlp");
 
 module.exports = class BtwFlow extends Flow {
 

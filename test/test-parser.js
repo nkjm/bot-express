@@ -14,8 +14,8 @@ let should = chai.should();
 describe("Parser Test", function(){
     let message_platform = "facebook";
     let user_id = "parse";
-    describe("# No corresponding parameter found", function(){
-        it("will skip the parameter.", function(){
+    describe("# NLP return some params but no corresponding parameter found in skill", function(){
+        it("will skip that parameter.", function(){
             this.timeout(5000);
 
             let options = Util.create_options();
@@ -27,12 +27,8 @@ describe("Parser Test", function(){
             ).then(
                 function(response){
                     // Bot is now asking zip_code.
-                    response.should.have.property("confirming", "zip_code");
+                    response.should.have.property("confirming", "type");
                     response.confirmed.should.deep.equal({});
-                    response.to_confirm.should.have.lengthOf(3);
-                    response.to_confirm[0].should.equal("zip_code");
-                    response.to_confirm[1].should.equal("city");
-                    response.to_confirm[2].should.equal("street");
                 }
             )
         });
@@ -49,23 +45,17 @@ describe("Parser Test", function(){
                 }
             ).then(
                 function(response){
-                    // Bot is now asking zip_code.
-                    response.should.have.property("confirming", "zip_code");
+                    // Bot is now asking juminhyo type.
+                    response.should.have.property("confirming", "type");
                     response.confirmed.should.deep.equal({});
-                    return webhook.run(Util.create_req(message_platform, "message", user_id, "107-0061"));
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "世帯全員分"));
                 }
             ).then(
                 function(response){
                     // Bot should have set zip_code.
-                    response.should.have.property("confirming", "city");
-                    response.confirmed.should.deep.equal({
-                        zip_code: {
-                            zip_code: "107-0061",
-                            resolved_address: "東京都港区北青山"
-                        }
-                    });
+                    response.confirmed.should.have.property("type", "世帯全員分");
                 }
-            )
+            );
         });
     });
     describe("# There is corresponding parameter and parser. If parse fails,", function(){
@@ -80,23 +70,23 @@ describe("Parser Test", function(){
                 }
             ).then(
                 function(response){
-                    // Bot is now asking zip_code.
-                    response.should.have.property("confirming", "zip_code");
+                    // Bot is now asking juminhyo type.
+                    response.should.have.property("confirming", "type");
                     response.confirmed.should.deep.equal({});
-                    return webhook.run(Util.create_req(message_platform, "message", user_id, "000-0000"));
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "他人の分"));
                 }
             ).then(
                 function(response){
-                    // Bot should ask the same question once again.
-                    response.should.have.property("confirming", "zip_code");
+                    // Bot should ask for same parameter onece again.
+                    response.should.have.property("confirming", "type");
                     response.confirmed.should.deep.equal({});
                 }
-            )
+            );
         });
     });
     describe("# There is corresponding parameter but no parser found", function(){
         it("will apply the value as it is unless the value is empty.", function(){
-            this.timeout(5000);
+            this.timeout(8000);
 
             let options = Util.create_options();
             let webhook = new Webhook(options);
@@ -106,86 +96,31 @@ describe("Parser Test", function(){
                 }
             ).then(
                 function(response){
-                    // Bot is now asking zip_code.
-                    response.should.have.property("confirming", "zip_code");
-                    response.confirmed.should.deep.equal({});
-                    return webhook.run(Util.create_req(message_platform, "message", user_id, "107-0061"));
+                    // Bot is now asking juminhyo type
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "本人だけ"));
                 }
             ).then(
                 function(response){
-                    // Bot should have set zip_code.
-                    response.should.have.property("confirming", "city");
-                    response.confirmed.should.deep.equal({
-                        zip_code: {
-                            zip_code: "107-0061",
-                            resolved_address: "東京都港区北青山"
-                        }
-                    });
-                    return webhook.run(Util.create_req(message_platform, "postback", user_id, "東京都港区北青山"));
+                    // Bot is now asking name.
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "中嶋一樹です"));
                 }
             ).then(
                 function(response){
-                    // Bot should have set city.
-                    response.should.have.property("confirming", "street");
-                    response.confirmed.should.deep.equal({
-                        zip_code: {
-                            zip_code: "107-0061",
-                            resolved_address: "東京都港区北青山"
-                        },
-                        city: "東京都港区北青山"
-                    });
-                    return webhook.run(Util.create_req(message_platform, "message", user_id, "2-5-8"));
+                    // Bot is now confirming if name is correct.
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "いいえ"));
                 }
             ).then(
                 function(response){
-                    // Bot should have set street.
-                    response.should.have.property("confirming", null);
-                    response.confirmed.should.deep.equal({
-                        zip_code: {
-                            zip_code: "107-0061",
-                            resolved_address: "東京都港区北青山"
-                        },
-                        city: "東京都港区北青山",
-                        street: "2-5-8"
-                    });
-                }
-            )
-        });
-    });
-    describe("# There is corresponding parameter and parser. If parser throws exception,", function(){
-        it("stops processing.", function(){
-            this.timeout(5000);
+                    // Bot is now asking lastname
+                    response.should.have.property("confirming", "lastname");
+                    response.to_confirm[0].should.equal("lastname");
 
-            let options = Util.create_options();
-            let webhook = new Webhook(options);
-            return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
-                function(response){
-                    return webhook.run(Util.create_req(message_platform, "message", user_id, "パーステスト"));
+                    return webhook.run(Util.create_req(message_platform, "message", user_id, "中嶋"));
                 }
             ).then(
                 function(response){
-                    // Bot is now asking zip_code.
-                    response.should.have.property("confirming", "zip_code");
-                    response.confirmed.should.deep.equal({});
-                    return webhook.run(Util.create_req(message_platform, "message", user_id, "107-0061"));
-                }
-            ).then(
-                function(response){
-                    // Bot should have set zip_code.
-                    response.should.have.property("confirming", "city");
-                    response.confirmed.should.deep.equal({
-                        zip_code: {
-                            zip_code: "107-0061",
-                            resolved_address: "東京都港区北青山"
-                        }
-                    });
-                    return webhook.run(Util.create_req(message_platform, "message", user_id, "例外"));
-                }
-            ).catch(
-                function(response){
-                    // Bot should stops processing and returns Error Object
-                    response.should.have.property("name", "Error");
-                    response.should.have.property("message", "例外");
+                    // Bot is now asking firstname and lastname should be in confirmed.
+                    response.confirmed.should.have.property("lastname", "中嶋");
                 }
             );
         });

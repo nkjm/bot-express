@@ -7,12 +7,12 @@ let Promise = require("bluebird");
 let debug = require("debug")("bot-express:flow");
 let Flow = require("./flow");
 
-module.exports = class FollowFlow extends Flow {
+module.exports = class JoinFlow extends Flow {
 
     constructor(messenger, bot_event, options) {
         let context = {
-            _flow: "follow",
-            intent: {name: options.follow_skill},
+            _flow: "join",
+            intent: {name: options.join_skill},
             confirmed: {},
             to_confirm: [],
             confirming: null,
@@ -28,7 +28,7 @@ module.exports = class FollowFlow extends Flow {
     }
 
     run(){
-        debug("### This is Follow Flow. ###");
+        debug("### This is Join Flow. ###");
 
         return super.begin().then(
             (response) => {

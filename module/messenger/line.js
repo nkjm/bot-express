@@ -79,7 +79,7 @@ module.exports = class MessengerLine {
     }
 
     static extract_beacon_event_type(event){
-        let beacon_event_type = false;
+        let beacon_event_type;
         if (event.beacon.type == "enter"){
             beacon_event_type = "enter";
         } else if (event.beacon.type == "leave"){
@@ -89,7 +89,13 @@ module.exports = class MessengerLine {
     }
 
     static extract_sender_id(event){
-        return event.source.userId;
+        if (event.source.type == "group"){
+            return event.source.groupId;
+        } else if (event.source.type == "room"){
+            return event.source.roomId;
+        } else {
+            return event.source.userId;
+        }
     }
 
     static extract_param_value(event){
@@ -137,12 +143,6 @@ module.exports = class MessengerLine {
 
     static check_supported_event_type(flow, event){
         switch(flow){
-            case "beacon":
-                if (event.type == "beacon"){
-                    return true;
-                }
-                return false;
-            break;
             case "start_conversation":
                 if (event.type == "message" || event.type == "postback"){
                     return true;

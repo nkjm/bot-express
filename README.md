@@ -59,10 +59,12 @@ Webhookでサポートしているイベントは下記の通りです。
 
 **LINE**
 - message
-- postback
-- beacon
 - follow
 - unfollow
+- join
+- leave
+- postback
+- beacon
 
 **Facebook**
 - messages

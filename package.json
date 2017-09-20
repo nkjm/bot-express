@@ -2,7 +2,7 @@
   "description": "Chatbot builder framework to develop tailor-made chatbot at lightning fast.",
   "main": "index.js",
   "name": "bot-express",
-  "version": "0.0.124",
+  "version": "0.0.125",
   "private": false,
   "repository": {
     "type": "git",

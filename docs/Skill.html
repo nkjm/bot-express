@@ -417,7 +417,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line54">line 54</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -473,7 +473,7 @@
     
 
     
-    <h4 class="name" id="constructor"><span class="type-signature"></span>constructor<span class="signature">(bot, event)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="constructor"><span class="type-signature"></span>constructor<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -490,78 +490,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>bot</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Bot.html">Bot</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and so on.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>event</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Event object which triggers this flow.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -711,7 +639,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line44">line 44</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -938,7 +866,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line65">line 65</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line67">line 67</a>
     </li></ul></dd>
     
 
@@ -994,7 +922,7 @@
     
 
     
-    <h4 class="name" id="parser"><span class="type-signature"></span>parser<span class="signature">(value, context, resolve, reject)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    <h4 class="name" id="parser"><span class="type-signature"></span>parser<span class="signature">(value, bot, event, context, resolve, reject)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
     
 
     
@@ -1058,6 +986,52 @@
             
 
             <td class="description last">Data to parse. In case of text message, its text will be set in string. In case of postback event, data payload will be set in string. In other cases, message object will be set as it is.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bot</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Bot.html">Bot</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Event object which triggers this flow.</td>
         </tr>
 
     
@@ -1223,7 +1197,7 @@
     
 
     
-    <h4 class="name" id="reaction"><span class="type-signature"></span>reaction<span class="signature">(error, value, context, resolve, reject)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    <h4 class="name" id="reaction"><span class="type-signature"></span>reaction<span class="signature">(error, value, bot, event, context, resolve, reject)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
     
 
     
@@ -1307,6 +1281,52 @@
             
 
             <td class="description last">Parsed value.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bot</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Bot.html">Bot</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Event object which triggers this flow.</td>
         </tr>
 
     
@@ -1416,7 +1436,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line33">line 33</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line35">line 35</a>
     </li></ul></dd>
     
 
@@ -1803,7 +1823,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Wed Sep 20 2017 18:17:51 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.3</a> on Thu Sep 21 2017 16:01:23 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

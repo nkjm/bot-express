@@ -24,8 +24,8 @@ module.exports = class ServiceSupport {
             }
         })
 
-        let support_ids = supporter.split(",");
-        if (support_ids.length === 0){
+        let supporter_ids = supporter.split(",");
+        if (supporter_ids.length === 0){
             // If no supporters are configured, we skip sending help message.
             return Promise.resolve();
         }

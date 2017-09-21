@@ -17,6 +17,14 @@ module.exports = class Flow {
         if (this.context.intent && this.context.intent.name){
             if (!this.context.skill){
                 this.context.skill = this.instantiate_skill(this.context.intent.name);
+                debug(this.context.skill);
+            } else {
+                let skill = this.instantiate_skill(this.context.intent.name);
+                skill.required_parameter = this.context.skill.required_parameter;
+                skill.optional_parameter = this.context.skill.optional_parameter;
+                skill.dynamic_parameter = this.context.skill.dynamic_parameter;
+                this.context.skill = skill;
+                debug(this.context.skill);
             }
 
             // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.

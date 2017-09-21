@@ -30,6 +30,8 @@ module.exports = class ServiceSupport {
             return Promise.resolve();
         }
 
+        debug(messages[0]);
+        debug(messages[1]);
         return bot.multicast(supporter_ids, messages).then(
             (response) => {
                 return response;

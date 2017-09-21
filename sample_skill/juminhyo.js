@@ -42,6 +42,7 @@ module.exports = class SkillJuminhyo {
 
                         return Promise.all(tasks).then(
                             (response) => {
+                                debug("success");
                                 bot.pause();
                                 return resolve();
                             },

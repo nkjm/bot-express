@@ -18,7 +18,7 @@ bot-expressはオーダーメイドのChatbotを高速に開発するための�
 
 bot-expressをベースとしたChatbotは下記のコンポーネントで構成されます。
 
-![アーキテクチャー](https://dl.dropboxusercontent.com/u/149862/bot-express_architecture.png)
+![アーキテクチャー](https://www.dropbox.com/s/p9thelcidos8ea5/bot-express_architecture.png?raw=1)
 
 - メッセンジャー（現在はLINEまたはFacebook Messenger）
 - 自然言語処理のサービス（現在は[api.ai](https://api.ai)）
@@ -45,7 +45,7 @@ bot-expressはスキルに定められたアクションを完了するために
 
 また、bot-expressのsample_skillディレクトリにスキルのサンプルがいくつか収められていますのでスキル開発の参考にしてみてください。
 
-[スキルのサンプル](/sample_skill/)
+[スキルのサンプル](https://github.com/nkjm/bot-express/tree/master/sample_skill)
 
 # リファレンス
 

@@ -15,7 +15,7 @@ Promise.promisifyAll(request);
 const SUPPORTED_MESSENGERS = ["line"];
 
 module.exports = class SkillLeave {
-    constructor(bot, event){
+    constructor(){
         this.clear_context_on_finish = true;
     }
 

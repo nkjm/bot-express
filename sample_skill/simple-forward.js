@@ -16,7 +16,7 @@ const SUPPORTED_MESSENGERS = ["line"];
 const SUPPORTED_MESSAGE_TYPES = ["text", "sticker", "location"];
 
 module.exports = class SkillSimpleForward {
-    constructor(bot, event){
+    constructor(){
         this.clear_context_on_finish = true;
     }
 

@@ -4,7 +4,7 @@ let debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillCompileMessage {
 
-    constructor(bot, event) {
+    constructor() {
         this.required_parameter = {
             line_text: { // Will be text in facebook.
                 message_to_confirm: {
@@ -27,7 +27,7 @@ module.exports = class SkillCompileMessage {
                         ]
                     }
                 },
-                parser: (postback, context, resolve, reject) => {
+                parser: (postback, bot, event, context, resolve, reject) => {
                     if (typeof postback == "string"){
                         return resolve(postback);
                     }
@@ -69,7 +69,7 @@ module.exports = class SkillCompileMessage {
                         ]
                     }
                 },
-                parser: (postback, context, resolve, reject) => {
+                parser: (postback, bot, event, context, resolve, reject) => {
                     if (typeof postback == "string"){
                         return resolve(postback);
                     }
@@ -96,7 +96,7 @@ module.exports = class SkillCompileMessage {
                         ]
                     }
                 },
-                parser: (postback, context, resolve, reject) => {
+                parser: (postback, bot, event, context, resolve, reject) => {
                     if (typeof postback == "string"){
                         return resolve(postback);
                     }
@@ -145,7 +145,7 @@ module.exports = class SkillCompileMessage {
                         }]
                     }
                 },
-                parser: (postback, context, resolve, reject) => {
+                parser: (postback, bot, event, context, resolve, reject) => {
                     if (typeof postback == "string"){
                         return resolve(postback);
                     }
@@ -235,7 +235,7 @@ module.exports = class SkillCompileMessage {
                         }
                     }
                 },
-                parser: (postback, context, resolve, reject) => {
+                parser: (postback, bot, event, context, resolve, reject) => {
                     if (typeof postback == "string"){
                         return resolve(postback);
                     }
@@ -262,7 +262,7 @@ module.exports = class SkillCompileMessage {
                         }
                     }
                 },
-                parser: (postback, context, resolve, reject) => {
+                parser: (postback, bot, event, context, resolve, reject) => {
                     if (typeof postback == "string"){
                         return resolve(postback);
                     }
@@ -298,7 +298,7 @@ module.exports = class SkillCompileMessage {
                         }
                     }
                 },
-                parser: (postback, context, resolve, reject) => {
+                parser: (postback, bot, event, context, resolve, reject) => {
                     if (typeof postback == "string"){
                         return resolve(postback);
                     }

@@ -3,7 +3,7 @@
 let debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillBeginFinish {
-    constructor(bot, event){
+    constructor(){
         this.required_parameter = {
             name: {
                 message_to_confirm: {
@@ -21,7 +21,7 @@ module.exports = class SkillBeginFinish {
         });
         return resolve();
     }
-    
+
     finish(bot, event, context, resolve, reject){
         return bot.reply({
             type: "text",

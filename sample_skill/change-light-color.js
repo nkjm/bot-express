@@ -15,7 +15,7 @@ const COLOR_MAPPINGS = [
 */
 module.exports = class SkillChangeLightColor {
 
-    constructor(bot, event) {
+    constructor() {
         this.required_parameter = {
             color: {
                 message_to_confirm: {
@@ -31,7 +31,7 @@ module.exports = class SkillChangeLightColor {
                         ]
                     }
                 },
-                parser: (payload, context, resolve, reject) => {
+                parser: (payload, bot, event, context, resolve, reject) => {
                     let requested_color;
                     if (bot.type == "line"){
                         if (typeof payload == "string"){
@@ -62,7 +62,7 @@ module.exports = class SkillChangeLightColor {
                     }
                     return resolve(parsed_value);
                 },
-                reaction: (error, parsed_value, context, resolve, reject) => {
+                reaction: (error, parsed_value, bot, event, context, resolve, reject) => {
                     if (!error){
                         if (parsed_value == "赤"){
                             bot.queue([{

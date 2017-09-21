@@ -13,7 +13,7 @@ const SUPPORTED_MESSENGERS = ["line", "facebook"];
 const SUPPORTED_MESSAGE_TYPES = ["text", "sticker", "location"];
 
 module.exports = class SkillBroadcast {
-    constructor(bot, event){
+    constructor(){
         this.required_parameter = {
             message_text: {
                 message_to_confirm: {

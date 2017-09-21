@@ -4,13 +4,13 @@ let debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillCompileMessage {
 
-    constructor(bot, event) {
+    constructor() {
         this.required_parameter = {
             message_type: {
                 message_to_confirm: {
                     text: "Message Type?"
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     bot.collect(value.toLowerCase());
                     resolve();
                 }

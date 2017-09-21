@@ -8,14 +8,14 @@ let app_env = require("../environment_variables");
 
 module.exports = class SkillFaq {
 
-    constructor(bot, event){
+    constructor(){
         this.required_parameter = {
             question: {
                 message_to_confirm: {
                     type: "text",
                     text: "どうぞ。"
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (error){
                         bot.change_message_to_confirm("question", {
                             type: "text",
@@ -163,7 +163,7 @@ module.exports = class SkillFaq {
                         ]
                     }
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (!error){
                         // Promise List.
                         let tasks = [];
@@ -224,7 +224,7 @@ module.exports = class SkillFaq {
         this.clear_context_on_finish = true;
     }
 
-    parse_rating(value, context, resolve, reject){
+    parse_rating(value, bot, event, context, resolve, reject){
         debug(`Parsing rating.`);
         let parsed_value;
 

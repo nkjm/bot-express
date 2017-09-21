@@ -7,7 +7,7 @@ let is_email = require("isemail");
 
 module.exports = class SkillSurvey {
 
-    constructor(bot, event){
+    constructor(){
         this.required_parameter = {
             satisfaction: {
                 message_to_confirm: {
@@ -20,7 +20,7 @@ module.exports = class SkillSurvey {
                         {content_type:"text", title:"1 低", payload:1},
                     ]
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (!error){
                         let messages = [];
                         if (value == 5){
@@ -77,7 +77,7 @@ module.exports = class SkillSurvey {
                 message_to_confirm: {
                     text: "この勉強会はどのようにすれば改善できると思いますか？"
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     bot.queue([{
                         text: "貴重なご意見、ありがとうございます！"
                     }]);
@@ -96,7 +96,7 @@ module.exports = class SkillSurvey {
         }
     }
 
-    parse_satisfaction(value, context, resolve, reject){
+    parse_satisfaction(value, bot, event, context, resolve, reject){
         debug(`Parsing satisfaction.`);
         let parsed_value;
         try {
@@ -112,7 +112,7 @@ module.exports = class SkillSurvey {
         return resolve(parsed_value);
     }
 
-    parse_difficulty(value, context, resolve, reject){
+    parse_difficulty(value, bot, event, context, resolve, reject){
         debug(`Parsing difficulty.`);
         let parsed_value;
         if (value.match(/難/) || value.match(/むずかし/) || value.match(/むずい/) || value.match(/げきむず/) || value.match(/ゲキムズ/) || value.match(/激ムズ/)){
@@ -128,14 +128,14 @@ module.exports = class SkillSurvey {
         return resolve(parsed_value);
     }
 
-    parse_free_comment(value, context, resolve, reject){
+    parse_free_comment(value, bot, event, context, resolve, reject){
         debug(`Parsing free_comment.`);
         let parsed_value = value;
         debug(`Parsed value is ${parsed_value}.`);
         return resolve(parsed_value);
     }
 
-    parse_mail(value, context, resolve, reject){
+    parse_mail(value, bot, event, context, resolve, reject){
         debug(`Parsing mail.`);
         let parsed_value;
         if (is_email.validate(value)){

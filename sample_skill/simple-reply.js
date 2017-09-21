@@ -6,7 +6,7 @@ let app_env = require("../environment_variables");
 
 module.exports = class SkillSimpleReply {
 
-    constructor(bot, bot_event){
+    constructor(){
         this.required_parameter = {
             body: {
                 message_to_confirm: {
@@ -23,7 +23,7 @@ module.exports = class SkillSimpleReply {
         this.clear_context_on_finish = true;
     }
 
-    finish(bot, bot_event, context, resolve, reject){
+    finish(bot, event, context, resolve, reject){
         let first_message = context.previous.message[context.previous.message.length - 1];
 
         let first_message_text;

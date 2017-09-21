@@ -6,7 +6,7 @@ let debug = require("debug")("bot-express:skill");
 ** Just reply the text response provided from api.ai.
 */
 module.exports = class SkillCancel {
-    constructor(bot, event){
+    constructor(){
         this.clear_context_on_finish = true;
     }
 

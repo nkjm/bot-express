@@ -4,10 +4,7 @@ let debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillTestDatetimepicker {
 
-    constructor(bot, event) {
-        this.bot = bot;
-        this.event = event;
-
+    constructor() {
         this.required_parameter = {
             test_case: {
                 message_to_confirm: {
@@ -24,7 +21,7 @@ module.exports = class SkillTestDatetimepicker {
                         ]
                     }
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (!error){
                         bot.collect(value);
                     }
@@ -46,9 +43,7 @@ module.exports = class SkillTestDatetimepicker {
                         ]
                     }
                 },
-                parser: (a, b, c, d) => {
-                    return this.postback_parser(a, b, c, d);
-                }
+                parser: this.postback_parser
             },
             buttons_date_and_url: {
                 message_to_confirm: {
@@ -63,9 +58,7 @@ module.exports = class SkillTestDatetimepicker {
                         ]
                     }
                 },
-                parser: (a, b, c, d) => {
-                    return this.postback_parser(a, b, c, d);
-                }
+                parser: this.postback_parser
             },
             carousel_date_only: {
                 message_to_confirm: {
@@ -81,9 +74,7 @@ module.exports = class SkillTestDatetimepicker {
                         }]
                     }
                 },
-                parser: (a, b, c, d) => {
-                    return this.postback_parser(a, b, c, d);
-                }
+                parser: this.postback_parser
             },
             carousel_date_and_url: {
                 message_to_confirm: {
@@ -100,20 +91,18 @@ module.exports = class SkillTestDatetimepicker {
                         }]
                     }
                 },
-                parser: (a, b, c, d) => {
-                    return this.postback_parser(a, b, c, d);
-                }
+                parser: this.postback_parser
             }
         }
     }
 
-    postback_parser(postback, context, resolve, reject){
+    postback_parser(postback, bot, event, context, resolve, reject){
         if (typeof postback == "string"){
             return resolve(postback);
         }
-        if (this.bot.type == "line"){
+        if (bot.type == "line"){
             return resolve(postback.params.date);
-        } else if (this.bot.type == "facebook"){
+        } else if (bot.type == "facebook"){
             return resolve(postback.payload);
         }
         return reject();

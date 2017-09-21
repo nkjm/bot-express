@@ -33,6 +33,8 @@ module.exports = class SkillJuminhyo {
                 },
                 reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (error){
+                        return resolve();
+                        /* Activate following code to enable human support.
                         let tasks = [];
                         tasks.push(support.send(bot, process.env.supporter_user_id, `住民票の申請受付中に必要な住民票タイプを聞いていたところ、ユーザーが「${value}」とおっしゃいましたが、何を意味しているのかわかりませんでした。`));
                         tasks.push(bot.reply({
@@ -46,6 +48,7 @@ module.exports = class SkillJuminhyo {
                                 return resolve();
                             }
                         );
+                        */
                     }
 
                     bot.queue({text: `${value}ですね。OKです。`});

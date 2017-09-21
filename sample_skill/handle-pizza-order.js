@@ -21,7 +21,7 @@ module.exports = class SkillHandlePizzaOrder {
                         ]
                     }
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (!error){
                         bot.queue({
                             type: "text",
@@ -68,7 +68,7 @@ module.exports = class SkillHandlePizzaOrder {
         this.clear_context_on_finish = true;
     }
 
-    parse_pizza(value, context, resolve, reject){
+    parse_pizza(value, bot, event, context, resolve, reject){
         let parsed_value;
         if (value.match(/マルゲリータ/)){
             parsed_value = "マルゲリータ";
@@ -80,7 +80,7 @@ module.exports = class SkillHandlePizzaOrder {
         return resolve(parsed_value);
     }
 
-    parse_size(value, context, resolve, reject){
+    parse_size(value, bot, event, context, resolve, reject){
         let parsed_value;
         if (value.match(/[sS]/) || value.match(/小/)){
             parsed_value = "S";
@@ -94,7 +94,7 @@ module.exports = class SkillHandlePizzaOrder {
         return resolve(parsed_value);
     }
 
-    parse_address(value, context, resolve, reject){
+    parse_address(value, bot, event, context, resolve, reject){
         let parsed_value;
         if (typeof value == "string"){
             parsed_value = {
@@ -130,7 +130,7 @@ module.exports = class SkillHandlePizzaOrder {
         return resolve(parsed_value);
     }
 
-    parse_name(value, context, resolve, reject){
+    parse_name(value, bot, event, context, resolve, reject){
         let lastname, firstname, fullname;
         return mecab.parse(value).then(
             (response) => {

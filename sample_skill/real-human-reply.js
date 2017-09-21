@@ -7,13 +7,13 @@ let rightnow = require("../sample_service/rightnow.js");
 
 module.exports = class SkillRealHumanReply {
 
-    constructor(bot, bot_event){
+    constructor(){
         this.required_parameter = {
             answer: {
                 message_to_confirm: {
                     text: "OK. 答えプリーズ"
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (!error){
                         if (app_env.FAQ_CONFIRM_AUTO_LEARN == "enable"){
                             bot.collect("auto_learn");

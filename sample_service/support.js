@@ -16,7 +16,7 @@ module.exports = class ServiceSupport {
             type: "template",
             altText: `返信しますか？`,
             template: {
-                type: "button",
+                type: "buttons",
                 text: "返信しますか？",
                 actions: [
                     {type:"postback", label:"返信", data:`${bot.extract_sender_id()} に返信します。`}

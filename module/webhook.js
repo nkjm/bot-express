@@ -86,13 +86,13 @@ class Webhook {
         debug("Signature Validation suceeded.");
 
         // Set Events.
-        let bot_events = messenger.extract_events(req.body);
+        let events = messenger.extract_events(req.body);
 
-        for (let bot_event of bot_events){
+        for (let event of events){
             debug(`Processing following event.`);
-            debug(bot_event);
+            debug(event);
 
-            messenger.bot_event = bot_event;
+            messenger.event = event;
 
             // Recall Memory
             let memory_id = messenger.extract_sender_id();
@@ -115,7 +115,7 @@ class Webhook {
                 }
 
                 try {
-                    flow = new flows[event_type](messenger, bot_event, this.options);
+                    flow = new flows[event_type](messenger, event, this.options);
                 } catch(err) {
                     return Promise.reject(err);
                 }
@@ -139,7 +139,7 @@ class Webhook {
 
                 messenger.context = context;
                 try {
-                    flow = new flows[event_type](messenger, bot_event, this.options, beacon_event_type);
+                    flow = new flows[event_type](messenger, event, this.options, beacon_event_type);
                 } catch(err) {
                     return Promise.reject(err);
                 }
@@ -150,7 +150,7 @@ class Webhook {
                 // ### Start Conversation Flow ###
 
                 try {
-                    flow = new flows["start_conversation"](messenger, bot_event, this.options);
+                    flow = new flows["start_conversation"](messenger, event, this.options);
                 } catch(err) {
                     return Promise.reject(err);
                 }
@@ -162,7 +162,7 @@ class Webhook {
                     // ### Reply Flow ###
 
                     try {
-                        flow = new flows["reply"](messenger, bot_event, context, this.options);
+                        flow = new flows["reply"](messenger, event, context, this.options);
                     } catch(err){
                         return Promise.reject(err);
                     }
@@ -173,7 +173,7 @@ class Webhook {
                     // ### BTW Flow ###
 
                     try {
-                        flow = new flows["btw"](messenger, bot_event, context, this.options);
+                        flow = new flows["btw"](messenger, event, context, this.options);
                     } catch(err){
                         return Promise.reject(err);
                     }

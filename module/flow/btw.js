@@ -9,9 +9,9 @@ let Flow = require("./flow");
 
 module.exports = class BtwFlow extends Flow {
 
-    constructor(messenger, bot_event, context, options) {
+    constructor(messenger, event, context, options) {
         context._flow = "btw";
-        super(messenger, bot_event, context, options);
+        super(messenger, event, context, options);
     }
 
     run(){
@@ -27,9 +27,9 @@ module.exports = class BtwFlow extends Flow {
 
         let is_postback = false;
         if (this.messenger.type == "line"){
-            if (this.bot_event.type == "postback") is_postback = true;
+            if (this.event.type == "postback") is_postback = true;
         } else if (this.messenger.type == "facebook"){
-            if (this.bot_event.postback) is_postback = true;
+            if (this.event.postback) is_postback = true;
         }
 
         let translated;

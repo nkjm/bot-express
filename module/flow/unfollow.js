@@ -13,7 +13,7 @@ module.exports = class UnfollowFlow extends Flow {
     ** -> Run final action.
     */
 
-    constructor(messenger, bot_event, options) {
+    constructor(messenger, event, options) {
         let context = {
             _flow: "unfollow",
             intent: {name: options.unfollow_skill},
@@ -28,7 +28,7 @@ module.exports = class UnfollowFlow extends Flow {
             sender_language: null
         };
         messenger.context = context;
-        super(messenger, bot_event, context, options);
+        super(messenger, event, context, options);
     }
 
     run(){

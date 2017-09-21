@@ -9,7 +9,7 @@ let Flow = require("./flow");
 
 module.exports = class leaveFlow extends Flow {
 
-    constructor(messenger, bot_event, options) {
+    constructor(messenger, event, options) {
         let context = {
             _flow: "join",
             intent: {name: options.leave_skill},
@@ -24,7 +24,7 @@ module.exports = class leaveFlow extends Flow {
             sender_language: null
         };
         messenger.context = context;
-        super(messenger, bot_event, context, options);
+        super(messenger, event, context, options);
     }
 
     run(){

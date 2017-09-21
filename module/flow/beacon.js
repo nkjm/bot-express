@@ -9,7 +9,7 @@ let Flow = require("./flow");
 
 module.exports = class BeaconFlow extends Flow {
 
-    constructor(messenger, bot_event, options, beacon_event_type) {
+    constructor(messenger, event, options, beacon_event_type) {
         // Instantiate the conversation object. This will be saved as Bot Memory.
         let context = {
             _flow: "beacon",
@@ -25,7 +25,7 @@ module.exports = class BeaconFlow extends Flow {
             sender_language: null
         };
         messenger.context = context;
-        super(messenger, bot_event, context, options);
+        super(messenger, event, context, options);
     }
 
     run(){

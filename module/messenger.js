@@ -10,12 +10,12 @@ module.exports = class Messenger {
     /**
     * @constructs
     */
-    constructor(options, bot_event){
+    constructor(options, event){
         this.type = options.message_platform_type;
         this.options = options;
         this.Messenger_classes = {};
         this.context = null; // Will be set later in flow.
-        this.bot_event = bot_event;
+        this.event = event;
         this.plugin = {};
 
         // Load messenger libraries located under messenger directory.
@@ -45,15 +45,15 @@ module.exports = class Messenger {
     }
 
     extract_beacon_event_type(){
-        return this.Messenger_classes[this.type].extract_beacon_event_type(this.bot_event);
+        return this.Messenger_classes[this.type].extract_beacon_event_type(this.event);
     }
 
     extract_param_value(){
-        return this.Messenger_classes[this.type].extract_param_value(this.bot_event);
+        return this.Messenger_classes[this.type].extract_param_value(this.event);
     }
 
     check_supported_event_type(flow){
-        return this.Messenger_classes[this.type].check_supported_event_type(flow, this.bot_event);
+        return this.Messenger_classes[this.type].check_supported_event_type(flow, this.event);
     }
 
     /**
@@ -62,7 +62,7 @@ module.exports = class Messenger {
     * @returns {MessageObject} - Extracted message.
     */
     extract_message(event){
-        return this.Messenger_classes[this.type].extract_message(event || this.bot_event);
+        return this.Messenger_classes[this.type].extract_message(event || this.event);
     }
 
     /**
@@ -71,7 +71,7 @@ module.exports = class Messenger {
     * @returns {String} - Extracted message text.
     */
     extract_message_text(event){
-        return this.Messenger_classes[this.type].extract_message_text(event || this.bot_event);
+        return this.Messenger_classes[this.type].extract_message_text(event || this.event);
     }
 
     /**
@@ -80,7 +80,7 @@ module.exports = class Messenger {
     * @returns {String}
     */
     extract_sender_id(event){
-        return this.Messenger_classes[this.type].extract_sender_id(event || this.bot_event);
+        return this.Messenger_classes[this.type].extract_sender_id(event || this.event);
     }
 
     /**
@@ -89,7 +89,7 @@ module.exports = class Messenger {
     * @returns {String} - Event type. In case of LINE, it can be "message", "follow", "unfollow", "join", "leave", "postback", "beacon". In case of Facebook, it can be "echo", "message", "delivery", "read", "postback", "optin", "referral", "account_linking".
     */
     identify_event_type(event){
-        return this.Messenger_classes[this.type].identify_event_type(event || this.bot_event);
+        return this.Messenger_classes[this.type].identify_event_type(event || this.event);
     }
 
     /**
@@ -100,7 +100,7 @@ module.exports = class Messenger {
     */
     identify_message_type(message){
         if (!message){
-            message = this.extract_message(this.bot_event);
+            message = this.extract_message(this.event);
         }
         return this.Messenger_classes[this.type].identify_message_type(message);
     }
@@ -122,7 +122,7 @@ module.exports = class Messenger {
         return Promise.all(messages_compiled).then(
             (response) => {
                 compiled_messages = response;
-                return this.service.reply(this.bot_event, compiled_messages);
+                return this.service.reply(this.event, compiled_messages);
             }
         ).then(
             (response) => {
@@ -158,7 +158,7 @@ module.exports = class Messenger {
         return Promise.all(messages_compiled).then(
             (response) => {
                 compiled_messages = response;
-                return this.service.send(this.bot_event, recipient_id, compiled_messages);
+                return this.service.send(this.event, recipient_id, compiled_messages);
             }
         ).then(
             (response) => {
@@ -193,7 +193,7 @@ module.exports = class Messenger {
         return Promise.all(messages_compiled).then(
             (response) => {
                 compiled_messages = response;
-                return this.service.multicast(this.bot_event, recipient_ids, compiled_messages);
+                return this.service.multicast(this.event, recipient_ids, compiled_messages);
             }
         ).then(
             (response) => {

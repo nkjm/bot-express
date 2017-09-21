@@ -14,7 +14,8 @@ module.exports = class ServiceSupport {
     */
     static send(bot, supporter, message){
         let messages = [];
-        if (typeof message == "string");
+
+        if (typeof message == "string"){
             messages.push({
                 type: "text",
                 text: message
@@ -24,7 +25,7 @@ module.exports = class ServiceSupport {
         } else {
             return Promise.reject(new Error("Unknown message format."));
         }
-        
+
         messages.push({
             type: "template",
             altText: `返信しますか？`,
@@ -42,9 +43,7 @@ module.exports = class ServiceSupport {
             // If no supporters are configured, we skip sending help message.
             return Promise.resolve();
         }
-
-        debug(messages[0]);
-        debug(messages[1]);
+        
         return bot.multicast(supporter_ids, messages).then(
             (response) => {
                 return response;

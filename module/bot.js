@@ -54,6 +54,14 @@ class Bot {
     }
 
     /**
+    * Stop processing final actions including collecting parameters and finish() and keep context.
+    * @returns {Null}
+    */
+    pause(){
+        return this._messenger.pause();
+    }
+
+    /**
     * Make the specified skill paramter being collected next.
     * @param {String|Skill#skill_parameter_container} arg - Name of the skill parameter or skill_parameter_container object to collect.
     * @returns {Null}

@@ -221,6 +221,14 @@ module.exports = class Messenger {
     }
 
     /**
+    * Stop processing final actions including collecting parameters and finish() and keep context.
+    * @returns {Null}
+    */
+    pause(){
+        this.context._pause = true;
+    }
+
+    /**
     * Change the message to collect specified parameter.
     * @param {String} parameter_key - Name of the parameter to collect.
     * @param {MessageObject} message - The message object.

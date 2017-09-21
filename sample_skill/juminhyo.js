@@ -5,6 +5,7 @@ let debug = require('debug')('bot-express:skill');
 let app_env = require("../environment_variables");
 let zip_code = require("../sample_service/zip-code");
 let mecab = require("mecabaas-client");
+let support = require("../sample_service/support");
 
 module.exports = class SkillJuminhyo {
 
@@ -31,7 +32,21 @@ module.exports = class SkillJuminhyo {
                     return reject();
                 },
                 reaction: (error, value, context, resolve, reject) => {
-                    if (error) return resolve();
+                    if (error){
+                        let tasks = [];
+                        tasks.push(support.send(bot, process.env.supporter_user_id, `住民票の申請受付中に必要な住民票タイプを聞いていたところ、ユーザーが「${value}」とおっしゃいましたが、何を意味しているのかわかりませんでした。`));
+                        tasks.push(bot.reply({
+                            type: "text",
+                            text: "ちょっとまってください。詳しい人にきいてきます。"
+                        }));
+
+                        return Promise.all(tasks).then(
+                            (response) => {
+                                bot.pause();
+                                return resolve();
+                            }
+                        );
+                    }
 
                     bot.queue({text: `${value}ですね。OKです。`});
                     return resolve();

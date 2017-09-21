@@ -271,7 +271,7 @@ module.exports = class Flow {
     Identify what the user like to achieve.
     @param {String|MessageObject} payload - Data from which we try to identify what the user like to achieve.
     @returns {Object} response
-    @returns {String} response.result - "restart_conversation", "change_intent", "change_parameter" or "no_idea"
+    @returns {String} response.result - "dig", "restart_conversation", "change_intent", "change_parameter" or "no_idea"
     @returns {Object} response.intent - Intent object.
     @returns {Object} response.parameter - Parameter.
     @returns {String} response.parameter.key - Parameter name.
@@ -296,11 +296,13 @@ module.exports = class Flow {
         return intent_identified.then(
             (intent) => {
                 if (intent.name != this.options.default_intent){
-                    // This is dig, change intent or restart conversation.
+                    // This is dig or change intent or restart conversation.
 
                     // Check if this is dig.
                     if (this.context._flow == "reply" && this.context.confirming){
                         let param_type = this._check_parameter_type(this.context.confirming);
+
+                        // Check if sub skill is configured in the confirming parameter.
                         if (this.context.skill[param_type][this.context.confirming].sub_skill &&
                             this.context.skill[param_type][this.context.confirming].sub_skill.indexOf(intent.name) !== -1){
                             // This is dig.
@@ -561,6 +563,13 @@ module.exports = class Flow {
             from: "user",
             message: this.messenger.extract_message()
         });
+
+        // If pause flat has been set, we stop processing following actions and exit.
+        if (this.context._pause){
+            debug("Dected pause flag. We stop processing collect() and finish().");
+            this.context._pause = false;
+            return Promise.resolve(this.context);
+        }
 
         // If we still have parameters to confirm, we collect them.
         if (this.context.to_confirm.length > 0){

@@ -7,20 +7,16 @@ let Bot = require("../bot"); // Libraries to be exposed to skill.
 let Nlp = require("../nlp");
 
 module.exports = class Flow {
-    constructor(messenger, bot_event, context, options){
+    constructor(messenger, event, context, options){
         this.messenger = messenger;
         this.bot = new Bot(messenger);
-        this.bot_event = bot_event;
+        this.event = event;
         this.options = options;
         this.context = context;
 
         if (this.context.intent && this.context.intent.name){
             if (!this.context.skill){
                 this.context.skill = this.instantiate_skill(this.context.intent.name);
-                debug(this.context.skill);
-            } else {
-                let skill = this.instantiate_skill(this.context.intent.name);
-                this.context.skill = skill;
                 debug(this.context.skill);
             }
 
@@ -52,7 +48,7 @@ module.exports = class Flow {
         if (skill == "builtin_default"){
             debug("Use built-in default skill.");
             let skill_class = require("../skill/default");
-            skill_instance = new skill_class(this.bot, this.bot_event);
+            skill_instance = new skill_class(this.bot, this.event);
         } else {
             debug(`Look for ${skill} skill.`);
             let skill_class;
@@ -63,7 +59,7 @@ module.exports = class Flow {
                 debug("Skill not found.");
                 throw(exception);
             }
-            skill_instance = new skill_class(this.bot, this.bot_event);
+            skill_instance = new skill_class(this.bot, this.event);
         }
 
         return skill_instance;
@@ -204,10 +200,10 @@ module.exports = class Flow {
 
             if (!!this.context.skill[type][key].parser){
                 debug("Parse method found in parameter definition.");
-                return this.context.skill[type][key].parser(value, this.context, resolve, parse_reject);
+                return this.context.skill[type][key].parser(value, this.bot, this.event, this.context, resolve, parse_reject);
             } else if (!!this.context.skill["parse_" + key]){
                 debug("Parse method found in default parser function name.");
-                return this.context.skill["parse_" + key](value, this.context, resolve, parse_reject);
+                return this.context.skill["parse_" + key](value, this.bot, this.event, this.context, resolve, parse_reject);
             } else {
                 if (strict){
                     return parse_reject("PARSER NOT FOUND");
@@ -256,10 +252,10 @@ module.exports = class Flow {
             if (this.context.skill[param_type] && this.context.skill[param_type][key]){
                 if (this.context.skill[param_type][key].reaction){
                     debug(`Reaction for ${key} found. Performing reaction...`);
-                    return this.context.skill[param_type][key].reaction(error, value, this.context, resolve, reject);
+                    return this.context.skill[param_type][key].reaction(error, value, this.bot, this.event, this.context, resolve, reject);
                 } else if (this.context.skill["reaction_" + key]){
                     debug(`Reaction for ${key} found. Performing reaction...`);
-                    return this.context.skill["reaction_" + key](error, value, this.context, resolve, reject);
+                    return this.context.skill["reaction_" + key](error, value, this.bot, this.event, this.context, resolve, reject);
                 } else {
                     // This parameter does not have reaction so do nothing.
                     debug(`Reaction for ${key} not found.`);
@@ -557,7 +553,7 @@ module.exports = class Flow {
 
         debug("Going to perform beginning action.");
         let begun = new Promise((resolve, reject) => {
-            this.context.skill.begin(this.bot, this.bot_event, this.context, resolve, reject);
+            this.context.skill.begin(this.bot, this.event, this.context, resolve, reject);
         });
 
         return begun;
@@ -589,7 +585,7 @@ module.exports = class Flow {
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
         debug("Going to perform final action.");
         let finished = new Promise((resolve, reject) => {
-            this.context.skill.finish(this.bot, this.bot_event, this.context, resolve, reject);
+            this.context.skill.finish(this.bot, this.event, this.context, resolve, reject);
         });
 
         return finished.then(

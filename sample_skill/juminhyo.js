@@ -9,7 +9,7 @@ let support = require("../sample_service/support");
 
 module.exports = class SkillJuminhyo {
 
-    constructor(bot, event){
+    constructor(){
         this.required_parameter = {
             type: {
                 message_to_confirm: {
@@ -24,14 +24,14 @@ module.exports = class SkillJuminhyo {
                         ]
                     }
                 },
-                parser: (value, context, resolve, reject) => {
+                parser: (value, bot, event, context, resolve, reject) => {
                     const acceptable_values = ["世帯全員分", "本人だけ"];
                     if (acceptable_values.indexOf(value) >= 0){
                         return resolve(value);
                     }
                     return reject();
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (error){
                         let tasks = [];
                         tasks.push(support.send(bot, process.env.supporter_user_id, `住民票の申請受付中に必要な住民票タイプを聞いていたところ、ユーザーが「${value}」とおっしゃいましたが、何を意味しているのかわかりませんでした。`));
@@ -57,7 +57,7 @@ module.exports = class SkillJuminhyo {
                     type: "text",
                     text: "次にご本人のことを少々。お名前教えてもらえますか？"
                 },
-                parser: (value, context, resolve, reject) => {
+                parser: (value, bot, event, context, resolve, reject) => {
                     return mecab.parse(value).then(
                         (response) => {
                             let name = {};
@@ -75,7 +75,7 @@ module.exports = class SkillJuminhyo {
                         }
                     );
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (error) return resolve();
 
                     if (value && value.lastname && value.firstname){
@@ -94,14 +94,14 @@ module.exports = class SkillJuminhyo {
                                         ]
                                     }
                                 },
-                                parser: (value, context, resolve, reject) => {
+                                parser: (value, bot, event, context, resolve, reject) => {
                                     const acceptable_values = ["はい", "いいえ"];
                                     if (acceptable_values.indexOf(value) >= 0){
                                         return resolve(value);
                                     }
                                     return reject();
                                 },
-                                reaction: (error, value, context, resolve, reject) => {
+                                reaction: (error, value, bot, event, context, resolve, reject) => {
                                     if (error) return resolve();
 
                                     if (value == "はい"){
@@ -131,7 +131,7 @@ module.exports = class SkillJuminhyo {
                     type: "text",
                     text: "郵便番号を教えていただけますか？"
                 },
-                parser: (value, context, resolve, reject) => {
+                parser: (value, bot, event, context, resolve, reject) => {
                     return zip_code.search(value).then(
                         (response) => {
                             // In case we could not find the address.
@@ -154,7 +154,7 @@ module.exports = class SkillJuminhyo {
                         }
                     );
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (error){
                         if (error.message == "zip code format is incorrect."){
                             // Provide zip code is incorrect.
@@ -203,14 +203,14 @@ module.exports = class SkillJuminhyo {
                                     ]
                                 }
                             },
-                            parser: (value, context, resolve, reject) => {
+                            parser: (value, bot, event, context, resolve, reject) => {
                                 const acceptable_values = ["はい", "いいえ"];
                                 if (acceptable_values.indexOf(value) >= 0){
                                     return resolve(value);
                                 }
                                 return reject();
                             },
-                            reaction: (error, value, context, resolve, reject) => {
+                            reaction: (error, value, bot, event, context, resolve, reject) => {
                                 if (error) return resolve();
 
                                 if (value == "はい"){
@@ -247,7 +247,7 @@ module.exports = class SkillJuminhyo {
                     type: "text",
                     text: "氏名（姓）を教えてもらえますか？"
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (error) return resolve();
 
                     bot.collect("firstname");
@@ -259,7 +259,7 @@ module.exports = class SkillJuminhyo {
                     type: "text",
                     text: "氏名（名）を教えてもらえますか？"
                 },
-                reaction: (error, value, context, resolve, reject) => {
+                reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (error) return resolve();
 
                     bot.queue({text: `${context.confirmed.lastname} ${value}さん、なかなかナウい名前ですね。`});

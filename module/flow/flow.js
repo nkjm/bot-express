@@ -20,9 +20,6 @@ module.exports = class Flow {
                 debug(this.context.skill);
             } else {
                 let skill = this.instantiate_skill(this.context.intent.name);
-                skill.required_parameter = this.context.skill.required_parameter;
-                skill.optional_parameter = this.context.skill.optional_parameter;
-                skill.dynamic_parameter = this.context.skill.dynamic_parameter;
                 this.context.skill = skill;
                 debug(this.context.skill);
             }

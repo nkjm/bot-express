@@ -44,6 +44,10 @@ module.exports = class SkillJuminhyo {
                             (response) => {
                                 bot.pause();
                                 return resolve();
+                            },
+                            (response) => {
+                                debug(response);
+                                return reject(response);
                             }
                         );
                     }

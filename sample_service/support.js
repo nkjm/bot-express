@@ -1,5 +1,8 @@
 "use strict";
 
+let Promise = require('bluebird');
+let debug = require('debug')('bot-express:skill');
+
 module.exports = class ServiceSupport {
 
     /**

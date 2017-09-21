@@ -9,12 +9,22 @@ module.exports = class ServiceSupport {
     * Send help request to predefined supporter.
     @param {Bot} bot - Bot object.
     @param {String} supporter - Comma separated list of supporters user id.
-    @param {Object} message - Message object to send to supporters.
+    @param {String|Object} message - Message to send to supporters.
     @return {Promise}
     */
     static send(bot, supporter, message){
         let messages = [];
-        messages.push(message);
+        if (typeof message == "string");
+            messages.push({
+                type: "text",
+                text: message
+            });
+        } else if (typeof message == "object"){
+            messages.push(message);
+        } else {
+            return Promise.reject(new Error("Unknown message format."));
+        }
+        
         messages.push({
             type: "template",
             altText: `返信しますか？`,

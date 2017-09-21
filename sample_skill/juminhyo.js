@@ -35,20 +35,15 @@ module.exports = class SkillJuminhyo {
                     if (error){
                         let tasks = [];
                         tasks.push(support.send(bot, process.env.supporter_user_id, `住民票の申請受付中に必要な住民票タイプを聞いていたところ、ユーザーが「${value}」とおっしゃいましたが、何を意味しているのかわかりませんでした。`));
-                        tasks.push(bot.reply({
+                        tasks.push(bot.send(bot.extract_sender_id(), {
                             type: "text",
                             text: "ちょっとまってください。詳しい人にきいてきます。"
                         }));
-
                         return Promise.all(tasks).then(
                             (response) => {
                                 debug("success");
                                 bot.pause();
                                 return resolve();
-                            },
-                            (response) => {
-                                debug(response);
-                                return reject(response);
                             }
                         );
                     }

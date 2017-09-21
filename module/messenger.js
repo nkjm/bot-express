@@ -134,10 +134,6 @@ module.exports = class Messenger {
                 }
                 this.context._message_queue = [];
                 return response;
-            },
-            (response) => {
-                debug(response);
-                return Promise.reject(response);
             }
         );
     }

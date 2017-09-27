@@ -22,7 +22,7 @@ module.exports = class MessengerFacebook {
             return Promise.resolve();
         }
 
-        let sent_messages;
+        let sent_messages = [];
         for (let to of to_list){
             sent_messages.push(this.send(event, to, messages));
         }

@@ -348,6 +348,9 @@ module.exports = class Flow {
                 debug(all_param_keys);
                 let parameters_parsed = [];
                 for (let param_key of all_param_keys){
+                    if (param_key === this.context.confirming){
+                        continue;
+                    }
                     debug(`Check if "${payload}" is suitable for ${param_key}.`);
                     parameters_parsed.push(
                         this._parse_parameter(this._check_parameter_type(param_key), param_key, payload, true).then(

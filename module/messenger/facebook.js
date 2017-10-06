@@ -135,7 +135,7 @@ module.exports = class MessengerFacebook {
         } else if (event.read){
             event_type = "read";
         } else if (event.postback){
-            event_type = "postback;"
+            event_type = "postback";
         } else if (event.optin){
             event_type = "optin";
         } else if (event.referral){

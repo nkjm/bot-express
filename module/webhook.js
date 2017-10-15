@@ -94,6 +94,12 @@ class Webhook {
 
             messenger.event = event;
 
+            // If this is for webhook validation, we skip processing this.
+            if(messenger.type == "line" && event.replyToken == "00000000000000000000000000000000"){
+                debug("This is webhook validation so skip processing.");
+                return Promise.resolve();
+            }
+
             // Recall Memory
             let memory_id = messenger.extract_sender_id();
             debug(`memory id is ${memory_id}.`);

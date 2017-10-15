@@ -3,7 +3,7 @@
 const REQUIRED_OPTIONS = {
     common: []
 }
-const DEFAULT_MEMORY_RETENTION = 60000;
+const DEFAULT_MEMORY_RETENTION = 300000;
 const DEFAULT_SKILL_PATH = "../../../../skill/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";

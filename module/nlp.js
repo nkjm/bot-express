@@ -37,6 +37,7 @@ class Nlp {
     @returns {String} intent.name - Name of the intent.
     @returns {Object} intent.parameters - Parameters found in the sentence.
     @returns {String} intent.text_response - Text response to the sentence.
+    @returns {Object} intent.fulfillment - Object to fulfill the action.
     */
     identify_intent(sentence, options){
         return this.service.identify_intent(sentence, options);

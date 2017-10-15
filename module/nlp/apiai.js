@@ -22,7 +22,8 @@ module.exports = class NlpApiai {
                 let intent = {
                     name: response.result.action,
                     parameters: response.result.parameters,
-                    text_response: response.result.fulfillment.speech
+                    text_response: response.result.fulfillment.speech,
+                    fulfillment: response.result.fulfillment
                 }
                 return resolve(intent);
             });

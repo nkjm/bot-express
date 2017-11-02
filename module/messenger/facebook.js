@@ -45,51 +45,45 @@ module.exports = class MessengerFacebook {
         }
         debug(`page_id is ${page_id}. Corresponding page_access_token is ${page_access_token}`);
 
-        let all_sent = [];
-        let interval = 0;
-        let offset = 0;
-
         let url = "https://graph.facebook.com/v2.8/me/messages?access_token=" + page_access_token;
 
-        // If we have more then 1 message, we set 2000 msec interval to assure the message order.
+        // change to setTimeout -> promise + reduce
+        let promises = [];
         for (let message of messages){
 
             let body = {
                 recipient: recipient,
                 message: message
             }
-
-            if (offset > 0 && interval == 0){
-                interval = 2000;
-            }
-            offset += 1;
-
-            setTimeout(() => {
-                all_sent.push(request.postAsync({
-                    url: url,
-                    body: body,
-                    json: true
-                }).then(
-                    (response) => {
-                        if (response.statusCode != 200){
-                            debug("facebook.send() failed.");
-                            if (response.body && response.body.error && response.body.error.message){
-                                return Promise.reject(new Error(response.body.error.message));
-                            } else if (response.statusMessage){
-                                return Promise.reject(new Error(response.statusMessage));
-                            }
-                        }
-                        return response;
-                    }
-                ));
-            }, interval);
+            promises.push(this._make_send_promises(url, body));
         }
 
-        return Promise.all(all_sent).then(
-            (response) => {
-                return response;
-            }
-        )
+        // execute sequensial 
+        return promises.reduce((prev, curr, index, array) => {
+            return prev.then(curr);
+        }, Promise.resolve());
+    }
+
+    _make_send_promises(url, body){
+        return () => {
+            return request.postAsync({
+                url: url,
+                body: body,
+                json: true
+            }).then(
+                (response) => {
+                    if (response.statusCode != 200){
+                        debug("facebook.send() failed.");
+                        if (response.body && response.body.error && response.body.error.message){
+                            return Promise.reject(new Error(response.body.error.message));
+                        } else if (response.statusMessage){
+                            return Promise.reject(new Error(response.statusMessage));
+                        }
+                    }
+                    return Promise.resolve(response);
+                }
+            );
+        }
     }
 
     reply(event, messages){

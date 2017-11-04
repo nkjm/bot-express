@@ -24,7 +24,7 @@ module.exports = class Messenger {
             this.Messenger_classes[messenger_script] = require("./messenger/" + messenger_script);
             this.plugin[messenger_script] = new this.Messenger_classes[messenger_script](options);
         }
-        this.service = new this.Messenger_classes[this.type](options);
+        this.service = this.plugin[this.type];
 
         // Instantiates a translater
         if (this.options.google_project_id && this.options.auto_translation == "enable"){

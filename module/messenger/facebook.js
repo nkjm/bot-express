@@ -92,6 +92,65 @@ module.exports = class MessengerFacebook {
         )
     }
 
+    send(event, to, message){
+        // If this is test, we will not actually issue call out.
+        if (process.env.BOT_EXPRESS_ENV == "test"){
+            debug("This is test so we skip the actual call out.");
+            return Promise.resolve();
+        }
+
+        if (message.length === 1){
+            return this._send_single_message(event, to, message);
+        } else if (message.length > 1){
+            return this._send_multiple_messages(event, to, messages);
+        } else {
+            return Promise.reject(new Error('Invalid message.'));
+        }
+    }
+
+    _send_single_message(event, to, message){
+        let page_id = event.recipient.id;
+        let recipient = {id: to};
+
+        let page_access_token = this._page_access_token.find(token => token.page_id === page_id).page_access_token;
+        if (!page_access_token){
+            return Promise.reject(new Error("page access token not found."));
+        }
+        debug(`page_id is ${page_id}. Corresponding page_access_token is ${page_access_token}`);
+
+        let url = "https://graph.facebook.com/v2.8/me/messages?access_token=" + page_access_token;
+        let body = {
+            recipient: recipient,
+            message: message
+        }
+
+        return request.postAsync({
+            url: url,
+            body: body,
+            json: true
+        }).then(
+            (response) => {
+                if (response.statusCode != 200){
+                    debug("facebook._send_message() failed.");
+                    if (response.body && response.body.error && response.body.error.message){
+                        return Promise.reject(new Error(response.body.error.message));
+                    } else if (response.statusMessage){
+                        return Promise.reject(new Error(response.statusMessage));
+                    }
+                }
+                return response;
+            }
+        );
+    }
+
+    _send_multiple_messages(event, to, messages){
+        return Promise.each(messages, (item, index, length) => {
+            return this._send_single_message(event, to, item);
+        }).then((responses) => {
+            return responses;
+        });
+    }
+
     reply(event, messages){
         return this.send(event, event.sender.id, messages);
     }

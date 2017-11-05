@@ -29,6 +29,7 @@ module.exports = class MessengerFacebook {
         return Promise.all(sent_messages);
     }
 
+/*
     send(event, to, messages){
         // If this is test, we will not actually issue call out.
         if (process.env.BOT_EXPRESS_ENV == "test"){
@@ -91,6 +92,7 @@ module.exports = class MessengerFacebook {
             }
         )
     }
+*/
 
     send(event, to, message){
         // If this is test, we will not actually issue call out.
@@ -102,7 +104,7 @@ module.exports = class MessengerFacebook {
         if (message.length === 1){
             return this._send_single_message(event, to, message);
         } else if (message.length > 1){
-            return this._send_multiple_messages(event, to, messages);
+            return this._send_multiple_messages(event, to, message);
         } else {
             return Promise.reject(new Error('Invalid message.'));
         }
@@ -131,7 +133,7 @@ module.exports = class MessengerFacebook {
         }).then(
             (response) => {
                 if (response.statusCode != 200){
-                    debug("facebook._send_message() failed.");
+                    debug("facebook._send_single_message() failed.");
                     if (response.body && response.body.error && response.body.error.message){
                         return Promise.reject(new Error(response.body.error.message));
                     } else if (response.statusMessage){
@@ -148,6 +150,8 @@ module.exports = class MessengerFacebook {
             return this._send_single_message(event, to, item);
         }).then((responses) => {
             return responses;
+        }).catch((responses) => {
+            return Promise.reject(new Error("facebook._send_multiple_messages failed."));
         });
     }
 

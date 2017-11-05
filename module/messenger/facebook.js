@@ -126,6 +126,7 @@ module.exports = class MessengerFacebook {
             message: message
         }
 
+        debug(body.message);
         return request.postAsync({
             url: url,
             body: body,

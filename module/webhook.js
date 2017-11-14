@@ -194,6 +194,11 @@ class Webhook {
                 (context) => {
                     debug("Successful End of Flow.");
 
+                    // nothing to do when flow is start_conversation but could not determined intent.
+                    if(context._flow === 'start_conversation' && context.intent === null){
+                        return context;
+                    }
+
                     // Update memory.
                     memory.put(memory_id, context, this.options.memory_retention);
 

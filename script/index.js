@@ -3,9 +3,8 @@
 /*
 ** Import Packages
 */
-const restify = require("restify");
+const server = require("express")();
 const bot_express = require("bot-express");
-const server = restify.createServer();
 
 /*
 ** Middleware Configuration

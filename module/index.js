@@ -9,13 +9,13 @@ const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
 const DEFAULT_NLP = "dialogflow";
 
-const restify = require("restify");
-const server = restify.createServer();
+const express = require("express");
+const router = express.Router();
 const body_parser = require("body-parser");
 const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
 
-server.use(body_parser.json({
+router.use(body_parser.json({
     verify: (req, res, buf, encoding) => {
         req.raw_body = buf;
     }
@@ -81,8 +81,8 @@ module.exports = (options) => {
     debug("Common required options all set.");
 
     // Webhook Process
-    server.post('/', (req, res, next) => {
-        res.send(200);
+    router.post('/', (req, res, next) => {
+        res.sendStatus(200);
 
         let webhook = new Webhook(options);
         webhook.run(req).then(
@@ -98,19 +98,19 @@ module.exports = (options) => {
     });
 
     // Verify Facebook Webhook
-    server.get("/", (req, res, next) => {
+    router.get("/", (req, res, next) => {
         if (!options.facebook_verify_token){
             debug("Failed validation. facebook_verify_token not set.");
-            return res.send(403);
+            return res.sendStatus(403);
         }
         if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === options.facebook_verify_token) {
             debug("Validating webhook");
-            return res.send(200, req.query['hub.challenge']);
+            return res.status(200).send(req.query['hub.challenge']);
         } else {
             debug("Failed validation. Make sure the validation tokens match.");
-            return res.send(403);
+            return res.sendStatus(403);
         }
     });
 
-    return server;
+    return router;
 }

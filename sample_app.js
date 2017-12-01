@@ -3,9 +3,8 @@
 /*
 ** Import Packages
 */
-const restify = require("restify");
+const server = require("express")();
 const bot_express = require("./index.js");
-const server = restify.createServer();
 
 /*
 ** Middleware Configuration
@@ -36,4 +35,4 @@ server.use('/webhook', bot_express({
     auto_translation: process.env.AUTO_TRANSLATION
 }));
 
-module.exports = app;
+module.exports = server;

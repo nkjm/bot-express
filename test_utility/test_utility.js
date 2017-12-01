@@ -13,7 +13,7 @@ module.exports = class TestUtility {
             memory_retention: oneoff_options.memory_retention || 60000, // This is optional but required for this testing since test does not go through index.js which sets default parameter.
             skill_path: "../../sample_skill/",
             line_channel_secret: process.env.LINE_CHANNEL_SECRET,
-            line_channel_access_token: process.env.LINE_CHANNEL_ACCESS_TOKEN,
+            line_channel_access_token: process.env.LINE_ACCESS_TOKEN,
             facebook_app_secret: process.env.FACEBOOK_PAGE_ACCESS_TOKEN,
             facebook_page_access_token: [
                 {page_id: process.env.FACEBOOK_PAGE_ID, page_access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN}
@@ -23,9 +23,9 @@ module.exports = class TestUtility {
             beacon_skill: oneoff_options.beacon_skill || undefined,
             google_project_id: process.env.GOOGLE_PROJECT_ID,
             auto_translation: process.env.AUTO_TRANSLATION,
-            nlp: "apiai",
+            nlp: "dialogflow",
             nlp_options: {
-                client_access_token: process.env.APIAI_CLIENT_ACCESS_TOKEN,
+                client_access_token: process.env.DIALOGFLOW_CLIENT_ACCESS_TOKEN,
                 language: "ja"
             }
         }

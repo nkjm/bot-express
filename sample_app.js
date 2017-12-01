@@ -4,7 +4,7 @@
 ** Import Packages
 */
 const restify = require("restify");
-const bot_express = require("bot-express");
+const bot_express = require("./index.js");
 const server = restify.createServer();
 
 /*

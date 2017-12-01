@@ -5,7 +5,7 @@ let Promise = require("bluebird");
 
 // If we add NLP service, we need to add required options below.
 const required_options = {
-    apiai: ["client_access_token", "language"]
+    dialogflow: ["client_access_token", "language"]
 };
 
 /**

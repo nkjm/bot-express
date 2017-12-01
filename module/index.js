@@ -7,15 +7,15 @@ const DEFAULT_MEMORY_RETENTION = 300000;
 const DEFAULT_SKILL_PATH = "../../../../skill/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
-const DEFAULT_NLP = "apiai";
+const DEFAULT_NLP = "dialogflow";
 
-let express = require("express");
-let router = express.Router();
-let body_parser = require("body-parser");
-let debug = require("debug")("bot-express:index");
-let Webhook = require("./webhook");
+const restify = require("restify");
+const server = restify.createServer();
+const body_parser = require("body-parser");
+const debug = require("debug")("bot-express:index");
+const Webhook = require("./webhook");
 
-router.use(body_parser.json({
+server.use(body_parser.json({
     verify: (req, res, buf, encoding) => {
         req.raw_body = buf;
     }
@@ -32,7 +32,7 @@ router.use(body_parser.json({
 * @param {String} options.facebook_page_access_token.page_id - Facebook Page Id.
 * @param {String} options.facebook_page_access_token.page_access_token - Facebook Page Access Token.
 * @param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
-* @param {String} [options.nlp="apiai"] - NLP Service you like to use. Default is api.ai.
+* @param {String} [options.nlp="dialogflow"] - NLP Service you like to use. Default is dialogflow.
 * @param {Object} options.nlp_options - NLP Configuration.
 * @param {String} options.nlp_options.client_access_token - Token to access to NLP service.
 * @param {String} [options.nlp_options.language="ja"] - Language to recognize.
@@ -81,8 +81,8 @@ module.exports = (options) => {
     debug("Common required options all set.");
 
     // Webhook Process
-    router.post('/', (req, res, next) => {
-        res.status(200).end();
+    server.post('/', (req, res, next) => {
+        res.send(200);
 
         let webhook = new Webhook(options);
         webhook.run(req).then(
@@ -98,19 +98,19 @@ module.exports = (options) => {
     });
 
     // Verify Facebook Webhook
-    router.get("/", (req, res, next) => {
+    server.get("/", (req, res, next) => {
         if (!options.facebook_verify_token){
             debug("Failed validation. facebook_verify_token not set.");
-            return res.sendStatus(403);
+            return res.send(403);
         }
         if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === options.facebook_verify_token) {
             debug("Validating webhook");
-            return res.status(200).send(req.query['hub.challenge']);
+            return res.send(200, req.query['hub.challenge']);
         } else {
             debug("Failed validation. Make sure the validation tokens match.");
-            return res.sendStatus(403);
+            return res.send(403);
         }
     });
 
-    return router;
+    return server;
 }

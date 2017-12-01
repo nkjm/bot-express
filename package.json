@@ -31,10 +31,10 @@
     "bluebird": "^3.5.0",
     "body-parser": "~1.13.2",
     "debug": "^2.6.1",
-    "express": "~4.15.2",
     "memory-cache": "^0.1.6",
     "morgan": "^1.8.1",
-    "request": "^2.79.0"
+    "request": "^2.79.0",
+    "restify": "^6.3.4"
   },
   "devDependencies": {
     "chai": "*",

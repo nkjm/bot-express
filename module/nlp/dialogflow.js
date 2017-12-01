@@ -1,10 +1,10 @@
 'use strict';
 
-let apiai = require("apiai");
-let Promise = require("bluebird");
-let debug = require("debug")("bot-express:nlp");
+const apiai = require("apiai");
+const debug = require("debug")("bot-express:nlp");
+Promise = require("bluebird");
 
-module.exports = class NlpApiai {
+module.exports = class NlpDialogflow {
     constructor(options){
         this._client_access_token = options.client_access_token;
         this._language = options.language;

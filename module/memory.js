@@ -27,11 +27,10 @@ class Memory {
         for (let store of supported_store_list){
             if (store == options.store){
                 debug("Found plugin for specified memory store. Loading " + store + "...");
+                store = store.replace(".js", "");
+                let Store = require("./memory/" + store);
+                this.store = new Store(options.options);
             }
-
-            store = store.replace(".js", "");
-            let Store = require("./memory/" + store);
-            this.store = new Store(options.options);
         }
 
         if (!this.store){

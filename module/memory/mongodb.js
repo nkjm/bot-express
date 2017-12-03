@@ -64,4 +64,4 @@ class MemoryMongodb {
     }
 }
 
-module.exports = MemoryMemoryCache;
+module.exports = MemoryMongodb;

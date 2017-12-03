@@ -3,18 +3,29 @@
 const debug = require("debug")("bot-express:skill");
 
 /*
-** Just reply the text response provided from api.ai.
+** Just reply the text response provided from NLU.
 */
 module.exports = class SkillSimpleResponse {
+    constructor(){
+        this.clear_context_on_finish = true;
+    }
+
     finish(bot, event, context, resolve, reject){
-        debug(`Going to reply "${context.intent.text_response}".`);
-        let messages = [{
-            text: context.intent.text_response
-        }];
-        return bot.reply(messages).then(
-            (response) => {
-                return resolve(response);
+        let message;
+        if (context.intent.fulfillment && context.intent.fulfillment.messages && context.intent.fulfillment.messages.length > 0){
+            let offset = Math.floor(Math.random() * (context.intent.fulfillment.messages.length));
+            if (context.intent.fulfillment.messages[offset].type === 0){
+                message = {
+                    type: "text",
+                    text: context.intent.fulfillment.messages[offset].speech
+                }
+            } else if (context.intent.fulfillment.messages[offset].type === 4){
+                // Set payload to message as it is.
+                message = context.intent.fulfillment.messages[offset].payload;
             }
-        );
+        }
+        return bot.reply(message).then((response) => {
+            return resolve();
+        });
     }
 };

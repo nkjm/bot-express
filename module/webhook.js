@@ -126,6 +126,8 @@ class Webhook {
             promise_flow_completed = Promise.resolve().then((response) => {
                 return memory.get(memory_id);
             }).then((context) => {
+                debug(`context is follwoing.`);
+                debug(context);
                 messenger.context = context;
 
                 let flow;

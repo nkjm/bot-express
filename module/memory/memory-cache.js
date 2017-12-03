@@ -2,7 +2,6 @@
 
 const memory_cache = require("memory-cache");
 Promise = require("bluebird");
-Promise.promisifyAll(memory_cache);
 
 class MemoryMemoryCache {
     constructor(options){
@@ -10,15 +9,33 @@ class MemoryMemoryCache {
     }
 
     get(key){
-        return this.client.getAsync(key);
+        return new Promise((resolve, reject) => {
+            try {
+                return resolve(this.client.get(key));
+            } catch(e) {
+                return reject(e);
+            }
+        });
     }
 
     put(key, value, retention){
-        return this.client.putAsync(key, value, retention * 1000);
+        return new Promise((resolve, reject) => {
+            try {
+                return resolve(this.client.put(key, value, retention * 1000));
+            } catch(e) {
+                return reject(e);
+            }
+        });
     }
 
     del(key){
-        return this.client.delAsync(key);
+        return new Promise((resolve, reject) => {
+            try {
+                return resolve(this.client.delAsync(key));
+            } catch(e) {
+                return reject(e);
+            }
+        });
     }
 }
 

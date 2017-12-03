@@ -16,7 +16,7 @@ class MemoryMongodb {
                 assert.equal(null, err);
                 debug("Connected successfully to MongoDB server");
 
-                return db.collection('bot-express').findOne({context_id: key).then((response) => {
+                return db.collection('bot-express').findOne({context_id: key}).then((response) => {
                     debug(response);
                     return resolve(response);
                 }).catch((error) => {
@@ -33,14 +33,11 @@ class MemoryMongodb {
                 debug("Connected successfully to MongoDB server");
 
                 value.context_id = key;
-                return db.collection('bot-express').insertOne(value, function(err, r) {
-                    try {
-                        assert.equal(null, err);
-                        assert.equal(1, r.insertedCount);
-                        return resolve();
-                    } catch(e) {
-                        return reject(e);
-                    }
+                return db.collection('bot-express').insertOne(value).then((response) => {
+                    assert.equal(1, response.insertedCount);
+                    return resolve();
+                }).catch((error) => {
+                    return reject(error);
                 });
             });
         });

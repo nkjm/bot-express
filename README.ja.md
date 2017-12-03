@@ -18,7 +18,7 @@ bot-expressはオーダーメイドのChatbotを高速に開発するための�
 
 bot-expressをベースとしたChatbotは下記のコンポーネントで構成されます。
 
-![アーキテクチャー](https://www.dropbox.com/s/p9thelcidos8ea5/bot-express_architecture.png?raw=1)
+![アーキテクチャー](https://raw.githubusercontent.com/nkjm/bot-express/master/material/architecture.png)
 
 - メッセンジャー（現在はLINEまたはFacebook Messenger）
 - 自然言語処理のサービス（現在は[Dialogflow](https://dialogflow.com)）

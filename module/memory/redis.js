@@ -25,7 +25,7 @@ class MemoryRedis {
 
     put(key, value, retention){
         if (value){
-            value = JSON.serialize(flatten(value));
+            value = JSON.stringify(flatten(value));
         }
         return this.client.setAsync(key, value, 'EX', retention);
     }

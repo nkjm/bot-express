@@ -12,11 +12,13 @@ class MemoryRedis {
     }
 
     get(key){
-        return this.client.getAsync(key);
+        return this.client.getAsync(key).then((response) => {
+            return JSON.parse(response);
+        })
     }
 
     put(key, value, retention){
-        return this.client.setAsync(key, value, 'EX', retention);
+        return this.client.setAsync(key, JSON.stringify(value), 'EX', retention);
     }
 
     del(key){

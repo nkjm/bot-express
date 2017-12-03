@@ -35,6 +35,7 @@
     "memory-cache": "^0.1.6",
     "morgan": "^1.8.1",
     "redis": "^2.8.0",
+    "redis-rejson": "^1.0.0",
     "request": "^2.79.0"
   },
   "devDependencies": {

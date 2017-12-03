@@ -1,24 +1,26 @@
 "use strict";
 
 const debug = require("debug")("bot-express:memory");
-const redis = require("redis");
-const rejson = require("redis-rejson");
-rejson(redis);
+const redis = require("flat");
+const flatten = require("flat");
+const unflatten = flatten.unflatten;
 Promise = require("bluebird");
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 
 class MemoryRedis {
     constructor(options){
-        this.client = redis.createClient(options);
+        this.client = new redis.createClient(options);
     }
 
     get(key){
-        return this.client.json_getAsync(key);
+        return this.client.get(key).then((response) => {
+            return unflatten(response);
+        })
     }
 
     put(key, value, retention){
-        return this.client.json_setAsync(key, value, 'EX', retention);
+        return this.client.set(key, flatten(value), 'EX', retention);
     }
 
     del(key){

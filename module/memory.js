@@ -18,7 +18,7 @@ class Memory {
     * @param {Number} options.retention - Lifetime of the context in seconds.
     * @param {Object} options.options - Options depending on the memory store.
     */
-    constructor(options){
+    constructor(options = {}){
         this.retention = options.retention || 600;
 
         if (!options.store) options.store = default_store;

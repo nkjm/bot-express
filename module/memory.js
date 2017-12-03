@@ -72,4 +72,4 @@ class Memory {
     }
 }
 
-modules.exports = Memory;
+module.exports = Memory;

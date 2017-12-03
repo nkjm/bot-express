@@ -1,5 +1,5 @@
 {
-  "description": "Chatbot builder framework to develop tailor-made chatbot at lightning fast.",
+  "description": "A development framework to develop tailor-made chatbot lightning fast.",
   "main": "index.js",
   "name": "bot-express",
   "version": "0.0.136",
@@ -34,6 +34,7 @@
     "express": "^4.16.2",
     "memory-cache": "^0.1.6",
     "morgan": "^1.8.1",
+    "redis": "^2.8.0",
     "request": "^2.79.0"
   },
   "devDependencies": {

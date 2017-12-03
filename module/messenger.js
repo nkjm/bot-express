@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
-let Line = require("./messenger/line");
-let Facebook = require("./messenger/facebook");
-let debug = require("debug")("bot-express:messenger");
-let google_translate = require('@google-cloud/translate');
-let fs = require("fs");
+const Line = require("./messenger/line");
+const Facebook = require("./messenger/facebook");
+const debug = require("debug")("bot-express:messenger");
+const google_translate = require('@google-cloud/translate');
+const fs = require("fs");
 
 module.exports = class Messenger {
     /**

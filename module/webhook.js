@@ -7,7 +7,8 @@ const REQUIRED_OPTIONS = {
 
 // Import NPM Packages
 const Promise = require("bluebird");
-const memory = require("memory-cache");
+//const memory = require("memory-cache");
+const Memory = require("./memory");
 const debug = require("debug")("bot-express:webhook");
 
 // Import Flows
@@ -24,6 +25,8 @@ const flows = {
 
 // Import Messenger Abstraction.
 const Messenger = require("./messenger");
+
+const BotExpressWebhookSkip = require("./error/webhook");
 
 /**
 Webhook to receive all request from messenger.
@@ -42,13 +45,19 @@ class Webhook {
     run(req){
         debug("Webhook runs.\n\n");
 
+        memory = new Memory(this.options.memory);
+
         // FOR TEST PURPOSE ONLY: Clear Memory.
         if (process.env.BOT_EXPRESS_ENV == "test" && req.clear_memory){
             debug(`Deleting memory of ${req.clear_memory}`);
-            memory.del(req.clear_memory);
-            return Promise.resolve({
-                message: "memory cleared",
-                memory_id: req.clear_memory
+
+            return Promise.resolve().then((response) => {
+                return memory.del(req.clear_memory);
+            }).then((response) => {
+                return {
+                    message: "memory cleared",
+                    memory_id: req.clear_memory
+                }
             });
         }
 
@@ -100,114 +109,125 @@ class Webhook {
                 return Promise.resolve();
             }
 
+            /**
+            * Overview of Webhook Promise Chain
+
+            1. Get memory.
+            2. Run flow.
+            3. Update memory.
+            **/
+
+            let promise_flow_completed;
+
             // Recall Memory
             let memory_id = messenger.extract_sender_id();
             debug(`memory id is ${memory_id}.`);
 
-            let context = memory.get(memory_id);
-            messenger.context = context;
-
-            let promise_flow_completed;
-            let flow;
-            let event_type = messenger.identify_event_type();
-            debug(`evet type is ${event_type}.`);
-
-            if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
-                // ### Follow | Unfollow | Join | Leave Flow ###
-
-                if (!this.options[event_type + "_skill"]){
-                    debug(`This is ${event_type} flow but ${event_type}_skill not found so skip.`);
-                    return Promise.resolve();
-                }
-
-                try {
-                    flow = new flows[event_type](messenger, event, this.options);
-                } catch(err) {
-                    return Promise.reject(err);
-                }
-                promise_flow_completed = flow.run();
-
-                // ### Follow | Unfollow | Join | Leave Flow ###
-            } else if (event_type == "beacon"){
-                // ### Beacon Flow ###
-
-                let beacon_event_type = messenger.extract_beacon_event_type();
-
-                if (!beacon_event_type){
-                    debug(`Unsupported beacon event so we skip this event.`);
-                    return Promise.resolve();
-                }
-                if (!this.options.beacon_skill || !this.options.beacon_skill[beacon_event_type]){
-                    debug(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`);
-                    return Promise.resolve();
-                }
-                debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
-
+            promise_flow_completed = Promise.resolve().then((response) => {
+                return memory.get(memory_id);
+            }).then((context) => {
                 messenger.context = context;
-                try {
-                    flow = new flows[event_type](messenger, event, this.options, beacon_event_type);
-                } catch(err) {
-                    return Promise.reject(err);
-                }
-                promise_flow_completed = flow.run();
 
-                // ### Beacon Flow ###
-            } else if (!context){
-                // ### Start Conversation Flow ###
+                let flow;
+                let event_type = messenger.identify_event_type();
+                debug(`evet type is ${event_type}.`);
 
-                try {
-                    flow = new flows["start_conversation"](messenger, event, this.options);
-                } catch(err) {
-                    return Promise.reject(err);
-                }
-                promise_flow_completed = flow.run();
+                if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
+                    // ### Follow | Unfollow | Join | Leave Flow ###
 
-                // ### Start Conversation Flow ###
-            } else {
-                if (context.confirming){
-                    // ### Reply Flow ###
+                    if (!this.options[event_type + "_skill"]){
+                        return Promise.reject(new BotExpressWebhookSkip(`This is ${event_type} flow but ${event_type}_skill not found so skip.`));
+                    }
 
                     try {
-                        flow = new flows["reply"](messenger, event, context, this.options);
-                    } catch(err){
+                        flow = new flows[event_type](messenger, event, this.options);
+                    } catch(err) {
                         return Promise.reject(err);
                     }
-                    promise_flow_completed = flow.run();
+                    return flow.run();
 
-                    // ### Reply Flow ###
+                    // ### Follow | Unfollow | Join | Leave Flow ###
+                } else if (event_type == "beacon"){
+                    // ### Beacon Flow ###
+
+                    let beacon_event_type = messenger.extract_beacon_event_type();
+
+                    if (!beacon_event_type){
+                        return Promise.reject(new BotExpressWebhookSkip(`Unsupported beacon event so we skip this event.`));
+                    }
+                    if (!this.options.beacon_skill || !this.options.beacon_skill[beacon_event_type]){
+                        return Promise.reject(new BotExpressWebhookSkip(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`));
+                    }
+                    debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
+
+                    messenger.context = context;
+                    try {
+                        flow = new flows[event_type](messenger, event, this.options, beacon_event_type);
+                    } catch(err) {
+                        return Promise.reject(err);
+                    }
+                    return flow.run();
+
+                    // ### Beacon Flow ###
+                } else if (!context){
+                    // ### Start Conversation Flow ###
+
+                    try {
+                        flow = new flows["start_conversation"](messenger, event, this.options);
+                    } catch(err) {
+                        return Promise.reject(err);
+                    }
+                    return flow.run();
+
+                    // ### Start Conversation Flow ###
                 } else {
-                    // ### BTW Flow ###
+                    if (context.confirming){
+                        // ### Reply Flow ###
 
-                    try {
-                        flow = new flows["btw"](messenger, event, context, this.options);
-                    } catch(err){
-                        return Promise.reject(err);
+                        try {
+                            flow = new flows["reply"](messenger, event, context, this.options);
+                        } catch(err){
+                            return Promise.reject(err);
+                        }
+                        return flow.run();
+
+                        // ### Reply Flow ###
+                    } else {
+                        // ### BTW Flow ###
+
+                        try {
+                            flow = new flows["btw"](messenger, event, context, this.options);
+                        } catch(err){
+                            return Promise.reject(err);
+                        }
+                        return flow.run();
+
+                        // ### BTW Flow ###
                     }
-                    promise_flow_completed = flow.run();
-
-                    // ### BTW Flow ###
                 }
-            }
+            });
+
 
             // Triggers on completion of Flow
-            return promise_flow_completed.then(
-                (context) => {
-                    debug("Successful End of Flow.");
+            return promise_flow_completed.then((context) => {
+                debug("Successful End of Flow.");
 
-                    // Update memory.
-                    memory.put(memory_id, context, this.options.memory_retention);
-
+                // Update memory.
+                return memory.put(memory_id, context).then((response) => {
                     return context;
-                },
-                (response) => {
-                    debug("Abnormal End of Flow.");
-
-                    // Clear memory.
-                    memory.del(memory_id);
-
-                    return Promise.reject(response);
+                });
+            }).catch((error) => {
+                if (error.name == "BotExpressWebhookSkip"){
+                    debug(error.message);
+                    return;
                 }
-            ); // End of Completion of Flow
+
+                debug("Abnormal End of Flow.");
+                // Clear memory.
+                return memory.del(memory_id).then((response) => {
+                    return Promise.reject(error);
+                });
+            }); // End of Completion of Flow
 
         }; // End of Process Event
     }

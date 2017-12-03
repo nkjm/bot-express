@@ -36,6 +36,10 @@ router.use(body_parser.json({
 * @param {Object} options.nlp_options - NLP Configuration.
 * @param {String} options.nlp_options.client_access_token - Token to access to NLP service.
 * @param {String} [options.nlp_options.language="ja"] - Language to recognize.
+* @param {Object} options.memory - Option object for memory to store context.
+* @param {String} options.memory.store - Store type of memory. memory-cache and redis are supported.
+* @param {Number} options.memory.retention - Lifetime of the context in seconds.
+* @param {Object} options.memory.options - Options depending on the specific store type.
 * @param {String} [options.default_skill] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
 * @param {Object} [options.beacon_skill] - Skill to be used when bot receives beacon event.
 * @param {String} [options.beacon_skill.enter] - Skill to be used when bot receives beacon enter event.

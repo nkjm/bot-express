@@ -1,7 +1,7 @@
 "use strict";
 
-let debug = require("debug")("bot-express:nlp");
-let Promise = require("bluebird");
+const debug = require("debug")("bot-express:nlp");
+Promise = require("bluebird");
 
 // If we add NLP service, we need to add required options below.
 const required_options = {

@@ -22,6 +22,9 @@ class MemoryRedis {
     }
 
     put(key, value, retention){
+        if (value){
+            value = flatten(value);
+        }
         return this.client.setAsync(key, flatten(value), 'EX', retention);
     }
 

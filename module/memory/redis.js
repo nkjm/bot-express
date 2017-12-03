@@ -22,7 +22,7 @@ class MemoryRedis {
     }
 
     del(key){
-        return this.client.json_delAsync(key);
+        return this.client.delAsync(key);
     }
 }
 

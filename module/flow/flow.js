@@ -588,6 +588,7 @@ module.exports = class Flow {
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
         debug("Going to perform final action.");
         let finished = new Promise((resolve, reject) => {
+            debug(this.context.skill);debug(this.context.skill.finish);
             this.context.skill.finish(this.bot, this.event, this.context, resolve, reject);
         });
 

@@ -132,7 +132,7 @@ class Webhook {
 
                 let flow;
                 let event_type = messenger.identify_event_type();
-                debug(`evet type is ${event_type}.`);
+                debug(`event type is ${event_type}.`);
 
                 if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
                     // ### Follow | Unfollow | Join | Leave Flow ###

@@ -32,11 +32,13 @@ server.use('/webhook', bot_express({
             host: process.env.REDIS_HOST,
             port: process.env.REDIS_PORT
         }*/
+        /*
         store: "mongodb",
         retention: 180,
         options: {
             url: process.env.MONGODB_URL
         }
+        */
     },
     beacon_skill: {
         enter: "survey",

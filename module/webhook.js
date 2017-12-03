@@ -215,9 +215,13 @@ class Webhook {
                 debug("Successful End of Flow.");
 
                 // Update memory.
-                return memory.put(memory_id, context).then((response) => {
-                    return context;
-                });
+                if (!context){
+                    return memory.del(memory_id);
+                } else {
+                    return memory.put(memory_id, context).then((response) => {
+                        return context;
+                    });
+                }
             }).catch((error) => {
                 if (error.name == "BotExpressWebhookSkip"){
                     debug(error.message);

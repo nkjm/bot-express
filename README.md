@@ -48,7 +48,7 @@ $ npm install --save bot-express
 
 Running through the tutorial is a fastest way to learn bot-express since it covers the most important configurations step by step.
 
-[Create pizza delivery reception bot using bot-express](http://qiita.com/nkjm/items/1ac1a73d018c13deae30)
+[Tutorial: Create pizza delivery reception bot using bot-express](http://qiita.com/nkjm/items/1ac1a73d018c13deae30)
 
 Also take a glance at sample_skill directory which contains some sample skills.
 

@@ -14,7 +14,7 @@ module.exports = class SkillCancel {
         debug(`Going to reply "${context.intent.text_response}".`);
         let message = {
             text: context.intent.text_response
-        ];
+        };
         return bot.reply(message).then(
             (response) => {
                 return resolve(response);

@@ -16,7 +16,7 @@ class MemoryRedis {
     get(key){
         return this.client.getAsync(key).then((response) => {
             if (response){
-                return unflatten(response);
+                return JSON.parse(unflatten(response));
             } else {
                 return response;
             }
@@ -25,7 +25,7 @@ class MemoryRedis {
 
     put(key, value, retention){
         if (value){
-            value = flatten(value);
+            value = JSON.serialize(flatten(value));
         }
         return this.client.setAsync(key, value, 'EX', retention);
     }

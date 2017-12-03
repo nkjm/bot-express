@@ -15,7 +15,9 @@ class MemoryRedis {
 
     get(key){
         return this.client.getAsync(key).then((response) => {
-            return unflatten(response);
+            if (response){
+                return unflatten(response);
+            }
         })
     }
 

@@ -14,13 +14,13 @@ class MemoryRedis {
     }
 
     get(key){
-        return this.client.get(key).then((response) => {
+        return this.client.getAsync(key).then((response) => {
             return unflatten(response);
         })
     }
 
     put(key, value, retention){
-        return this.client.set(key, flatten(value), 'EX', retention);
+        return this.client.setAsync(key, flatten(value), 'EX', retention);
     }
 
     del(key){

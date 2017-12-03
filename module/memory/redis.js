@@ -14,7 +14,7 @@ class MemoryRedis {
     get(key){
         return this.client.getAsync(key).then((response) => {
             if (response){
-                return JSON.parse(response, this._reciever);
+                return JSON.parse(response);
             } else {
                 return response;
             }
@@ -23,7 +23,7 @@ class MemoryRedis {
 
     put(key, value, retention){
         if (value){
-            value = JSON.stringify(value, this._replacer);
+            value = JSON.stringify(value);
         }
         return this.client.setAsync(key, value, 'EX', retention);
     }

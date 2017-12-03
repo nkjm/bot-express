@@ -25,11 +25,17 @@ server.use('/webhook', bot_express({
         {page_id: process.env.FACEBOOK_PAGE_ID, page_access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN}
     ],
     memory: {
+        /* redis
         store: "redis",
         retention: 180,
         options: {
             host: process.env.REDIS_HOST,
             port: process.env.REDIS_PORT
+        }*/
+        store: "mongodb",
+        retention: 180,
+        options: {
+            url: process.env.MONGODB_URL
         }
     },
     beacon_skill: {

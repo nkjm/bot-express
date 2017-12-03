@@ -19,7 +19,7 @@ bot-express is a chatbot development framework to build tailer-made chatbot ligh
 
 A chatbot based on bot-express is composed of following components.
 
-![architecture](https://www.dropbox.com/s/p9thelcidos8ea5/bot-express_architecture.png?raw=1)
+![architecture](https://raw.githubusercontent.com/nkjm/bot-express/master/material/architecture.png)
 
 - Messenger
 - NLU

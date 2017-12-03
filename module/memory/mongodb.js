@@ -52,7 +52,6 @@ class MemoryMongodb {
                 return db.collection('bot-express').deleteOne({context_id: key}, function(err, r) {
                     try {
                         assert.equal(null, err);
-                        assert.equal(1, r.insertedCount);
                         return resolve();
                     } catch(e) {
                         return reject(e);

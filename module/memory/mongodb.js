@@ -15,24 +15,14 @@ class MemoryMongodb {
 
     get(key){
         return this.connected.then((response) => {
-            return this.db.collection('bot-express').findOne({_id: key}).then((response) => {
-                return response;
-            }).catch((error) => {
-                return Promise.reject(error);
-            });
+            return this.db.collection('bot-express').findOne({_id: key});
         });
     }
 
     put(key, value, retention){
         return this.connected.then((response) => {
             value._id = key;
-
-            return this.db.collection('bot-express').updateOne({_id:key}, value, {upsert:true}).then((response) => {
-                assert.equal(1, response.insertedCount);
-                return;
-            }).catch((error) => {
-                return Promise.reject(error);
-            });
+            return this.db.collection('bot-express').updateOne({_id:key}, value, {upsert:true});
         });
     }
 

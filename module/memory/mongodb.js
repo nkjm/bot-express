@@ -15,7 +15,7 @@ class MemoryMongodb {
 
     get(key){
         return this.connected.then((response) => {
-            return db.collection('bot-express').findOne({context_id: key}).then((response) => {
+            return this.db.collection('bot-express').findOne({context_id: key}).then((response) => {
                 return resolve(response);
             }).catch((error) => {
                 return reject(error);
@@ -26,7 +26,7 @@ class MemoryMongodb {
     put(key, value, retention){
         return this.connected.then((response) => {
             value.context_id = key;
-            return db.collection('bot-express').insertOne(value).then((response) => {
+            return this.db.collection('bot-express').insertOne(value).then((response) => {
                 assert.equal(1, response.insertedCount);
                 return resolve();
             }).catch((error) => {
@@ -37,7 +37,7 @@ class MemoryMongodb {
 
     del(key){
         return this.connected.then((response) => {
-            return db.collection('bot-express').deleteOne({context_id: key}).then((response) => {
+            return this.db.collection('bot-express').deleteOne({context_id: key}).then((response) => {
                 assert.equal(null, err);
                 return resolve();
             }).catch((error) => {

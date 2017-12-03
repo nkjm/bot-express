@@ -23,7 +23,7 @@ server.use('/webhook', bot_express({
     facebook_app_secret: process.env.FACEBOOK_APP_SECRET,
     facebook_page_access_token: [
         {page_id: process.env.FACEBOOK_PAGE_ID, page_access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN}
-    ],
+    ],/*
     memory: {
         store: "redis",
         retention: 180,
@@ -31,7 +31,7 @@ server.use('/webhook', bot_express({
             host: process.env.REDIS_HOST,
             port: process.env.REDIS_PORT
         }
-    },
+    },*/
     beacon_skill: {
         enter: "survey",
         leave: "bye"

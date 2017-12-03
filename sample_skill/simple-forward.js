@@ -1,10 +1,8 @@
 'use strict';
 
-let debug = require("debug")("bot-express:skill");
-let app_env = require("../environment_variables");
-let Promise = require("bluebird");
-let request = require("request");
-
+const debug = require("debug")("bot-express:skill");
+const request = require("request");
+Promise = require("bluebird");
 Promise.promisifyAll(request);
 
 /*
@@ -32,11 +30,11 @@ module.exports = class SkillSimpleForward {
             return resolve();
         }
 
-        let admin_user_id = app_env.LINE_ADMIN_USER_ID;
+        let admin_user_id = process.env.LINE_ADMIN_USER_ID;
         let url = 'https://api.line.me/v2/bot/profile/' + bot.extract_sender_id();
         let headers = {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + app_env.LINE_CHANNEL_ACCESS_TOKEN
+            "Authorization": "Bearer " + process.env.LINE_ACCESS_TOKEN
         }
 
         return request.getAsync({

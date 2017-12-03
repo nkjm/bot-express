@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
-let Promise = require('bluebird');
-let striptags = require('striptags');
-let debug = require('debug')('bot-express:skill');
-let rightnow = require('../sample_service/rightnow');
-let app_env = require("../environment_variables");
+const striptags = require('striptags');
+const debug = require('debug')('bot-express:skill');
+const rightnow = require('../sample_service/rightnow');
+
+Promise = require('bluebird');
 
 module.exports = class SkillFaq {
 
@@ -24,7 +24,7 @@ module.exports = class SkillFaq {
                         return resolve();
                     }
 
-                    if (app_env.FAQ_MODE == "human"){ // This is Human Only Mode.
+                    if (process.env.FAQ_MODE == "human"){ // This is Human Only Mode.
                         debug("Human mode reaction.");
 
                         let tasks = [];
@@ -44,9 +44,9 @@ module.exports = class SkillFaq {
                                 return resolve();
                             }
                         );
-                    } else if (app_env.FAQ_MODE == "hybrid"){ // This is Hybrid Mode by Robot and Human.
+                    } else if (process.env.FAQ_MODE == "hybrid"){ // This is Hybrid Mode by Robot and Human.
                         debug("Hybrid mode reaction.");
-                        return rightnow.bot_search_answer(value, app_env.RN_PRODUCT).then(
+                        return rightnow.bot_search_answer(value, process.env.RN_PRODUCT).then(
                             (response) => {
                                 // Save interacion id for later rating.
                                 context.confirmed.interaction_id = response.interaction_id;
@@ -78,7 +78,7 @@ module.exports = class SkillFaq {
                                     tasks.push(bot.queue([{text: context.confirmed.answer}]));
 
                                     // -> Send help to administrator.
-                                    if ((!!app_env.LINE_ADMIN_USER_ID && bot.type == "line") || (!!app_env.FACEBOOK_ADMIN_USER_ID && bot.type == "facebook")){
+                                    if ((!!process.env.LINE_ADMIN_USER_ID && bot.type == "line") || (!!process.env.FACEBOOK_ADMIN_USER_ID && bot.type == "facebook")){
                                         tasks.push(this.need_help(bot, "わからないこと聞かれました。", bot.extract_sender_id(), context.confirmed.question));
                                     }
                                 } else {
@@ -100,9 +100,9 @@ module.exports = class SkillFaq {
                                 )
                             }
                         );
-                    } else if (app_env.FAQ_MODE == "robot"){ // This is Robot Only Mode.
+                    } else if (process.env.FAQ_MODE == "robot"){ // This is Robot Only Mode.
                         debug("Robot mode reaction.");
-                        return rightnow.bot_search_answer(value, app_env.RN_PRODUCT).then(
+                        return rightnow.bot_search_answer(value, process.env.RN_PRODUCT).then(
                             (response) => {
                                 // Save interacion id for later rating.
                                 context.confirmed.interaction_id = response.interaction_id;
@@ -184,8 +184,8 @@ module.exports = class SkillFaq {
                         }
 
                         // Send Help to administrator if user says answer is not useful.
-                        if (value == 1 && app_env.FAQ_MODE == "hybrid"){
-                            if ((!!app_env.LINE_ADMIN_USER_ID && bot.type == "line") || (!!app_env.FACEBOOK_ADMIN_USER_ID && bot.type == "facebook")){
+                        if (value == 1 && process.env.FAQ_MODE == "hybrid"){
+                            if ((!!process.env.LINE_ADMIN_USER_ID && bot.type == "line") || (!!process.env.FACEBOOK_ADMIN_USER_ID && bot.type == "facebook")){
                                 // Extract user_id.
                                 let user_id;
                                 if (bot.type == "line"){
@@ -250,9 +250,9 @@ module.exports = class SkillFaq {
     need_help(bot, status, sender_user_id, question, answer = null){
         let admin_user_id;
         if (bot.type == "line"){
-            admin_user_id = app_env.LINE_ADMIN_USER_ID;
+            admin_user_id = process.env.LINE_ADMIN_USER_ID;
         } else if (bot.type == "facebook"){
-            admin_user_id = app_env.FACEBOOK_ADMIN_USER_ID;
+            admin_user_id = process.env.FACEBOOK_ADMIN_USER_ID;
         }
         debug("Going to send help message to admin.");
         let message_text;

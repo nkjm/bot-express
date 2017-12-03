@@ -1,11 +1,9 @@
 "use strict";
 
-let debug = require("debug")("bot-express:skill");
-let bot_user = require("../sample_service/bot-user");
-let Promise = require("bluebird");
-let request = require("request");
-let app_env = require("../environment_variables");
-
+const debug = require("debug")("bot-express:skill");
+const bot_user = require("../sample_service/bot-user");
+const request = require("request");
+Promise = require("bluebird");
 Promise.promisifyAll(request);
 
 /*

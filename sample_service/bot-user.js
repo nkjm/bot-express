@@ -1,12 +1,10 @@
 'use strict';
 
-let Promise = require('bluebird');
-let request = require('request');
-let debug = require("debug")("bot-express:service");
-let app_env = require("../environment_variables");
-const BOT_ID = app_env.BOT_ID;
-const URL_BASE = `https://apex.oracle.com/pls/apex/${app_env.ORACLE_WORKSPACE}/bot/${app_env.ORACLE_ACCESS_TOKEN}/${BOT_ID}`;
-
+const request = require('request');
+const debug = require("debug")("bot-express:service");
+const BOT_ID = process.env.BOT_ID;
+const URL_BASE = `https://apex.oracle.com/pls/apex/${process.env.ORACLE_WORKSPACE}/bot/${process.env.ORACLE_ACCESS_TOKEN}/${BOT_ID}`;
+Promise = require('bluebird');
 Promise.promisifyAll(request);
 
 module.exports = class ServiceBotUser {

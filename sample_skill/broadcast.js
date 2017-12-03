@@ -1,9 +1,8 @@
 "use strict";
 
-let debug = require("debug")("bot-express:skill");
-let bot_user = require("../sample_service/bot-user");
-let app_env = require("../environment_variables");
-let Promise = require("bluebird");
+const debug = require("debug")("bot-express:skill");
+const bot_user = require("../sample_service/bot-user");
+Promise = require("bluebird");
 
 /*
 ** Just forward the original message to all users.

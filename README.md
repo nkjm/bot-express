@@ -1,63 +1,80 @@
 ![Build Status](https://travis-ci.org/nkjm/bot-express.svg?branch=master)
 
-# 概要
+# Overview
 
-bot-expressはオーダーメイドのChatbotを高速に開発するためのフレームワークでNode.jsで動作します。開発者はフォーマットにしたがって「スキル」を追加するだけでChatbotの能力を拡張していくことができます。
+bot-express is a chatbot development framework to build tailer-made chatbot lightning fast. Developers can extend the chatbot capability just by adding skills.
 
-# bot-expressに含まれる主な機能
+# Features
 
-- NLP（Natural Language Processing）によるメッセージの意図解析
-- 複数メッセンジャーへの対応（LINEとFacebook Messengerに対応）
-- 文脈の記憶
-- ユーザーからの情報収集・リアクション
-- 多言語翻訳
+- NLU integration.
+- Context aware behavior.
+- Auto parameter collection based on skill.
+- Auto language translation. \*Google project id is required.
+- Support multiple messengers.
+- Available as npm package.
 
-# 構成
+# Architecture
 
-### コンポーネント
+### Components
 
-bot-expressをベースとしたChatbotは下記のコンポーネントで構成されます。
+A chatbot based on bot-express is composed of following components.
 
-![アーキテクチャー](https://www.dropbox.com/s/p9thelcidos8ea5/bot-express_architecture.png?raw=1)
+![architecture](https://www.dropbox.com/s/p9thelcidos8ea5/bot-express_architecture.png?raw=1)
 
-- メッセンジャー（現在はLINEまたはFacebook Messenger）
-- 自然言語処理のサービス（現在は[api.ai](https://api.ai)）
-- Chatbot本体（bot-expressベースのNode.jsアプリ）
+- Messenger
+- NLU
+- Bot instance（Node.js app based on bot-express）
 
-開発者はChatbot本体に「スキル」を追加することでChatbotの能力を拡張していくことができます。丁寧で品質の高いスキルを開発することでChatbotの精度が上がり、スキルの数を増やすことでChatbotは多くのリクエストに応えることができるようになります。このスキルは1スキル:1スキルスクリプトという形で作成します。
+Developers can extend the chatbot capability just by adding skills. 1 skill is simply composed by 1 script file. Developers can make chatbot more painstaking by creating polished skill and make it more capable by adding wide variety of skills.
 
-### 基本的な動作パターン
+### Basic workflow
 
-最も基本的な動作は下記のようになります。
+The very basic workflow of bot-express based chatbot is following.
 
-1. ユーザーがChatbotにメッセージを送信。
-2. bot-expressがメッセージを自然言語処理サービスに連携してメッセージの意図を解析。
-3. 解析された意図に応じてbot-expressが利用するスキルを選択。
-4. スキルが実行される。（例：メッセージ返信、データベース更新、IoTデバイスへの命令送信など）
+1. A user sends message to a chatbot.
+1. bot-express forwards the message to NLU and identifies the intent of the message.
+1. bot-express pickup a skill corresponding to the identified intent.
+1. The skill is executed. ex: Reply to the user, Update the database, Send signal to IoT devices.
 
-bot-expressはスキルに定められたアクションを完了するために必要に応じて対話を続けていきます。対話は必要な情報を収集するためにおこなわれ、ユーザーからの返信メッセージはスキルに定められたパース処理とリアクションが自動的に適用されていきます。
+bot-express continues interaction with the user until it accomplish the mission defined by the skill. The interaction is conducted to respond/collect required information. Developers can configure the parser and reaction for every single parameters to collect and they are automatically applied to each messages from the user.
 
 # Getting Started
 
-まずはチュートリアルをご覧ください。必要なすべての流れをステップ・バイ・ステップでカバーしています。
+bot-express can be installed by installing a npm package just like below.
 
-[bot-expressを使ってピザ注文受付Botを60分で作ってみる](http://qiita.com/nkjm/items/1ac1a73d018c13deae30)
+```
+$ npm install --save bot-express
+```
 
-また、bot-expressのsample_skillディレクトリにスキルのサンプルがいくつか収められていますのでスキル開発の参考にしてみてください。
+Running through the tutorial is a fastest way to learn bot-express since it covers the most important configurations step by step.
 
-[スキルのサンプル](https://github.com/nkjm/bot-express/tree/master/sample_skill)
+[Create pizza delivery reception bot using bot-express](http://qiita.com/nkjm/items/1ac1a73d018c13deae30)
 
-# リファレンス
+Also take a glance at sample_skill directory which contains some sample skills.
 
-bot-expressの設定オプション、スキルスクリプトの構成、提供されるライブラリについては下記のリファレンスに完全な情報が記載されています。
+[Sample skills](https://github.com/nkjm/bot-express/tree/master/sample_skill)
+
+# Reference
+
+As for the complete configurations, spec of the skill script and API, please refer to the following document.
 
 https://nkjm.github.io/bot-express
 
-# 制約
+# Supported Messengers
 
-Webhookでサポートしているイベントは下記の通りです。
+- [LINE](https://developers.line.me/en/services/messaging-api/)
+- [Facebook Messenger](https://developers.facebook.com/products/messenger/overview/)
+
+# Supported NLU
+
+- [Dialogflow](https://dialogflow.com)
+
+# Limitation
+
+Webhook supports following event at present.
 
 **LINE**
+
 - message
 - follow
 - unfollow
@@ -67,11 +84,10 @@ Webhookでサポートしているイベントは下記の通りです。
 - beacon
 
 **Facebook**
+
 - messages
 - messaging-postbacks
 
-キャッシュにmemory-cacheを利用しているため、サポートされているBotの実行環境はシングルインスタンスとなります。
 
---
 
-Enjoy.
+Supported number of instance of bot-express based chatbot is 1 since bot-express uses memory-cache as context store.

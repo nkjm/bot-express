@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-let debug = require("debug")("bot-express:skill");
-let mecab = require("mecabaas-client");
+const debug = require("debug")("bot-express:skill");
+const mecab = require("mecabaas-client");
 
 module.exports = class SkillHandlePizzaOrder {
 

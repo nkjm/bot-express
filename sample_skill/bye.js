@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-let debug = require("debug")("bot-express:skill");
+const debug = require("debug")("bot-express:skill");
 
 /*
 ** Intended for use of beacon leave event.

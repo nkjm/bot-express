@@ -1,9 +1,9 @@
-'use strict';
+"use strict";
 
-let Promise = require("bluebird");
-let moji = require("moji");
-let debug = require("debug")("bot-express:skill");
-let is_email = require("isemail");
+const moji = require("moji");
+const debug = require("debug")("bot-express:skill");
+const is_email = require("isemail");
+Promise = require("bluebird");
 
 module.exports = class SkillSurvey {
 

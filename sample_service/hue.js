@@ -1,11 +1,10 @@
-'use strict';
+"use strict";
 
-let Promise = require('bluebird');
-let request = require('request');
-let debug = require("debug")("bot-express:service");
+const request = require('request');
+const debug = require("debug")("bot-express:service");
 const MAKER_URL_PREFIX = 'https://maker.ifttt.com/trigger/';
 const MAKER_KEY = process.env.MAKER_KEY;
-
+Promise = require('bluebird');
 Promise.promisifyAll(request);
 
 module.exports = class Hue {

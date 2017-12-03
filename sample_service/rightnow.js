@@ -1,16 +1,15 @@
 'use strict';
 
-let Promise = require("bluebird");
-let soap = require("soap");
-let memory = require("memory-cache");
-let request = require('request');
-let debug = require("debug")("bot-express:service");
-let app_env = require("../environment_variables");
+const soap = require("soap");
+const memory = require("memory-cache");
+const request = require('request');
+const debug = require("debug")("bot-express:service");
+Promise = require("bluebird");
 
-const RN_USER = app_env.RN_USER;
-const RN_PASSWORD = app_env.RN_PASSWORD;
-const RN_HOSTNAME = app_env.RN_HOSTNAME;
-const RN_WSDL = app_env.RN_WSDL;
+const RN_USER = process.env.RN_USER;
+const RN_PASSWORD = process.env.RN_PASSWORD;
+const RN_HOSTNAME = process.env.RN_HOSTNAME;
+const RN_WSDL = process.env.RN_WSDL;
 const SOAP_WSS_SECURITY = new soap.WSSecurity(RN_USER, RN_PASSWORD, {hasTimeStamp: false, hasTokenCreated: false});
 const APP_API_ID = 'kobaton';
 const APP_IP_ADDRESS = '10.0.0.0';
@@ -88,7 +87,7 @@ module.exports = class RightNow {
 
     static create_answer(answer){
         debug("create_answer() started.");
-        let url = "https://" + app_env.RN_USER + ":" + app_env.RN_PASSWORD + "@" + app_env.RN_HOSTNAME + "/services/rest/connect/v1.3/answers";
+        let url = "https://" + process.env.RN_USER + ":" + process.env.RN_PASSWORD + "@" + process.env.RN_HOSTNAME + "/services/rest/connect/v1.3/answers";
         let headers = {
             "Content-Type": "application/json"
         };

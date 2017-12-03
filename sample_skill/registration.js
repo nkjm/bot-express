@@ -1,11 +1,9 @@
 "use strict";
 
-let debug = require("debug")("bot-express:skill");
-let bot_user = require("../sample_service/bot-user");
-let Promise = require("bluebird");
-let request = require("request");
-let app_env = require("../environment_variables");
-
+const debug = require("debug")("bot-express:skill");
+const bot_user = require("../sample_service/bot-user");
+const request = require("request");
+Promise = require("bluebird");
 Promise.promisifyAll(request);
 
 /*
@@ -29,7 +27,7 @@ module.exports = class SkillRegistration {
         let url = 'https://api.line.me/v2/bot/profile/' + bot.extract_sender_id();
         let headers = {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + app_env.LINE_CHANNEL_ACCESS_TOKEN
+            "Authorization": "Bearer " + process.env.LINE_ACCESS_TOKEN
         }
         return request.getAsync({
             url: url,

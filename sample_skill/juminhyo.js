@@ -1,11 +1,10 @@
-'use strict';
+"use strict";
 
-let Promise = require('bluebird');
-let debug = require('debug')('bot-express:skill');
-let app_env = require("../environment_variables");
-let zip_code = require("../sample_service/zip-code");
-let mecab = require("mecabaas-client");
-let support = require("../sample_service/support");
+const debug = require('debug')('bot-express:skill');
+const zip_code = require("../sample_service/zip-code");
+const mecab = require("mecabaas-client");
+const support = require("../sample_service/support");
+Promise = require('bluebird');
 
 module.exports = class SkillJuminhyo {
 

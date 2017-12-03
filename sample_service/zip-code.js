@@ -1,9 +1,8 @@
 "use strict";
 
-let Promise = require("bluebird");
-let request = require("request");
-let debug = require("debug")("bot-express:service");
-
+const request = require("request");
+const debug = require("debug")("bot-express:service");
+Promise = require("bluebird");
 Promise.promisifyAll(request);
 
 module.exports = class ServiceZipCode {

@@ -1,8 +1,7 @@
-'use strict';
+"use strict";
 
-let Promise = require('bluebird');
-let debug = require('debug')('bot-express:skill');
-let app_env = require("../environment_variables");
+const debug = require('debug')('bot-express:skill');
+Promise = require('bluebird');
 
 module.exports = class SkillSimpleReply {
 

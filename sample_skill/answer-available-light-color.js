@@ -1,7 +1,6 @@
-'use strict';
+"use strict";
 
-let Promise = require('bluebird');
-let debug = require("debug")("bot-express:skill");
+const debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillAnswerAvailableLightColor {
 

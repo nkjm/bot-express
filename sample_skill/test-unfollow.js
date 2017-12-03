@@ -1,6 +1,6 @@
 "use strict";
 
-let debug = require("debug")("bot-express:skill");
+const debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillUnfollow {
     finish(bot, event, context, resolve, reject){

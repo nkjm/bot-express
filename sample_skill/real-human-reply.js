@@ -1,9 +1,8 @@
-'use strict';
+"use strict";
 
-let Promise = require('bluebird');
-let debug = require('debug')('bot-express:skill');
-let app_env = require("../environment_variables");
-let rightnow = require("../sample_service/rightnow.js");
+const debug = require('debug')('bot-express:skill');
+const rightnow = require("../sample_service/rightnow.js");
+Promise = require('bluebird');
 
 module.exports = class SkillRealHumanReply {
 
@@ -15,7 +14,7 @@ module.exports = class SkillRealHumanReply {
                 },
                 reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (!error){
-                        if (app_env.FAQ_CONFIRM_AUTO_LEARN == "enable"){
+                        if (process.env.FAQ_CONFIRM_AUTO_LEARN == "enable"){
                             bot.collect("auto_learn");
                         }
                     }
@@ -67,10 +66,10 @@ module.exports = class SkillRealHumanReply {
                 question: "<div>" + question + "</div>\n",
                 solution: "<div>" + context.confirmed.answer + "</div>\n",
                 products: [{
-                    lookupName: app_env.RN_PRODUCT
+                    lookupName: process.env.RN_PRODUCT
                 }],
                 categories: [{
-                    lookupName: app_env.RN_CATEGORY
+                    lookupName: process.env.RN_CATEGORY
                 }],
                 accessLevels: [{
                     lookupName: "全員"

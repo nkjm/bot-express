@@ -1,7 +1,7 @@
 "use strict";
 
-let Promise = require('bluebird');
-let debug = require('debug')('bot-express:skill');
+const debug = require('debug')('bot-express:skill');
+Promise = require('bluebird');
 
 module.exports = class ServiceSupport {
 
@@ -43,7 +43,7 @@ module.exports = class ServiceSupport {
             // If no supporters are configured, we skip sending help message.
             return Promise.resolve();
         }
-        
+
         return bot.multicast(supporter_ids, messages).then(
             (response) => {
                 return response;

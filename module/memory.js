@@ -25,10 +25,9 @@ class Memory {
 
         let supported_store_list = fs.readdirSync(__dirname + "/memory");
         for (let store of supported_store_list){
-            if (store == options.store){
+            if (store.replace(".js", "") == options.store){
                 debug("Found plugin for specified memory store. Loading " + store + "...");
-                store = store.replace(".js", "");
-                let Store = require("./memory/" + store);
+                let Store = require("./memory/" + options.store);
                 this.store = new Store(options.options);
             }
         }

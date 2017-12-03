@@ -1,6 +1,7 @@
 "use strict";
 
 const memory_cache = require("memory-cache");
+const debug = require("debug")("bot-express:memory");
 Promise = require("bluebird");
 
 class MemoryMemoryCache {

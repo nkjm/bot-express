@@ -1,6 +1,7 @@
 "use strict";
 
 const MongoClient = require("mongodb").MongoClient;
+const debug = require("debug")("bot-express:memory");
 const assert = require('assert');
 Promise = require("bluebird");
 

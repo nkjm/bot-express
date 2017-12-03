@@ -37,12 +37,7 @@ class MemoryMongodb {
 
     del(key){
         return this.connected.then((response) => {
-            return this.db.collection('bot-express').deleteOne({context_id: key}).then((response) => {
-                assert.equal(null, err);
-                return;
-            }).catch((error) => {
-                return Promise.reject(error);
-            });
+            return this.db.collection('bot-express').deleteOne({context_id: key});
         });
     }
 }

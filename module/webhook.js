@@ -45,7 +45,7 @@ class Webhook {
     run(req){
         debug("Webhook runs.\n\n");
 
-        memory = new Memory(this.options.memory);
+        let memory = new Memory(this.options.memory);
 
         // FOR TEST PURPOSE ONLY: Clear Memory.
         if (process.env.BOT_EXPRESS_ENV == "test" && req.clear_memory){

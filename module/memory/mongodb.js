@@ -16,9 +16,9 @@ class MemoryMongodb {
     get(key){
         return this.connected.then((response) => {
             return this.db.collection('bot-express').findOne({context_id: key}).then((response) => {
-                return resolve(response);
+                return response;
             }).catch((error) => {
-                return reject(error);
+                return Promise.reject(error);
             });
         });
     }
@@ -28,9 +28,9 @@ class MemoryMongodb {
             value.context_id = key;
             return this.db.collection('bot-express').insertOne(value).then((response) => {
                 assert.equal(1, response.insertedCount);
-                return resolve();
+                return;
             }).catch((error) => {
-                return reject(error);
+                return Promise.reject(error);
             });
         });
     }
@@ -39,9 +39,9 @@ class MemoryMongodb {
         return this.connected.then((response) => {
             return this.db.collection('bot-express').deleteOne({context_id: key}).then((response) => {
                 assert.equal(null, err);
-                return resolve();
+                return;
             }).catch((error) => {
-                return reject(error);
+                return Promise.reject(error);
             });
         });
     }

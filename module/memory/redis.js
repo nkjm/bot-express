@@ -1,7 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:memory");
-const redis = require("flat");
+const redis = require("redis");
 const flatten = require("flat");
 const unflatten = flatten.unflatten;
 Promise = require("bluebird");

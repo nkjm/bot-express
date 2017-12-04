@@ -216,7 +216,9 @@ class Webhook {
 
                 // Update memory.
                 if (!context){
-                    return memory.del(memory_id);
+                    return memory.del(memory_id).then((response) => {
+                        return null;
+                    });
                 } else {
                     return memory.put(memory_id, context).then((response) => {
                         return context;

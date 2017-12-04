@@ -32,7 +32,7 @@ class MemoryMemoryCache {
     del(key){
         return new Promise((resolve, reject) => {
             try {
-                return resolve(this.client.delAsync(key));
+                return resolve(this.client.del(key));
             } catch(e) {
                 return reject(e);
             }

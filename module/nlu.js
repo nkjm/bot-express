@@ -13,7 +13,7 @@ class Nlu {
     /**
     * @constructor
     * @param {Object} options
-    * @param {String} options.type - NLU Service. Supported services are located in nlu directory.
+    * @param {String} [options.type="dialogflow"] - NLU Service. Supported services are located in nlu directory.
     * @param {Object} options.options - Options depending on the NLU service.
     */
     constructor(options = {}){

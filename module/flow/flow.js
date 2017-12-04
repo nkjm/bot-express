@@ -4,7 +4,7 @@ let Promise = require('bluebird');
 let debug = require("debug")("bot-express:flow");
 let BotExpressParseError = require("../error/parse");
 let Bot = require("../bot"); // Libraries to be exposed to skill.
-let Nlp = require("../nlp");
+let Nlu = require("../nlu");
 
 module.exports = class Flow {
     constructor(messenger, event, context, options){
@@ -288,8 +288,8 @@ module.exports = class Flow {
             intent_identified = Promise.resolve(intent);
         } else {
             debug("Going to check if we can identify the intent.");
-            let nlp = new Nlp(this.options.nlp, this.options.nlp_options);
-            intent_identified = nlp.identify_intent(payload, {
+            let nlu = new Nlu(this.options.nlu);
+            intent_identified = nlu.identify_intent(payload, {
                 session_id: this.messenger.extract_sender_id()
             });
         }

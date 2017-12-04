@@ -8,6 +8,7 @@ const DEFAULT_SKILL_PATH = "../../../../skill/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
 const DEFAULT_NLP = "dialogflow";
+const DEFAULT_LANGUAGE = "ja";
 
 const express = require("express");
 const router = express.Router();
@@ -25,6 +26,7 @@ router.use(body_parser.json({
 * bot-express module. This module should be mounted on webhook URI and requires configuration as options parameter.
 * @module bot-express
 * @param {Object} options - Configuration of bot-express.
+* @param {Object} [options.language="ja"] - ISO-639-1 based code of the language which NLU and bot-express expect to receive. If the language of the received message differs from this value, bot-express can transparently translate it.
 * @param {String} [options.line_channel_secret] - LINE Channel Secret. Required when you use LINE.
 * @param {String} [options.line_access_token] - LINE Access Token. Required when you use LINE.
 * @param {String} [options.facebook_app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
@@ -33,8 +35,8 @@ router.use(body_parser.json({
 * @param {String} options.facebook_page_access_token.page_access_token - Facebook Page Access Token.
 * @param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
 * @param {String} options.nlu - Option object for NLU Service.
-* @param {String} [options.nlu.type] - NLU service. Supported service is dialogflow.
-* @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service.
+* @param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
+* @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, client_access_token is required.
 * @param {Object} options.memory - Option object for memory to store context.
 * @param {String} options.memory.type - Store type of context. Supported store type is memory-cache.
 * @param {Number} options.memory.retention - Lifetime of the context in seconds.
@@ -57,6 +59,7 @@ module.exports = (options) => {
     debug("\nBot Express\n");
 
     // Set optional options.
+    options.language = options.language || DEFAULT_LANGUAGE;
     options.default_intent = options.default_intent || DEFAULT_INTENT;
     options.default_skill = options.default_skill || DEFAULT_SKILL;
     options.memory_retention = options.memory_retention || DEFAULT_MEMORY_RETENTION;

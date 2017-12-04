@@ -37,13 +37,13 @@ module.exports = class BtwFlow extends Flow {
             translated = Promise.resolve(param_value);
         } else {
             // If sender language is different from bot language, we translate message into bot language.
-            debug(`Bot language is ${this.options.nlp_options.language} and sender language is ${this.context.sender_language}`);
-            if (this.options.nlp_options.language === this.context.sender_language){
+            debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
+            if (this.options.language === this.context.sender_language){
                 debug("We do not translate param value.");
                 translated = Promise.resolve(param_value);
             } else {
                 debug("Translating param value...");
-                translated = this.messenger.translater.translate(param_value, this.options.nlp_options.language).then(
+                translated = this.messenger.translater.translate(param_value, this.options.language).then(
                     (response) => {
                         debug("Translater response follows.");
                         debug(response);

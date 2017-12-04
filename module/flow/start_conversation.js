@@ -45,7 +45,7 @@ module.exports = class StartConversationFlow extends Flow {
             return Promise.resolve(this.context);
         }
 
-        // If this is message event but not text, it's impossible to identify intent via NLP so we use default skill and just run finish();
+        // If this is message event but not text, it's impossible to identify intent via NLU so we use default skill and just run finish();
         if (this.messenger.identify_event_type() == "message" && this.messenger.identify_message_type() != "text"){
             debug("Since this is not a text message, we use default skill and just run finish().");
             // ### Instantiate Skill ###
@@ -69,15 +69,15 @@ module.exports = class StartConversationFlow extends Flow {
             translated = this.messenger.translater.detect(message_text).then(
                 (response) => {
                     this.context.sender_language = response[0].language;
-                    debug(`Bot language is ${this.options.nlu_options.language} and sender language is ${this.context.sender_language}`);
+                    debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
 
                     // If sender language is different from bot language, we translate message into bot language.
-                    if (this.options.nlu_options.language === this.context.sender_language){
+                    if (this.options.language === this.context.sender_language){
                         debug("We do not translate message text.");
                         return [message_text];
                     } else {
                         debug("Translating message text...");
-                        return this.messenger.translater.translate(message_text, this.options.nlu_options.language)
+                        return this.messenger.translater.translate(message_text, this.options.language)
                     }
                 }
             ).then(
@@ -92,8 +92,8 @@ module.exports = class StartConversationFlow extends Flow {
         return translated.then(
             (message_text) => {
                 // ### Identify Intent ###
-                let nlu = new Nlu(this.options.nlu, this.options.nlu_options);
-                debug("NLP Abstraction instantiated.");
+                let nlu = new Nlu(this.options.nlu);
+                debug("NLU Abstraction instantiated.");
                 return nlu.identify_intent(message_text, {
                     session_id: this.messenger.extract_sender_id()
                 });

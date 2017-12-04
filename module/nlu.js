@@ -2,6 +2,7 @@
 
 const debug = require("debug")("bot-express:nlu");
 const default_service = "dialogflow";
+const fs = require("fs");
 Promise = require("bluebird");
 
 /**

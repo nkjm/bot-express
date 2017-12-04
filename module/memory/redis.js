@@ -31,22 +31,6 @@ class MemoryRedis {
     del(key){
         return this.client.delAsync(key);
     }
-
-    _replacer(k, v){
-        if (typeof v === "function"){
-            return v.toString()
-        } else {
-            return v;
-        }
-    }
-
-    _reciever(k, v){
-        if (typeof v === "string" && v.match(/^function/) ){
-            return Function.call(this, "return "+ v)();
-        } else {
-            return v;
-        }
-    }
 }
 
 module.exports = MemoryRedis;

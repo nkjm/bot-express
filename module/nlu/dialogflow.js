@@ -1,13 +1,22 @@
 'use strict';
 
 const apiai = require("apiai");
-const debug = require("debug")("bot-express:nlp");
+const debug = require("debug")("bot-express:nlu");
+const default_language = "ja";
+const required_options = ["client_access_token"];
+
 Promise = require("bluebird");
 
-module.exports = class NlpDialogflow {
+module.exports = class NluDialogflow {
     constructor(options){
+        required_options.map((required_option) => {
+            if (!options[required_option]){
+                throw new Error(`Required option "${required_option}" of Dialogflow not set.`);
+            }
+        })
         this._client_access_token = options.client_access_token;
-        this._language = options.language;
+        this._developer_access_token = options.developer_access_token;
+        this._language = options.language || default_language;
     }
 
     identify_intent(sentence, options){

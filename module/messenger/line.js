@@ -11,12 +11,11 @@ Promise.promisifyAll(request);
 module.exports = class MessengerLine {
 
     constructor(options){
-        this._channel_id = options.line_channel_id;
         this._channel_secret = options.line_channel_secret;
-        this._channel_access_token = options.line_channel_access_token;
+        this._access_token = options.line_access_token;
 
         const sdk_config = {
-            channelAccessToken: this._channel_access_token,
+            channelAccessToken: this._access_token,
             channelSecret: this._channel_secret
         };
         this.sdk = new line_bot_sdk.Client(sdk_config);

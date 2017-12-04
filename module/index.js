@@ -26,18 +26,17 @@ router.use(body_parser.json({
 * @module bot-express
 * @param {Object} options - Configuration of bot-express.
 * @param {String} [options.line_channel_secret] - LINE Channel Secret. Required when you use LINE.
-* @param {String} [options.line_channel_access_token] - LINE Channel Access Token. Required when you use LINE.
+* @param {String} [options.line_access_token] - LINE Access Token. Required when you use LINE.
 * @param {String} [options.facebook_app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
 * @param {Array.<Object>} [options.facebook_page_access_token] - Array of a pair of Facebook Page Id and Page Access Token. Required when you use Facebook Messenger.
 * @param {String} options.facebook_page_access_token.page_id - Facebook Page Id.
 * @param {String} options.facebook_page_access_token.page_access_token - Facebook Page Access Token.
 * @param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
-* @param {String} [options.nlp="dialogflow"] - NLP Service you like to use. Default is dialogflow.
-* @param {Object} options.nlp_options - NLP Configuration.
-* @param {String} options.nlp_options.client_access_token - Token to access to NLP service.
-* @param {String} [options.nlp_options.language="ja"] - Language to recognize.
+* @param {String} options.nlu - Option object for NLU Service.
+* @param {String} [options.nlu.type] - NLU service. Supported service is dialogflow.
+* @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service.
 * @param {Object} options.memory - Option object for memory to store context.
-* @param {String} options.memory.store - Store type of memory. memory-cache and redis are supported.
+* @param {String} options.memory.type - Store type of context. Supported store type is memory-cache.
 * @param {Number} options.memory.retention - Lifetime of the context in seconds.
 * @param {Object} options.memory.options - Options depending on the specific store type.
 * @param {String} [options.default_skill] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
@@ -61,7 +60,6 @@ module.exports = (options) => {
     options.default_intent = options.default_intent || DEFAULT_INTENT;
     options.default_skill = options.default_skill || DEFAULT_SKILL;
     options.memory_retention = options.memory_retention || DEFAULT_MEMORY_RETENTION;
-    options.nlp = options.nlp || DEFAULT_NLP;
     if (!!options.skill_path){
         options.skill_path = "../../../../" + options.skill_path;
     } else if (process.env.BOT_EXPRESS_ENV == "development"){

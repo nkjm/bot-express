@@ -14,20 +14,20 @@ class Memory {
     /**
     * @constructor
     * @param {Object} options
-    * @param {String} options.store - Store to use. Available stores are located in memory directory.
+    * @param {String} options.type - Store type. Supported stores are located in memory directory.
     * @param {Number} options.retention - Lifetime of the context in seconds.
     * @param {Object} options.options - Options depending on the memory store.
     */
     constructor(options = {}){
         this.retention = options.retention || 600;
 
-        if (!options.store) options.store = default_store;
+        if (!options.type) options.type = default_store;
 
-        let supported_store_list = fs.readdirSync(__dirname + "/memory");
-        for (let store of supported_store_list){
-            if (store.replace(".js", "") == options.store){
-                debug("Found plugin for specified memory store. Loading " + store + "...");
-                let Store = require("./memory/" + options.store);
+        let store_scripts = fs.readdirSync(__dirname + "/memory");
+        for (let store_script of store_scripts){
+            if (store_script.replace(".js", "") == options.type){
+                debug("Found plugin for specified memory store. Loading " + store_script + "...");
+                let Store = require("./memory/" + options.type);
                 this.store = new Store(options.options);
             }
         }

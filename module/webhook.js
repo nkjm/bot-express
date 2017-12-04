@@ -1,7 +1,7 @@
 'use strict';
 
 const REQUIRED_OPTIONS = {
-    line: ["line_channel_secret", "line_channel_access_token"],
+    line: ["line_channel_secret", "line_access_token"],
     facebook: ["facebook_app_secret", "facebook_page_access_token"]
 }
 

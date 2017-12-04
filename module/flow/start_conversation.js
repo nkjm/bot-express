@@ -6,7 +6,7 @@
 let Promise = require("bluebird");
 let debug = require("debug")("bot-express:flow");
 let Flow = require("./flow");
-let Nlp = require("../nlp");
+let Nlu = require("../nlu");
 
 module.exports = class StartConversationFlow extends Flow {
     /*
@@ -69,15 +69,15 @@ module.exports = class StartConversationFlow extends Flow {
             translated = this.messenger.translater.detect(message_text).then(
                 (response) => {
                     this.context.sender_language = response[0].language;
-                    debug(`Bot language is ${this.options.nlp_options.language} and sender language is ${this.context.sender_language}`);
+                    debug(`Bot language is ${this.options.nlu_options.language} and sender language is ${this.context.sender_language}`);
 
                     // If sender language is different from bot language, we translate message into bot language.
-                    if (this.options.nlp_options.language === this.context.sender_language){
+                    if (this.options.nlu_options.language === this.context.sender_language){
                         debug("We do not translate message text.");
                         return [message_text];
                     } else {
                         debug("Translating message text...");
-                        return this.messenger.translater.translate(message_text, this.options.nlp_options.language)
+                        return this.messenger.translater.translate(message_text, this.options.nlu_options.language)
                     }
                 }
             ).then(
@@ -92,9 +92,9 @@ module.exports = class StartConversationFlow extends Flow {
         return translated.then(
             (message_text) => {
                 // ### Identify Intent ###
-                let nlp = new Nlp(this.options.nlp, this.options.nlp_options);
+                let nlu = new Nlu(this.options.nlu, this.options.nlu_options);
                 debug("NLP Abstraction instantiated.");
-                return nlp.identify_intent(message_text, {
+                return nlu.identify_intent(message_text, {
                     session_id: this.messenger.extract_sender_id()
                 });
             }

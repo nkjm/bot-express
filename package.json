@@ -43,7 +43,7 @@
     "chai": "*",
     "chai-as-promised": "*",
     "isemail": "*",
-    "mecabaas-client": "^1.0.2",
+    "mecabaas-client": "1.0.3",
     "mocha": "*",
     "moji": "*",
     "striptags": "*",

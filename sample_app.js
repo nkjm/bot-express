@@ -14,31 +14,37 @@ server.listen(process.env.PORT || 5000, () => {
 });
 
 server.use('/webhook', bot_express({
-    nlp_options: {
-        client_access_token: process.env.DIALOGFLOW_CLIENT_ACCESS_TOKEN,
-        language: "ja"
+    nlu: {
+        type: "dialogflow",
+        options: {
+            client_access_token: process.env.DIALOGFLOW_CLIENT_ACCESS_TOKEN,
+            developer_access_token: process.env.DIALOGFLOW_DEVELOPER_ACCESS_TOKEN,
+            language: "ja"
+        }
     },
     line_channel_secret: process.env.LINE_CHANNEL_SECRET,
-    line_channel_access_token: process.env.LINE_ACCESS_TOKEN,
+    line_access_token: process.env.LINE_ACCESS_TOKEN,
     facebook_app_secret: process.env.FACEBOOK_APP_SECRET,
     facebook_page_access_token: [
         {page_id: process.env.FACEBOOK_PAGE_ID, page_access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN}
     ],
     memory: {
         /* redis
-        store: "redis",
+        type: "redis",
         retention: 180,
         options: {
             host: process.env.REDIS_HOST,
             port: process.env.REDIS_PORT
         }*/
-        /*
-        store: "mongodb",
+        /* mongodb
+        type: "mongodb",
         retention: 180,
         options: {
             url: process.env.MONGODB_URL
         }
         */
+        type: "memory-cache",
+        retention: 180
     },
     beacon_skill: {
         enter: "survey",

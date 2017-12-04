@@ -6,9 +6,6 @@ const debug = require("debug")("bot-express:skill");
 ** Just reply the text response provided from NLU.
 */
 module.exports = class SkillSimpleResponse {
-    constructor(){
-        this.clear_context_on_finish = true;
-    }
 
     finish(bot, event, context, resolve, reject){
         let message;

@@ -125,6 +125,45 @@
 
         <tr>
             
+                <td class="name"><code>language</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    "ja"
+                
+                </td>
+            
+
+            <td class="description last">ISO-639-1 based code of the language which NLU and bot-express expect to receive. If the language of the received message differs from this value, bot-express can transparently translate it.</td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>line_channel_secret</code></td>
             
 
@@ -162,7 +201,7 @@
 
         <tr>
             
-                <td class="name"><code>line_channel_access_token</code></td>
+                <td class="name"><code>line_access_token</code></td>
             
 
             <td class="type">
@@ -192,7 +231,7 @@
                 </td>
             
 
-            <td class="description last">LINE Channel Access Token. Required when you use LINE.</td>
+            <td class="description last">LINE Access Token. Required when you use LINE.</td>
         </tr>
 
     
@@ -384,7 +423,65 @@
 
         <tr>
             
-                <td class="name"><code>nlp</code></td>
+                <td class="name"><code>nlu</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Option object for NLU Service.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
             
 
             <td class="type">
@@ -416,14 +513,14 @@
                 </td>
             
 
-            <td class="description last">NLP Service you like to use. Default is dialogflow.</td>
+            <td class="description last">NLU service. Supported service is dialogflow.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>nlp_options</code></td>
+                <td class="name"><code>options</code></td>
             
 
             <td class="type">
@@ -451,7 +548,49 @@
                 </td>
             
 
-            <td class="description last">NLP Configuration.
+            <td class="description last">NLU Configuration depending on the specific NLU service. As for Dialogflow, client_access_token is required.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>memory</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Option object for memory to store context.
                 <h6>Properties</h6>
                 
 
@@ -465,11 +604,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -481,7 +616,7 @@
 
         <tr>
             
-                <td class="name"><code>client_access_token</code></td>
+                <td class="name"><code>type</code></td>
             
 
             <td class="type">
@@ -494,61 +629,56 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                </td>
-            
 
-            <td class="description last">Token to access to NLP service.</td>
+            <td class="description last">Store type of context. Supported store type is memory-cache.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>language</code></td>
+                <td class="name"><code>retention</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">Number</span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
-                
+            
 
+            <td class="description last">Lifetime of the context in seconds.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
             
 
             
-                <td class="default">
-                
-                    "ja"
-                
-                </td>
-            
 
-            <td class="description last">Language to recognize.</td>
+            <td class="description last">Options depending on the specific store type.</td>
         </tr>
 
     
@@ -917,45 +1047,6 @@
 
         <tr>
             
-                <td class="name"><code>memory_retention</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    6000
-                
-                </td>
-            
-
-            <td class="description last">Period to retain context data in bot memory in milli-seconds.</td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>skill_path</code></td>
             
 
@@ -1110,7 +1201,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_index.js.html">module/index.js</a>, <a href="module_index.js.html#line24">line 24</a>
+        <a href="module_index.js.html">module/index.js</a>, <a href="module_index.js.html#line25">line 25</a>
     </li></ul></dd>
     
 
@@ -1177,7 +1268,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Dec 01 2017 14:58:26 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Dec 04 2017 16:03:02 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

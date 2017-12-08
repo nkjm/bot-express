@@ -21,7 +21,7 @@
     "postinstall": "node script/postinstall.js"
   },
   "engines": {
-    "node": ">=8"
+    "node": "8.9.x"
   },
   "author": "Kazuki Nakajima <nkjm.kzk@gmail.com>",
   "dependencies": {

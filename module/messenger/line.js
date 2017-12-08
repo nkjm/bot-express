@@ -37,7 +37,6 @@ module.exports = class MessengerLine {
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
-
         return this.sdk.pushMessage(to, messages);
     }
 
@@ -47,8 +46,6 @@ module.exports = class MessengerLine {
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
-        debug(event.replyToken);
-        debug(messages);
         return this.sdk.replyMessage(event.replyToken, messages);
     }
 

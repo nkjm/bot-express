@@ -1,7 +1,5 @@
 "use strict";
 
-const Line = require("./messenger/line");
-const Facebook = require("./messenger/facebook");
 const debug = require("debug")("bot-express:messenger");
 const google_translate = require('@google-cloud/translate');
 const fs = require("fs");

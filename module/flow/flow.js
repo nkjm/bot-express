@@ -17,7 +17,6 @@ module.exports = class Flow {
         if (this.context.intent && this.context.intent.name){
             if (!this.context.skill){
                 this.context.skill = this.instantiate_skill(this.context.intent.name);
-                debug(this.context.skill);
             }
 
             // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
@@ -382,13 +381,11 @@ module.exports = class Flow {
                 return Promise.all(parameters_parsed).then(
                     (responses) => {
                         let fit_parameters = [];
-                        debug(responses);
                         for (let response of responses){
                             if (response.is_fit === true){
                                 fit_parameters.push(response);
                             }
                         }
-                        debug(fit_parameters);
                         debug(`There are ${fit_parameters.length} applicable parameters.`);
 
                         if (fit_parameters.length === 0){

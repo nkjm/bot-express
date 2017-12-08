@@ -7,7 +7,6 @@ const REQUIRED_OPTIONS = {
 
 // Import NPM Packages
 const Promise = require("bluebird");
-//const memory = require("memory-cache");
 const Memory = require("./memory");
 const debug = require("debug")("bot-express:webhook");
 
@@ -82,17 +81,17 @@ class Webhook {
                 });
             }
         }
-        debug("Message Platform specific required options all set.");
+        debug("Messenger specific required options all set.");
 
         // Instantiate messenger instance.
         let messenger = new Messenger(this.options);
-        debug("Messenger Abstraction instantiated.");
+        debug("Messenger abstraction instantiated.");
 
         // Signature Validation.
         if (!messenger.validate_signature(req)){
             return Promise.reject("Signature Validation failed.");
         }
-        debug("Signature Validation suceeded.");
+        debug("Signature validation suceeded.");
 
         // Set Events.
         let events = messenger.extract_events(req.body);
@@ -126,8 +125,6 @@ class Webhook {
             promise_flow_completed = Promise.resolve().then((response) => {
                 return memory.get(memory_id);
             }).then((context) => {
-                debug(`context is follwoing.`);
-                debug(context);
                 messenger.context = context;
 
                 let flow;

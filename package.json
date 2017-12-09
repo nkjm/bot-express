@@ -33,7 +33,7 @@
     "body-parser": "~1.13.2",
     "debug": "^2.6.1",
     "express": "^4.16.2",
-    "memory-cache": "^0.1.6",
+    "memory-cache": "^0.2.0",
     "mongodb": "^2.2.33",
     "morgan": "^1.8.1",
     "redis": "^2.8.0",

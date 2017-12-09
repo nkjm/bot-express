@@ -44,12 +44,14 @@ describe("follow flow test from LINE", function(){
                 }
             ).then(
                 function(response){
+                    if (response){
                     response.previous.message.should.have.lengthOf(2);
                     response.previous.message[0].from.should.equal("bot");
                     response.previous.message[0].message.should.deep.equal({
                         type: "text",
                         text: "Welcome."
                     });
+                    }
                 }
             );
         });

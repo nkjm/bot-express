@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
-let Promise = require('bluebird');
-let debug = require("debug")("bot-express:flow");
-let BotExpressParseError = require("../error/parse");
-let Bot = require("../bot"); // Libraries to be exposed to skill.
-let Nlu = require("../nlu");
+const debug = require("debug")("bot-express:flow");
+const BotExpressParseError = require("../error/parse");
+const Bot = require("../bot"); // Libraries to be exposed to skill.
+const Nlu = require("../nlu");
+Promise = require('bluebird');
 
 module.exports = class Flow {
     constructor(messenger, event, context, options){
@@ -552,11 +552,11 @@ module.exports = class Flow {
         }
 
         debug("Going to perform beginning action.");
-        let begun = new Promise((resolve, reject) => {
+        let done_begin = new Promise((resolve, reject) => {
             this.context.skill.begin(this.bot, this.event, this.context, resolve, reject);
         });
 
-        return begun;
+        return done_begin;
     }
 
     finish(){
@@ -584,40 +584,32 @@ module.exports = class Flow {
 
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
         debug("Going to perform final action.");
-        let finished = new Promise((resolve, reject) => {
+        let done_finish = new Promise((resolve, reject) => {
             this.context.skill.finish(this.bot, this.event, this.context, resolve, reject);
         });
 
-        return finished.then(
-            (response) => {
-                debug("Final action succeeded.");
-                // Double check if we have no parameters to confirm since developers can execute collect() method inside finsh().
-                if (this.context.to_confirm.length > 0){
-                    debug("Going to collect parameter.");
-                    return this._collect();
-                }
-
-                debug("Final action done. Wrapping up.");
-
-                // If this is sub skill, we get parent context back.
-                if (this.context.parent){
-                    debug(`We finished sub skill and get back to parent skill "${this.context.parent.intent.name}".`);
-                    this.context.parent.previous.message = this.context.previous.message.concat(this.context.parent.previous.message);
-                    this.context = this.context.parent;
-                    return response;
-                }
-
-                // This is Root Skill. We clear context depeding on the configuration and return.
-                if (this.context.skill.clear_context_on_finish && this.context.to_confirm.length == 0){
-                    debug(`Clearing context.`);
-                    this.context = null;
-                }
-                return response;
+        return done_finish.then((response) => {
+            debug("Final action succeeded.");
+            // Double check if we have no parameters to confirm since developers can execute collect() method inside finsh().
+            if (this.context.to_confirm.length > 0){
+                debug("Going to collect parameter.");
+                return this._collect().then((response) => {
+                    return this.context;
+                });
             }
-        ).then(
-            (response) => {
-                return this.context;
+
+            if (this.context.parent){
+                // This is sub skill so we get parent context back.
+                debug(`We finished sub skill and get back to parent skill "${this.context.parent.intent.name}".`);
+                this.context.parent.previous.message = this.context.previous.message.concat(this.context.parent.previous.message);
+                this.context = this.context.parent;
+            } else if (this.context.skill.clear_context_on_finish){
+                // This is Root Skill. If clear_context_on_finish flag is true, we clear context.
+                debug(`Clearing context.`);
+                this.context = null;
             }
-        );
+
+            return this.context;
+        })
     }
 };

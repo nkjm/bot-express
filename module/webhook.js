@@ -8,7 +8,7 @@ const REQUIRED_OPTIONS = {
 }
 
 // Import NPM Packages
-const Promise = require("bluebird");
+Promise = require("bluebird");
 const Memory = require("./memory");
 const debug = require("debug")("bot-express:webhook");
 
@@ -71,7 +71,7 @@ class Webhook {
             debug(`This event comes from unsupported message platform. Skip processing.`);
             return Promise.resolve(null);
         }
-        debug(`Message Platform is ${this.options.message_platform_type}`);
+        debug(`Messenger is ${this.options.message_platform_type}`);
 
         // Check if required options for this message platform are set.
         for (let req_opt of REQUIRED_OPTIONS[this.options.message_platform_type]){
@@ -98,6 +98,8 @@ class Webhook {
         // Set Events.
         let events = messenger.extract_events(req.body);
 
+        // Process events.
+        let done_all_flows = [];
         for (let event of events){
             debug(`Processing following event.`);
             debug(event);
@@ -113,18 +115,17 @@ class Webhook {
             /**
             * Overview of Webhook Promise Chain
 
-            1. Get memory.
+            1. Recall memory.
             2. Run flow.
             3. Update memory.
             **/
-
-            let promise_flow_completed;
 
             // Recall Memory
             let memory_id = messenger.extract_sender_id();
             debug(`memory id is ${memory_id}.`);
 
-            promise_flow_completed = Promise.resolve().then((response) => {
+            // Run flow.
+            let done_flow = Promise.resolve().then((response) => {
                 return memory.get(memory_id);
             }).then((context) => {
                 messenger.context = context;
@@ -208,20 +209,23 @@ class Webhook {
                 }
             });
 
+            done_all_flows = [];
 
-            // Triggers on completion of Flow
-            return promise_flow_completed.then((context) => {
+            // Update memory.
+            done_all_flows.push(done_flow.then((context) => {
                 debug("Successful End of Flow.");
 
                 // Update memory.
                 if (!context){
                     return memory.del(memory_id).then((response) => {
+                        debug("Clearing context");
                         return null;
-                    });
+                    })
                 } else {
                     return memory.put(memory_id, context).then((response) => {
+                        debug("Updating context");
                         return context;
-                    });
+                    })
                 }
             }).catch((error) => {
                 if (error.name == "BotExpressWebhookSkip"){
@@ -232,11 +236,21 @@ class Webhook {
                 debug("Abnormal End of Flow.");
                 // Clear memory.
                 return memory.del(memory_id).then((response) => {
+                    debug("Context cleard.");
                     return Promise.reject(error);
                 });
-            }); // End of Completion of Flow
+            })); // End of Completion of Flow
 
-        }; // End of Process Event
+        } // End of Process Events.
+
+        return Promise.all(done_all_flows).then((responses) => {
+            debug("All events processed.");
+            if (responses && responses.length === 1){
+                return responses[0];
+            } else {
+                return responses;
+            }
+        });
     }
 }
 

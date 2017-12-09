@@ -3,10 +3,10 @@
 /*
 ** Import Packages
 */
-let Promise = require("bluebird");
-let debug = require("debug")("bot-express:flow");
-let Flow = require("./flow");
-let Nlu = require("../nlu");
+Promise = require("bluebird");
+const debug = require("debug")("bot-express:flow");
+const Flow = require("./flow");
+const Nlu = require("../nlu");
 
 module.exports = class StartConversationFlow extends Flow {
 

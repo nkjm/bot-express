@@ -1,6 +1,6 @@
 'use strict';
 
-let debug = require("debug")("bot-express:skill");
+const debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillDefault {
     finish(bot, bot_event, context, resolve, reject){

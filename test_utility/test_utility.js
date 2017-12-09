@@ -23,7 +23,7 @@ module.exports = class TestUtility {
             },
             memory: {
                 type: "memory-cache",
-                retention: 60
+                retention: Number(process.env.MEMORY_RETENTION)
             },
             line_channel_secret: process.env.LINE_CHANNEL_SECRET,
             line_access_token: process.env.LINE_ACCESS_TOKEN,

@@ -1,10 +1,10 @@
 'use strict';
 
-let Promise = require("bluebird");
-let request = require("request");
-let crypto = require("crypto");
-let debug = require("debug")("bot-express:messenger");
-let line_bot_sdk = require("@line/bot-sdk");
+Promise = require("bluebird");
+const request = require("request");
+const crypto = require("crypto");
+const debug = require("debug")("bot-express:messenger");
+const line_bot_sdk = require("@line/bot-sdk");
 
 Promise.promisifyAll(request);
 

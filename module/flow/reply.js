@@ -3,9 +3,9 @@
 /*
 ** Import Packages
 */
-let Promise = require('bluebird');
-let debug = require("debug")("bot-express:flow");
-let Flow = require("./flow");
+Promise = require('bluebird');
+const debug = require("debug")("bot-express:flow");
+const Flow = require("./flow");
 
 module.exports = class ReplyFlow extends Flow {
 

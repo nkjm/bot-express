@@ -29,7 +29,7 @@
     "@line/bot-sdk": "^2.0.0",
     "apiai": "^4.0.2",
     "assert": "^1.4.1",
-    "bluebird": "^3.5.0",
+    "bluebird": "^3.5.1",
     "body-parser": "~1.13.2",
     "debug": "^2.6.1",
     "express": "^4.16.2",

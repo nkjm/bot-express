@@ -3,6 +3,7 @@
 const debug = require("debug")("bot-express:messenger");
 const google_translate = require('@google-cloud/translate');
 const fs = require("fs");
+Promise = require("bluebird");
 
 module.exports = class Messenger {
     /**

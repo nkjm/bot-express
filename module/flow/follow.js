@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
 /*
 ** Import Packages
 */
-let Promise = require("bluebird");
-let debug = require("debug")("bot-express:flow");
-let Flow = require("./flow");
+Promise = require("bluebird");
+const debug = require("debug")("bot-express:flow");
+const Flow = require("./flow");
 
 module.exports = class FollowFlow extends Flow {
 
@@ -30,10 +30,8 @@ module.exports = class FollowFlow extends Flow {
     run(){
         debug("### This is Follow Flow. ###");
 
-        return super.begin().then(
-            (response) => {
-                return super.finish();
-            }
-        );
+        return super.begin().then((response) => {
+            return super.finish();
+        });
     }
 };

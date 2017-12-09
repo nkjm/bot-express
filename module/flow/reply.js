@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /*
 ** Import Packages
@@ -73,9 +73,9 @@ module.exports = class ReplyFlow extends Flow {
         ).catch(
             (error) => {
                 if (error.name == "BotExpressParseError"){
-                    debug("Parser rejected the value. We are going to identify what user wants.");
+                    debug("Parser rejected the value. We are going to identify what user has in mind by this message.");
 
-                    return super.what_you_want(translated_param_value).then(
+                    return super.identify_mind(translated_param_value).then(
                         (response) => {
                             if (response.result == "dig"){
                                 return super.dig(response.intent);

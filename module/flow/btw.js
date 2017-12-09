@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /*
 ** Import Packages
@@ -15,6 +15,18 @@ module.exports = class BtwFlow extends Flow {
     }
 
     run(){
+        /*
+        ** ### Start Conversation Flow ###
+        ** -> Run event based handling.
+        ** -> Translate the message text.
+        ** -> Identify mind.
+        ** -> Run mind based flow.
+        ** -> Run finish().
+        */
+
+        let done_translate, done_identify_mind, done_run_mind_based_flow, done_finish;
+        let skip_translate, skip_identify_mind, skip_run_mind_based_flow;
+
         debug("### This is BTW Flow. ###");
 
         // Check if this event type is supported in this flow.
@@ -23,64 +35,101 @@ module.exports = class BtwFlow extends Flow {
             return Promise.resolve(this.context);
         }
 
-        let param_value = this.messenger.extract_param_value();
+        // Run event based handling.
+        if (this.messenger.identify_event_type() == "message" && this.messenger.identify_message_type() != "text"){
+            debug("This is a message event but not a text message so we skip translation.");
 
-        let is_postback = false;
-        if (this.messenger.type == "line"){
-            if (this.event.type == "postback") is_postback = true;
-        } else if (this.messenger.type == "facebook"){
-            if (this.event.postback) is_postback = true;
-        }
-
-        let translated;
-        if (!this.messenger.translater || is_postback || typeof param_value != "string"){
-            translated = Promise.resolve(param_value);
-        } else {
-            // If sender language is different from bot language, we translate message into bot language.
-            debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
-            if (this.options.language === this.context.sender_language){
-                debug("We do not translate param value.");
-                translated = Promise.resolve(param_value);
-            } else {
-                debug("Translating param value...");
-                translated = this.messenger.translater.translate(param_value, this.options.language).then(
-                    (response) => {
-                        debug("Translater response follows.");
-                        debug(response);
-                        return response[0];
-                    }
-                );
-            }
-        }
-
-        let translated_param_value;
-        return translated.then(
-            (response) => {
-                translated_param_value = response;
-                return super.what_you_want(translated_param_value);
-            }
-        ).then(
-            (response) => {
-                if (response.result == "restart_conversation"){
-                    return super.restart_conversation(response.intent);
-                } else if (response.result == "change_intent"){
-                    return super.change_intent(response.intent);
-                } else if (response.result == "change_parameter"){
-                    return super.change_parameter(response.parameter.key, translated_param_value).then(
-                        (applied_parameter) => {
-                            return super.react(null, applied_parameter.key, applied_parameter.value);
-                        }
-                    );
-                } else if (response.result == "no_idea"){
-                    return super.change_intent(response.intent);
+            skip_translate, skip_identify_mind = true;
+            done_identify_mind = Promise.resolve({
+                result: "no_idea"
+            });
+        } else if (this.messenger.identify_event_type() == "postback"){
+            let postback_payload = this.messenger.extract_postback_payload();
+            if (postback_payload && postback_payload._type == "intent"){
+                if (!postback_payload.intent || !postback_payload.intent.name){
+                    return Promise.reject(new Error("Recieved postback event indicates the event should contain intent payload but not found."));
+                } else if (postback_payload.intent && postback_payload.intent.name == this.context.intent.name){
+                    debug(`We conluded that user has in mind to restart conversation.`);
+                    skip_translate, skip_identify_mind = true;
+                    doen_indentify_mind = Promise.resolve({
+                        result: "restart_conversation",
+                        intent: postback_payload.intent
+                    });
+                } else if (postback_payload.intent && postback_payload.intent.name != this.context.intent.name){
+                    debug(`We conluded that user has in mind to change intent.`);
+                    skip_translate, skip_identify_mind = true;
+                    doen_indentify_mind = Promise.resolve({
+                        result: "change_intent",
+                        intent: postback_payload.intent
+                    });
                 }
+            } else if (postback_payload && typeof postback_payload != "string"){
+                debug("We have no idea what user has in mind.");
+                skip_translate, skip_identify_mind = true;
+                done_identify_mind = Promise.resolve({
+                    result: "no_idea"
+                });
             }
-        ).then(
-            (response) => {
-                // Run final action.
-                debug("Going to perform super.finish().");
-                return super.finish();
+        }
+
+        // Translate.
+        if (!skip_translate){
+            let message_text = this.messenger.extract_message_text();
+
+            if (!this.messenger.translater){
+                done_translate = Promise.resolve(message_text);
+            } else {
+                done_translate = Promise.resolve().then((response) => {
+                    return this.messenger.translater.detect(message_text)
+                }).then((response) => {
+                    this.context.sender_language = response[0].language;
+                    debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
+
+                    // If sender language is different from bot language, we translate message into bot language.
+                    if (this.options.language === this.context.sender_language){
+                        debug("We do not translate message text.");
+                        return [message_text];
+                    } else {
+                        debug("Translating message text...");
+                        return this.messenger.translater.translate(message_text, this.options.language)
+                    }
+                }).then((response) => {
+                    debug("Translater response follows.");
+                    debug(response);
+                    return response[0];
+                });
             }
-        );
+        }
+
+        // Identify mind.
+        if (!skip_identify_mind){
+            done_identify_mind = done_translate.then((message_text) => {
+                return super.identify_mind(message_text);
+            });
+        }
+
+        // Run mind based flow.
+        if (!skip_run_mind_based_flow){
+            done_run_mind_based_flow = done_identify_mind.then((mind) => {
+                if (mind.result == "restart_conversation"){
+                    return super.restart_conversation(mind.intent);
+                } else if (mind.result == "change_intent"){
+                    return super.change_intent(mind.intent);
+                } else if (mind.result == "change_parameter"){
+                    return super.change_parameter(mind.parameter.key, mind.payload).then((applied_parameter) => {
+                        return super.react(null, applied_parameter.key, applied_parameter.value);
+                    });
+                } else if (mind.result == "no_idea"){
+                    return super.change_intent(mind.intent);
+                }
+            })
+        }
+
+        // Finish.
+        done_finish = done_run_mind_based_flow.then((response) => {
+            return super.finish();
+        });
+
+        return done_finish;
     }
 }

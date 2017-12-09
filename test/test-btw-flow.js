@@ -1,6 +1,6 @@
 'use strict';
 
-const message_platform_list = ["line","facebook"];
+const message_platform_list = ["line"];
 
 let chai = require('chai');
 let chaiAsPromised = require('chai-as-promised');

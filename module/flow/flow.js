@@ -268,32 +268,33 @@ module.exports = class Flow {
     }
 
     /**
-    Identify what the user like to achieve.
+    Identify what the user has in mind.
     @param {String|MessageObject} payload - Data from which we try to identify what the user like to achieve.
     @returns {Object} response
     @returns {String} response.result - "dig", "restart_conversation", "change_intent", "change_parameter" or "no_idea"
     @returns {Object} response.intent - Intent object.
+    @returns {String|MessageObject} payload - Passed payload.
     @returns {Object} response.parameter - Parameter.
     @returns {String} response.parameter.key - Parameter name.
     @returns {String|Object} response.parameter.value - Parameter value.
     */
-    what_you_want(payload){
-        let intent_identified;
+    identify_mind(payload){
+        let done_identify_intent;
         if (typeof payload !== "string"){
             debug("The payload is not string so we skip identifying intent.");
             let intent = {
                 name: this.options.default_intent
             }
-            intent_identified = Promise.resolve(intent);
+            done_identify_intent = Promise.resolve(intent);
         } else {
             debug("Going to check if we can identify the intent.");
             let nlu = new Nlu(this.options.nlu);
-            intent_identified = nlu.identify_intent(payload, {
+            done_identify_intent = nlu.identify_intent(payload, {
                 session_id: this.messenger.extract_sender_id()
             });
         }
 
-        return intent_identified.then(
+        return done_identify_intent.then(
             (intent) => {
                 if (intent.name != this.options.default_intent){
                     // This is dig or change intent or restart conversation.
@@ -309,7 +310,8 @@ module.exports = class Flow {
                             debug("We conclude this is dig.");
                             return {
                                 result: "dig",
-                                intent: intent
+                                intent: intent,
+                                payload: payload
                             }
                         }
                     }
@@ -321,7 +323,8 @@ module.exports = class Flow {
                         debug("We conclude this is restart conversation.");
                         return {
                             result: "restart_conversation",
-                            intent: intent
+                            intent: intent,
+                            payload: payload
                         }
                     }
 
@@ -329,7 +332,8 @@ module.exports = class Flow {
                     debug("We conclude this is change intent.");
                     return {
                         result: "change_intent",
-                        intent: intent
+                        intent: intent,
+                        payload: payload
                     }
                 }
 
@@ -400,6 +404,7 @@ module.exports = class Flow {
                             debug("We conclude this is change parameter.");
                             return {
                                 result: "change_parameter",
+                                payload: payload,
                                 parameter: {
                                     key: fit_parameters[0].key,
                                     value: fit_parameters[0].value
@@ -411,6 +416,7 @@ module.exports = class Flow {
                             // TENTATIVE BEGIN //
                             return {
                                 result: "change_parameter",
+                                payload: payload,
                                 parameter: {
                                     key: fit_parameters[0].key,
                                     value: fit_parameters[0].value

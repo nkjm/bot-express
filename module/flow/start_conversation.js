@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /*
 ** Import Packages
@@ -62,7 +62,7 @@ module.exports = class StartConversationFlow extends Flow {
         } else if (this.messenger.identify_event_type() == "postback"){
             let postback_payload = this.messenger.extract_postback_payload();
             if (postback_payload && postback_payload._type == "intent"){
-                if (!postback_payload.intent || !postback_payload.name){
+                if (!postback_payload.intent || !postback_payload.intent.name){
                     return Promise.reject(new Error("Recieved postback event indicates the event should contain intent payload but not found."));
                 }
                 debug("This is a postback event and we could identify intent.");

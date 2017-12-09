@@ -138,6 +138,10 @@ module.exports = class MessengerLine {
         return message_text;
     }
 
+    static extract_postback_payload(event){
+        return event.postback.data;
+    }
+
     static check_supported_event_type(flow, event){
         switch(flow){
             case "start_conversation":

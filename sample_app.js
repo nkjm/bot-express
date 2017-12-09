@@ -1,5 +1,7 @@
 "use strict";
 
+require("dotenv").config();
+
 /*
 ** Import Packages
 */
@@ -44,7 +46,7 @@ server.use('/webhook', bot_express({
         }
         */
         type: "memory-cache",
-        retention: 180
+        retention: Number(process.env.MEMORY_RETENTION)
     },
     beacon_skill: {
         enter: "survey",

@@ -1,5 +1,7 @@
 "use strict";
 
+require("dotenv").config();
+
 const request = require('request');
 const debug = require("debug")("bot-express:service");
 const MAKER_URL_PREFIX = 'https://maker.ifttt.com/trigger/';

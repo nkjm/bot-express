@@ -1,5 +1,7 @@
 'use strict';
 
+require("dotenv").config();
+
 const debug = require("debug")("bot-express:skill");
 const request = require("request");
 Promise = require("bluebird");

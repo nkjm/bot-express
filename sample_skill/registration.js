@@ -1,5 +1,7 @@
 "use strict";
 
+require("dotenv").config();
+
 const debug = require("debug")("bot-express:skill");
 const bot_user = require("../sample_service/bot-user");
 const request = require("request");

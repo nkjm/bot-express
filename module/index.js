@@ -1,4 +1,6 @@
-'use strict';
+"use strict";
+
+require("dotenv").config();
 
 const REQUIRED_OPTIONS = {
     common: []

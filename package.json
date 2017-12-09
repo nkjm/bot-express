@@ -42,11 +42,12 @@
   "devDependencies": {
     "chai": "*",
     "chai-as-promised": "*",
+    "dotenv": "^4.0.0",
     "isemail": "*",
     "mecabaas-client": "1.0.3",
     "mocha": "*",
     "moji": "*",
-    "striptags": "*",
-    "soap": "*"
+    "soap": "*",
+    "striptags": "*"
   }
 }

@@ -1,5 +1,7 @@
 'use strict';
 
+require("dotenv").config();
+
 const soap = require("soap");
 const memory = require("memory-cache");
 const request = require('request');

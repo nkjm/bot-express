@@ -1,5 +1,7 @@
 "use strict";
 
+require("dotenv").config();
+
 const striptags = require('striptags');
 const debug = require('debug')('bot-express:skill');
 const rightnow = require('../sample_service/rightnow');

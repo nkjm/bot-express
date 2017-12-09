@@ -1,4 +1,6 @@
-'use strict';
+"use strict";
+
+require("dotenv").config();
 
 const REQUIRED_OPTIONS = {
     line: ["line_channel_secret", "line_access_token"],
@@ -60,7 +62,7 @@ class Webhook {
             });
         }
 
-        // Identify Message Platform.
+        // Identify messenger.
         if (req.get("X-Line-Signature") && req.body.events){
             this.options.message_platform_type = "line";
         } else if (req.get("X-Hub-Signature") && req.body.object == "page"){

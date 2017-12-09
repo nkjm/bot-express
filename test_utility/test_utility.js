@@ -1,5 +1,7 @@
 "use strict";
 
+require("dotenv").config();
+
 const messengers = {
     line: require("./line"),
     facebook: require("./facebook"),

@@ -189,6 +189,10 @@ module.exports = class MessengerFacebook {
         return message_text;
     }
 
+    static extract_postback_payload(event){
+        return event.postback.payload;
+    }
+
     static check_supported_event_type(flow, event){
         switch(flow){
             case "beacon":

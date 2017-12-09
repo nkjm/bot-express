@@ -9,14 +9,6 @@ let Flow = require("./flow");
 let Nlu = require("../nlu");
 
 module.exports = class StartConversationFlow extends Flow {
-    /*
-    ** ### Start Conversation Flow ###
-    ** -> Check if the event is supported one in this flow.
-    ** -> Translate the message text.
-    ** -> Identify intent.
-    ** -> Process parameters.
-    ** -> Run final action.
-    */
 
     constructor(messenger, event, options) {
         let context = {
@@ -37,6 +29,20 @@ module.exports = class StartConversationFlow extends Flow {
     }
 
     run(){
+        /*
+        ** ### Start Conversation Flow ###
+        ** -> Run event based handling.
+        ** -> Translate the message text.
+        ** -> Identify intent.
+        ** -> Instantiate skill.
+        ** -> Run begin().
+        ** -> Process parameters.
+        ** -> Run finish().
+        */
+
+        let done_translate, done_identify_intent, done_instantiate_skill, done_begin, done_process_params, done_finish;
+        let skip_translate, skip_identify_intent, skip_instantiate_skill, skip_begin, skip_process_params;
+
         debug("### This is Start Conversation Flow. ###");
 
         // Check if this event type is supported in this flow.
@@ -45,29 +51,41 @@ module.exports = class StartConversationFlow extends Flow {
             return Promise.resolve(this.context);
         }
 
-        // If this is message event but not text, it's impossible to identify intent via NLU so we use default skill and just run finish();
+        // Run event based handling.
         if (this.messenger.identify_event_type() == "message" && this.messenger.identify_message_type() != "text"){
-            debug("Since this is not a text message, we use default skill and just run finish().");
-            // ### Instantiate Skill ###
-            this.context.intent = {
-                name: this.options.default_intent
-            }
-            this.context.skill = super.instantiate_skill(this.context.intent.name);
+            debug("This is a message event but not a text message so we use default skill.");
 
-            return super.begin().then(
-                (response) => {
-                    return super.finish();
+            skip_translate, skip_identify_intent = true;
+            done_identify_intent = Promise.resolve({
+                name: this.options.default_intent
+            });
+        } else if (this.messenger.identify_event_type() == "postback"){
+            let postback_payload = this.messenger.extract_postback_payload();
+            if (postback_payload && postback_payload._type == "intent"){
+                if (!postback_payload.intent || !postback_payload.name){
+                    return Promise.reject(new Error("Recieved postback event indicates the event should contain intent payload but not found."));
                 }
-            );
+                debug("This is a postback event and we could identify intent.");
+                done_identify_intent = Promise.resolve(postback_payload.intent);
+            } else if (postback_payload && typeof postback_payload != "string"){
+                debug("This is a postback event and payload is not text so we use default skill.");
+                skip_translate, skip_identify_intent = true;
+                done_identify_intent = Promise.resolve({
+                    name: this.options.default_intent
+                });
+            }
         }
 
-        let message_text = this.messenger.extract_message_text();
-        let translated;
-        if (!this.messenger.translater){
-            translated = Promise.resolve(message_text);
-        } else {
-            translated = this.messenger.translater.detect(message_text).then(
-                (response) => {
+        // Translate.
+        if (!skip_translate){
+            let message_text = this.messenger.extract_message_text();
+
+            if (!this.messenger.translater){
+                done_translate = Promise.resolve(message_text);
+            } else {
+                done_translate = Promise.resolve().then((response) => {
+                    return this.messenger.translater.detect(message_text)
+                }).then((response) => {
                     this.context.sender_language = response[0].language;
                     debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
 
@@ -79,30 +97,30 @@ module.exports = class StartConversationFlow extends Flow {
                         debug("Translating message text...");
                         return this.messenger.translater.translate(message_text, this.options.language)
                     }
-                }
-            ).then(
-                (response) => {
+                }).then((response) => {
                     debug("Translater response follows.");
                     debug(response);
                     return response[0];
-                }
-            );
+                });
+            }
         }
 
-        return translated.then(
-            (message_text) => {
-                // ### Identify Intent ###
+        // Identify intent.
+        if (!skip_identify_intent){
+            done_identify_intent = done_translate.then((message_text) => {
                 let nlu = new Nlu(this.options.nlu);
                 debug("NLU Abstraction instantiated.");
                 return nlu.identify_intent(message_text, {
                     session_id: this.messenger.extract_sender_id()
                 });
-            }
-        ).then(
-            (intent) => {
-                // ### Instantiate Skill ###
+            });
+        }
+
+        // Instantiate skill.
+        if (!skip_instantiate_skill){
+            done_instantiate_skill = done_identify_intent.then((intent) => {
                 this.context.intent = intent;
-                this.context.skill = super.instantiate_skill(this.context.intent.name);
+                this.context.skill = super.instantiate_skill(intent.name);
                 this.messenger.skill = this.context.skill;
 
                 // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
@@ -111,12 +129,20 @@ module.exports = class StartConversationFlow extends Flow {
                     this.context.to_confirm = super.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
                 }
                 debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
+                return this.context.skill;
+            });
+        }
 
+        // Run begin().
+        if (!skip_begin){
+            done_begin = done_instantiate_skill.then((skill) => {
                 return super.begin();
-            }
-        ).then(
-            (response) => {
-                // ### Process Parameters ###
+            });
+        }
+
+        // Process parameters.
+        if (!skip_process_params){
+            done_process_params = done_begin.then((response) => {
                 // If we find some parameters from initial message, add them to the conversation.
                 let parameters_processed = [];
                 if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
@@ -144,13 +170,16 @@ module.exports = class StartConversationFlow extends Flow {
                         );
                     }
                 }
+
                 return Promise.all(parameters_processed);
-            }
-        ).then(
-            (response) => {
-                // ### Run Final Action ###
-                return super.finish();
-            }
-        );
+            });
+        }
+
+        // Finish.
+        done_finish = done_process_params.then((response) => {
+            return super.finish();
+        });
+
+        return done_finish;
     } // End of run()
 };

@@ -50,6 +50,10 @@ module.exports = class Messenger {
         return this.Messenger_classes[this.type].extract_param_value(this.event);
     }
 
+    extract_postback_payload(){
+        return this.Messenger_classes[this.type].extract_postback_payload(this.event);
+    }
+
     check_supported_event_type(flow){
         return this.Messenger_classes[this.type].check_supported_event_type(flow, this.event);
     }

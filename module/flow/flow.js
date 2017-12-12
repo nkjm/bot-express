@@ -111,7 +111,7 @@ module.exports = class Flow {
 
         if (!!this.context.skill[param_type][param_key].message_to_confirm[this.messenger.type]){
             // Found message platform specific message object.
-            debug("Found message platform specific message object.");
+            debug("Found messenger specific message object.");
             message = this.context.skill[param_type][param_key].message_to_confirm[this.messenger.type];
         } else if (!!this.context.skill[param_type][param_key].message_to_confirm){
             // Found common message object. We compile this message object to get message platform specific message object.
@@ -126,7 +126,11 @@ module.exports = class Flow {
         this.context.confirming = param_key;
 
         // Send question to the user.
-        return this.messenger.reply([message]);
+        if (this.context._flow == "push"){
+            return this.messenger.send(this.event.to[`${this.event.to.type}Id`], [message]);
+        } else {
+            return this.messenger.reply([message]);
+        }
     }
 
     change_parameter(key, value){
@@ -581,11 +585,9 @@ module.exports = class Flow {
         // If we still have parameters to confirm, we collect them.
         if (this.context.to_confirm.length > 0){
             debug("Going to collect parameter.");
-            return this._collect().then(
-                (response) => {
-                    return this.context;
-                }
-            );
+            return this._collect().then((response) => {
+                return this.context;
+            });
         }
 
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.

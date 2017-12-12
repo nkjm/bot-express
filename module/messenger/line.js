@@ -86,13 +86,11 @@ module.exports = class MessengerLine {
     }
 
     static extract_sender_id(event){
-        if (event.source.type == "group"){
-            return event.source.groupId;
-        } else if (event.source.type == "room"){
-            return event.source.roomId;
-        } else {
-            return event.source.userId;
-        }
+        return event.source[`${event.source.type}Id`]
+    }
+
+    static extract_to_id(event){
+        return event.to[`${event.to.type}Id`];
     }
 
     static extract_param_value(event){

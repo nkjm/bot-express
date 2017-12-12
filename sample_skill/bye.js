@@ -7,14 +7,12 @@ const debug = require("debug")("bot-express:skill");
 */
 module.exports = class SkillBye {
     finish(bot, event, context, resolve, reject){
-        debug(`Going to reply "Bye".`);
-        let messages = [{
+        let messages = {
+            type: "text",
             text: "Bye"
-        }];
-        return bot.reply(messages).then(
-            (response) => {
-                return resolve(response);
-            }
-        );
+        }
+        return bot.reply(messages).then((response) => {
+            return resolve(response);
+        });
     }
 };

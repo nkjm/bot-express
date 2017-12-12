@@ -38,6 +38,7 @@ module.exports = class TestUtilityLine {
                 type: source_type
             }
         }
+
         if (source_type == "user"){
             event.source.userId = mem_id;
         } else if (source_type == "group"){
@@ -122,4 +123,25 @@ module.exports = class TestUtilityLine {
 
         return event;
     }
+
+    /**
+    Method to create req object.
+    @param {String} event - Event object.
+    @return {Object} - Request object
+    */
+    static create_req_with_event(event){
+        let req = {
+            body: {
+                events: [event]
+            },
+            get: function(param){
+                let header = {
+                    "X-Line-Signature": "dummy_signature"
+                };
+                return header[param];
+            }
+        }
+        return req;
+    }
+
 }

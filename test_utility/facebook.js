@@ -12,7 +12,6 @@ module.exports = class TestUtilityFacebook {
     @return {Object} - request object
     */
     static create_req(event_type, mem_id, payload, source_type = "dummy", user_id = "dummy"){
-
         let event = TestUtilityFacebook[`_create_${event_type}_event`](mem_id, payload);
         let req = {
             body: {
@@ -72,5 +71,27 @@ module.exports = class TestUtilityFacebook {
         }
 
         return event;
+    }
+
+
+    /**
+    Method to create req object.
+    @param {String} event - Event object.
+    @return {Object} - Request object
+    */
+    static create_req_with_event(event){
+        let req = {
+            body: {
+                object: "page",
+                entry: [event]
+            },
+            get: function(param){
+                let header = {
+                    "X-Hub-Signature": "dummy_signature"
+                };
+                return header[param];
+            }
+        }
+        return req;
     }
 }

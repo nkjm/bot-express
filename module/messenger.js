@@ -87,6 +87,15 @@ module.exports = class Messenger {
     }
 
     /**
+    * Extract reciever's user/room/group id.
+    * @param {EventObject} event - Event to extract message text.
+    * @returns {String}
+    */
+    extract_to_id(event){
+        return this.Messenger_classes[this.type].extract_to_id(event || this.event);
+    }
+
+    /**
     * Identify the event type.
     * @param {EventObject} event - Event to identify event type.
     * @returns {String} - Event type. In case of LINE, it can be "message", "follow", "unfollow", "join", "leave", "postback", "beacon". In case of Facebook, it can be "echo", "message", "delivery", "read", "postback", "optin", "referral", "account_linking".

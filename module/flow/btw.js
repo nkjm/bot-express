@@ -51,14 +51,14 @@ module.exports = class BtwFlow extends Flow {
                 } else if (postback_payload.intent && postback_payload.intent.name == this.context.intent.name){
                     debug(`We conluded that user has in mind to restart conversation.`);
                     skip_translate, skip_identify_mind = true;
-                    doen_indentify_mind = Promise.resolve({
+                    done_identify_mind = Promise.resolve({
                         result: "restart_conversation",
                         intent: postback_payload.intent
                     });
                 } else if (postback_payload.intent && postback_payload.intent.name != this.context.intent.name){
                     debug(`We conluded that user has in mind to change intent.`);
                     skip_translate, skip_identify_mind = true;
-                    doen_indentify_mind = Promise.resolve({
+                    done_identify_mind = Promise.resolve({
                         result: "change_intent",
                         intent: postback_payload.intent
                     });

@@ -21,7 +21,8 @@ const flows = {
     leave: require('./flow/leave'),
     start_conversation: require('./flow/start_conversation'),
     reply: require('./flow/reply'),
-    btw: require('./flow/btw')
+    btw: require('./flow/btw'),
+    push: require('./flow/push')
 }
 
 // Import Messenger Abstraction.
@@ -121,7 +122,12 @@ class Webhook {
             **/
 
             // Recall Memory
-            let memory_id = messenger.extract_sender_id();
+            let memory_id;
+            if (messenger.identify_event_type() == "bot-express:push"){
+                memory_id = messenger.extract_to_id(event);
+            } else {
+                memory_id = messenger.extract_sender_id(event);
+            }
             debug(`memory id is ${memory_id}.`);
 
             // Run flow.
@@ -136,7 +142,6 @@ class Webhook {
 
                 if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
                     // ### Follow | Unfollow | Join | Leave Flow ###
-
                     if (!this.options[event_type + "_skill"]){
                         return Promise.reject(new BotExpressWebhookSkip(`This is ${event_type} flow but ${event_type}_skill not found so skip.`));
                     }
@@ -147,11 +152,8 @@ class Webhook {
                         return Promise.reject(err);
                     }
                     return flow.run();
-
-                    // ### Follow | Unfollow | Join | Leave Flow ###
                 } else if (event_type == "beacon"){
                     // ### Beacon Flow ###
-
                     let beacon_event_type = messenger.extract_beacon_event_type();
 
                     if (!beacon_event_type){
@@ -169,42 +171,39 @@ class Webhook {
                         return Promise.reject(err);
                     }
                     return flow.run();
-
-                    // ### Beacon Flow ###
+                } else if (event_type == "bot-express:push"){
+                    // ### Push Flow ###
+                    try {
+                        flow = new flows["push"](messenger, event, this.options);
+                    } catch(err) {
+                        return Promise.reject(err);
+                    }
+                    return flow.run();
                 } else if (!context){
                     // ### Start Conversation Flow ###
-
                     try {
                         flow = new flows["start_conversation"](messenger, event, this.options);
                     } catch(err) {
                         return Promise.reject(err);
                     }
                     return flow.run();
-
-                    // ### Start Conversation Flow ###
                 } else {
                     if (context.confirming){
                         // ### Reply Flow ###
-
                         try {
                             flow = new flows["reply"](messenger, event, context, this.options);
                         } catch(err){
                             return Promise.reject(err);
                         }
                         return flow.run();
-
-                        // ### Reply Flow ###
                     } else {
                         // ### BTW Flow ###
-
                         try {
                             flow = new flows["btw"](messenger, event, context, this.options);
                         } catch(err){
                             return Promise.reject(err);
                         }
                         return flow.run();
-
-                        // ### BTW Flow ###
                     }
                 }
             });

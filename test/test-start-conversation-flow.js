@@ -99,5 +99,80 @@ for (let message_platform of message_platform_list){
                 );
             });
         });
+
+        describe("Recieved postback which contains intent object.", function(){
+            it("should trigger start conversation flow and set specified intent.", function(){
+                this.timeout(8000);
+
+                let options = Util.create_options();
+                let webhook = new Webhook(options);
+                let event = {
+                    type: "postback",
+                    timestamp: "1462629479859",
+                    source: {
+                        type: "user",
+                        userId: user_id
+                    },
+                    postback: {
+                        data: {
+                            _type: "intent",
+                            intent: {
+                                name: "handle-pizza-order"
+                            }
+                        }
+                    }
+                }
+                return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                    function(response){
+                        return webhook.run(Util.create_req_with_event(message_platform, event));
+                    }
+                ).then(
+                    function(response){
+                        response._flow.should.equal("start_conversation");
+                        response.intent.name.should.equal("handle-pizza-order");
+                        response.confirming.should.equal("pizza");
+                    }
+                );
+            });
+        });
+
+        describe("Recieved postback which contains intent object with parameters.", function(){
+            it("should trigger start conversation flow and set specified intent and parameters.", function(){
+                this.timeout(8000);
+
+                let options = Util.create_options();
+                let webhook = new Webhook(options);
+                let event = {
+                    type: "postback",
+                    timestamp: "1462629479859",
+                    source: {
+                        type: "user",
+                        userId: user_id
+                    },
+                    postback: {
+                        data: {
+                            _type: "intent",
+                            intent: {
+                                name: "handle-pizza-order",
+                                parameters: {
+                                    pizza: "マリナーラ"
+                                }
+                            }
+                        }
+                    }
+                }
+                return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                    function(response){
+                        return webhook.run(Util.create_req_with_event(message_platform, event));
+                    }
+                ).then(
+                    function(response){
+                        response._flow.should.equal("start_conversation");
+                        response.intent.name.should.equal("handle-pizza-order");
+                        response.confirming.should.equal("size");
+                    }
+                );
+            });
+        });
     });
 }

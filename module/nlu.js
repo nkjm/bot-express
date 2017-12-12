@@ -40,11 +40,7 @@ class Nlu {
     @param {String} sentence - Sentence to identify intent.
     @param {Object} options - Option.
     @param {String} options.session_id - Session id of this conversation.
-    @returns {Object} intent - Intent Object.
-    @returns {String} intent.name - Name of the intent.
-    @returns {Object} intent.parameters - Parameters found in the sentence.
-    @returns {String} intent.text_response - Text response to the sentence.
-    @returns {Object} intent.fulfillment - Object to fulfill the action.
+    @returns {intent} intent - Intent Object.
     */
     identify_intent(sentence, options){
         return this.service.identify_intent(sentence, options);

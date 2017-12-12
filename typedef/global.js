@@ -15,4 +15,26 @@ Object which contains context information.
 @prop {Array.<Object>} intent.parameters - Entities identified by NLP
 @prop {Skill} skill - Skill object currelty applied.
 @prop {String} sender_language - Automatically detected senders language.
+@prop {String} _flow - Flow applied to current event.
+*/
+
+/**
+Object which contains intent and related information.
+@typedef {Object} intent
+@prop {String} name - Name of the
+@prop {Object} parameters - Parameters found in the sentence.
+@prop {String} text_response - Text response to the sentence.
+@prop {Object} fulfillment - Object to fulfill the action.
+*/
+
+/**
+Custom event to start conversation from Bot.
+@typedef {Object} push_event
+@prop {String} type - Event type. This is always "bot-express:push".
+@prop {Object} to - Object which contains destination information.
+@prop {String} to.type - Type of reciever. Supported values are "user", "room", "group".
+@prop {String} [to.userId] - User id of reciever. Required if to.type is "user".
+@prop {String} [to.roomId] - Room id of reciever. Required if to.type is "room".
+@prop {String} [to.groupId] - Group id of reciever. Required if to.type is "group".
+@prop {intent} intent - Intent object to be applied in this conversation.
 */

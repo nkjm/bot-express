@@ -66,6 +66,7 @@ module.exports = class StartConversationFlow extends Flow {
                     return Promise.reject(new Error("Recieved postback event indicates the event should contain intent payload but not found."));
                 }
                 debug("This is a postback event and we could identify intent.");
+                skip_translate, skip_identify_intent = true;
                 done_identify_intent = Promise.resolve(postback_payload.intent);
             } else if (postback_payload && typeof postback_payload != "string"){
                 debug("This is a postback event and payload is not text so we use default skill.");

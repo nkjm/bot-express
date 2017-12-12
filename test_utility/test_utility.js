@@ -53,6 +53,19 @@ module.exports = class TestUtility {
         return messengers[messenger_type].create_req(event_type, mem_id, payload, source_type, user_id);
     }
 
+    /**
+    Method to create request object using provide event.
+    @param {String} messenger_type - line, facebook, unsupported
+    @param {Object} event - Event object.
+    */
+    static create_req_with_event(messenger_type, event){
+        return messengers[messenger_type].create_req_with_event(event);
+    }
+
+    /**
+    Method to clear memory for specified user.
+    @param {String} mem_id - Memory id to clear.
+    */
     static create_req_to_clear_memory(mem_id){
         let req = {
             clear_memory: mem_id

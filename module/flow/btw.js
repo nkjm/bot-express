@@ -45,30 +45,40 @@ module.exports = class BtwFlow extends Flow {
             });
         } else if (this.messenger.identify_event_type() == "postback"){
             let postback_payload = this.messenger.extract_postback_payload();
-            if (postback_payload && postback_payload._type == "intent"){
-                if (!postback_payload.intent || !postback_payload.intent.name){
-                    return Promise.reject(new Error("Recieved postback event indicates the event should contain intent payload but not found."));
-                } else if (postback_payload.intent && postback_payload.intent.name == this.context.intent.name){
-                    debug(`We conluded that user has in mind to restart conversation.`);
+
+            try {
+                postback_payload = JSON.parse(postback_payload);
+                debug(`Postback payload is JSON format.`);
+
+                if (postback_payload._type == "intent"){
+                    if (!postback_payload.intent || !postback_payload.intent.name){
+                        return Promise.reject(new Error("Recieved postback event and the payload indicates that this should contain intent but not found."));
+                    }
+
+                    if (postback_payload.intent && postback_payload.intent.name == this.context.intent.name){
+                        debug(`We conluded that user has in mind to restart conversation.`);
+                        skip_translate, skip_identify_mind = true;
+                        done_identify_mind = Promise.resolve({
+                            result: "restart_conversation",
+                            intent: postback_payload.intent
+                        });
+                    } else if (postback_payload.intent && postback_payload.intent.name != this.context.intent.name){
+                        debug(`We conluded that user has in mind to change intent.`);
+                        skip_translate, skip_identify_mind = true;
+                        done_identify_mind = Promise.resolve({
+                            result: "change_intent",
+                            intent: postback_payload.intent
+                        });
+                    }
+                } else {
+                    debug("This is a postback event and payload is JSON. It's impossible to identify intent so we use default skill.");
                     skip_translate, skip_identify_mind = true;
                     done_identify_mind = Promise.resolve({
-                        result: "restart_conversation",
-                        intent: postback_payload.intent
-                    });
-                } else if (postback_payload.intent && postback_payload.intent.name != this.context.intent.name){
-                    debug(`We conluded that user has in mind to change intent.`);
-                    skip_translate, skip_identify_mind = true;
-                    done_identify_mind = Promise.resolve({
-                        result: "change_intent",
-                        intent: postback_payload.intent
+                        result: "no_idea"
                     });
                 }
-            } else if (postback_payload && typeof postback_payload != "string"){
-                debug("We have no idea what user has in mind.");
-                skip_translate, skip_identify_mind = true;
-                done_identify_mind = Promise.resolve({
-                    result: "no_idea"
-                });
+            } catch(e) {
+                debug(`Postback payload is not JSON format. We use as it is.`);
             }
         }
 

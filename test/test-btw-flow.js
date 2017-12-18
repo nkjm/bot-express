@@ -170,12 +170,12 @@ for (let message_platform of message_platform_list){
                         userId: user_id
                     },
                     postback: {
-                        data: {
+                        data: JSON.stringify({
                             _type: "intent",
                             intent: {
                                 name: "bye"
                             }
-                        }
+                        })
                     }
                 }
                 return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
@@ -186,7 +186,12 @@ for (let message_platform of message_platform_list){
                 ).then(
                     function(response){
                         response._flow.should.equal("start_conversation");
-                        event.postback.data.intent.name = "handle-pizza-order";
+                        event.postback.data = JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "handle-pizza-order"
+                            }
+                        });
                         return webhook.run(Util.create_req_with_event(message_platform, event));
                     }
                 ).then(
@@ -194,6 +199,57 @@ for (let message_platform of message_platform_list){
                         response._flow.should.equal("btw");
                         response.intent.name.should.equal("handle-pizza-order");
                         response.confirming.should.equal("pizza");
+                    }
+                );
+            });
+        });
+
+        describe("User changes intent by postback which contains intent with parameters.", function(){
+            it("will trigger change intent and set parameters.", function(){
+                this.timeout(8000);
+
+                let options = Util.create_options();
+                let webhook = new Webhook(options);
+                let event = {
+                    type: "postback",
+                    timestamp: "1462629479859",
+                    source: {
+                        type: "user",
+                        userId: user_id
+                    },
+                    postback: {
+                        data: JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "bye"
+                            }
+                        })
+                    }
+                }
+                return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                    function(response){
+                        // User starts conversation.
+                        return webhook.run(Util.create_req_with_event(message_platform, event));
+                    }
+                ).then(
+                    function(response){
+                        response._flow.should.equal("start_conversation");
+                        event.postback.data = JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "handle-pizza-order",
+                                parameters: {
+                                    pizza: "マリナーラ"
+                                }
+                            }
+                        });
+                        return webhook.run(Util.create_req_with_event(message_platform, event));
+                    }
+                ).then(
+                    function(response){
+                        response._flow.should.equal("btw");
+                        response.intent.name.should.equal("handle-pizza-order");
+                        response.confirming.should.equal("size");
                     }
                 );
             });

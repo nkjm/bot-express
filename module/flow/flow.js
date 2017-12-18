@@ -53,7 +53,7 @@ module.exports = class Flow {
             let skill_class;
             try {
                 skill_class = require(`${this.options.skill_path}${skill}`);
-                debug("Skill found.")
+                debug("Found skill.")
             } catch(exception){
                 debug("Skill not found.");
                 throw(exception);
@@ -127,8 +127,11 @@ module.exports = class Flow {
 
         // Send question to the user.
         if (this.context._flow == "push"){
+            debug("We use send method to collect parameter since this is push flow.");
+            debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
             return this.messenger.send(this.event.to[`${this.event.to.type}Id`], [message]);
         } else {
+            debug("We use reply method to collect parameter.");
             return this.messenger.reply([message]);
         }
     }
@@ -577,7 +580,7 @@ module.exports = class Flow {
 
         // If pause flat has been set, we stop processing following actions and exit.
         if (this.context._pause){
-            debug("Dected pause flag. We stop processing collect() and finish().");
+            debug("Detected pause flag. We stop processing collect() and finish().");
             this.context._pause = false;
             return Promise.resolve(this.context);
         }

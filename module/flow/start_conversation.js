@@ -60,20 +60,31 @@ module.exports = class StartConversationFlow extends Flow {
                 name: this.options.default_intent
             });
         } else if (this.messenger.identify_event_type() == "postback"){
+            // There can be 3 cases.
+            // - payload is JSON and contains intent.
+            // - payload is JSON.
+            // - payload is not JSON (just a string).
             let postback_payload = this.messenger.extract_postback_payload();
-            if (postback_payload && postback_payload._type == "intent"){
-                if (!postback_payload.intent || !postback_payload.intent.name){
-                    return Promise.reject(new Error("Recieved postback event indicates the event should contain intent payload but not found."));
+            try {
+                postback_payload = JSON.parse(postback_payload);
+                debug(`Postback payload is JSON format.`);
+
+                if (postback_payload._type == "intent"){
+                    if (!postback_payload.intent || !postback_payload.intent.name){
+                        return Promise.reject(new Error("Recieved postback event and the payload indicates that this should contain intent but not found."));
+                    }
+                    debug("This is a postback event and we found intent inside payload.");
+                    skip_translate, skip_identify_intent = true;
+                    done_identify_intent = Promise.resolve(postback_payload.intent);
+                } else {
+                    debug("This is a postback event and payload is JSON. It's impossible to identify intent so we use default skill.");
+                    skip_translate, skip_identify_intent = true;
+                    done_identify_intent = Promise.resolve({
+                        name: this.options.default_intent
+                    });
                 }
-                debug("This is a postback event and we could identify intent.");
-                skip_translate, skip_identify_intent = true;
-                done_identify_intent = Promise.resolve(postback_payload.intent);
-            } else if (postback_payload && typeof postback_payload != "string"){
-                debug("This is a postback event and payload is not text so we use default skill.");
-                skip_translate, skip_identify_intent = true;
-                done_identify_intent = Promise.resolve({
-                    name: this.options.default_intent
-                });
+            } catch(e) {
+                debug(`Postback payload is not JSON format. We use as it is.`);
             }
         }
 

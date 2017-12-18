@@ -114,12 +114,12 @@ for (let message_platform of message_platform_list){
                         userId: user_id
                     },
                     postback: {
-                        data: {
+                        data: JSON.stringify({
                             _type: "intent",
                             intent: {
                                 name: "handle-pizza-order"
                             }
-                        }
+                        })
                     }
                 }
                 return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
@@ -150,7 +150,7 @@ for (let message_platform of message_platform_list){
                         userId: user_id
                     },
                     postback: {
-                        data: {
+                        data: JSON.stringify({
                             _type: "intent",
                             intent: {
                                 name: "handle-pizza-order",
@@ -158,7 +158,7 @@ for (let message_platform of message_platform_list){
                                     pizza: "マリナーラ"
                                 }
                             }
-                        }
+                        })
                     }
                 }
                 return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(

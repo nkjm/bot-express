@@ -17,7 +17,7 @@
     "facebook messenger"
   ],
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --exit",
     "postinstall": "node script/postinstall.js"
   },
   "engines": {
@@ -28,25 +28,24 @@
     "@google-cloud/translate": "^0.8.2",
     "@line/bot-sdk": "^2.0.0",
     "apiai": "^4.0.2",
-    "assert": "^1.4.1",
     "bluebird": "^3.5.1",
     "body-parser": "~1.13.2",
     "debug": "^2.6.1",
+    "dotenv": "^4.0.0",
     "express": "^4.16.2",
     "memory-cache": "^0.2.0",
-    "mongodb": "^2.2.33",
     "morgan": "^1.8.1",
-    "redis": "^2.8.0",
     "request": "^2.79.0"
   },
   "devDependencies": {
     "chai": "*",
     "chai-as-promised": "*",
-    "dotenv": "^4.0.0",
     "isemail": "*",
     "mecabaas-client": "1.0.3",
     "mocha": "*",
     "moji": "*",
+    "mongodb": "^3.0.1",
+    "redis": "^2.8.0",
     "soap": "*",
     "striptags": "*"
   }

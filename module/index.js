@@ -88,13 +88,18 @@ module.exports = (options) => {
 
     // Webhook Process
     router.post('/', (req, res, next) => {
-        res.sendStatus(200);
+        if (process.env.NODE_ENV != "test"){
+            res.sendStatus(200);
+        }
 
         let webhook = new Webhook(options);
         webhook.run(req).then(
             (context) => {
                 debug("Successful End of Webhook. Current context follows.");
                 debug(context);
+                if (process.env.NODE_ENV == "test"){
+                    res.json(context);
+                }
             },
             (response) => {
                 debug("Abnormal End of Webhook. Error follows.");

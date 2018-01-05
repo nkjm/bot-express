@@ -92,7 +92,11 @@ module.exports = class Messenger {
     * @returns {String}
     */
     extract_to_id(event){
-        return this.Messenger_classes[this.type].extract_to_id(event || this.event);
+        if (!event) event = this.event;
+        if (event.type == "bot-express:push"){
+            return event.to[`${event.to.type}Id`];
+        }
+        return this.Messenger_classes[this.type].extract_to_id(event);
     }
 
     /**
@@ -101,7 +105,11 @@ module.exports = class Messenger {
     * @returns {String} - Event type. In case of LINE, it can be "message", "follow", "unfollow", "join", "leave", "postback", "beacon". In case of Facebook, it can be "echo", "message", "delivery", "read", "postback", "optin", "referral", "account_linking".
     */
     identify_event_type(event){
-        return this.Messenger_classes[this.type].identify_event_type(event || this.event);
+        if (!event) event = this.event;
+        if (event.type && event.type.match(/^bot-express:/)){
+            return event.type;
+        }
+        return this.Messenger_classes[this.type].identify_event_type(event);
     }
 
     /**
@@ -134,6 +142,9 @@ module.exports = class Messenger {
         return Promise.all(messages_compiled).then(
             (response) => {
                 compiled_messages = response;
+                if (this.event.type == "bot-express:push"){
+                    return this.service.send(this.event, this.event.to[`${this.event.to.type}Id`], compiled_messages);
+                }
                 return this.service.reply(this.event, compiled_messages);
             }
         ).then(

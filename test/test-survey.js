@@ -1,6 +1,6 @@
 'use strict';
 
-const message_platform_list = ["line", "facebook"];
+const messenger_list = ["line", "facebook"];
 
 let chai = require('chai');
 let chaiAsPromised = require('chai-as-promised');
@@ -10,8 +10,8 @@ let Util = require("../test_utility/test_utility");
 chai.use(chaiAsPromised);
 let should = chai.should();
 
-for (let message_platform of message_platform_list){
-    describe("survey skill test - from " + message_platform, function(){
+for (let messenger of messenger_list){
+    describe("survey skill test - from " + messenger, function(){
         let user_id = "survey";
         let event_type = "message";
         describe("#Normal input", function(){
@@ -20,9 +20,9 @@ for (let message_platform of message_platform_list){
 
                 let options = Util.create_options();
                 let webhook = new Webhook(options);
-                return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                return webhook.run(Util.create_req_to_clear_context(messenger, user_id)).then(
                     function(response){
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "アンケートテスト"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "アンケートテスト"));
                     }
                 ).then(
                     function(response){
@@ -34,7 +34,7 @@ for (let message_platform of message_platform_list){
                         response.to_confirm[2].should.equal("free_comment");
                         response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "5"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "5"));
                     }
                 ).then(
                     function(response){
@@ -45,7 +45,7 @@ for (let message_platform of message_platform_list){
                         response.to_confirm[1].should.equal("free_comment");
                         response.to_confirm[2].should.equal("mail");
                         response.previous.confirmed.should.deep.equal(["satisfaction"]);
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "難しい"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "難しい"));
                     }
                 ).then(
                     function(response){
@@ -58,7 +58,7 @@ for (let message_platform of message_platform_list){
                         response.to_confirm[0].should.equal("free_comment");
                         response.to_confirm[1].should.equal("mail");
                         response.previous.confirmed.should.deep.equal(["difficulty","satisfaction"]);
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "とても有意義でした。"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "とても有意義でした。"));
                     }
                 ).then(
                     function(response){
@@ -71,7 +71,7 @@ for (let message_platform of message_platform_list){
                         response.should.have.property("to_confirm").have.lengthOf(1);
                         response.to_confirm[0].should.equal("mail");
                         response.previous.confirmed.should.deep.equal(["free_comment","difficulty","satisfaction"]);
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "nakajima@hoge.com"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "nakajima@hoge.com"));
                     }
                 ).then(
                     function(response){
@@ -94,9 +94,9 @@ for (let message_platform of message_platform_list){
 
                 let options = Util.create_options();
                 let webhook = new Webhook(options);
-                return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                return webhook.run(Util.create_req_to_clear_context(messenger, user_id)).then(
                     function(response){
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "アンケートテスト"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "アンケートテスト"));
                     }
                 ).then(
                     function(response){
@@ -110,7 +110,7 @@ for (let message_platform of message_platform_list){
                         response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                         // Answer the value which is out of range.
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "6"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "6"));
                     }
                 ).then(
                     function(response){
@@ -124,7 +124,7 @@ for (let message_platform of message_platform_list){
                         response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                         // Answer the value of unacceptable data type.
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "良い"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "良い"));
                     }
                 ).then(
                     function(response){
@@ -147,9 +147,9 @@ for (let message_platform of message_platform_list){
 
                 let options = Util.create_options();
                 let webhook = new Webhook(options);
-                return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                return webhook.run(Util.create_req_to_clear_context(messenger, user_id)).then(
                     function(response){
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "アンケートテスト"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "アンケートテスト"));
                     }
                 ).then(
                     function(response){
@@ -163,7 +163,7 @@ for (let message_platform of message_platform_list){
                         response.to_confirm[3].should.equal("mail");
                         response.previous.confirmed.should.deep.equal([]);
                         // Answer the value which is out of range.
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "５"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "５"));
                     }
                 ).then(
                     function(response){
@@ -184,19 +184,19 @@ for (let message_platform of message_platform_list){
 
                 let options = Util.create_options();
                 let webhook = new Webhook(options);
-                return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                return webhook.run(Util.create_req_to_clear_context(messenger, user_id)).then(
                     function(response){
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "アンケートテスト"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "アンケートテスト"));
                     }
                 ).then(
                     function(response){
                         // Bot is asking satisfaction.
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "5"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "5"));
                     }
                 ).then(
                     function(response){
                         // Bot is asking difficulty.
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "激ムズでした。"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "激ムズでした。"));
                     }
                 ).then(
                     function(response){
@@ -215,29 +215,29 @@ for (let message_platform of message_platform_list){
 
                 let options = Util.create_options();
                 let webhook = new Webhook(options);
-                return webhook.run(Util["create_req_to_clear_memory"](user_id)).then(
+                return webhook.run(Util.create_req_to_clear_context(messenger, user_id)).then(
                     function(response){
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "アンケートテスト"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "アンケートテスト"));
                     }
                 ).then(
                     function(response){
                         // Bot is asking satisfaction.
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "5"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "5"));
                     }
                 ).then(
                     function(response){
                         // Bot is asking difficulty.
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "激ムズでした。"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "激ムズでした。"));
                     }
                 ).then(
                     function(response){
                         // Bot is asking free_comment
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "特になし"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "特になし"));
                     }
                 ).then(
                     function(response){
                         // Bot is asking mail
-                        return webhook.run(Util.create_req(message_platform, event_type, user_id, "nakajima.hoge.com"));
+                        return webhook.run(Util.create_req(messenger, event_type, user_id, "nakajima.hoge.com"));
                     }
                 ).then(
                     function(response){

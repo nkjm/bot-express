@@ -52,14 +52,14 @@ module.exports = class StartConversationFlow extends Flow {
         }
 
         // Run event based handling.
-        if (this.messenger.identify_event_type() == "message" && this.messenger.identify_message_type() != "text"){
+        if (this.messenger.identify_event_type(this.event) == "message" && this.messenger.identify_message_type() != "text"){
             debug("This is a message event but not a text message so we use default skill.");
 
             skip_translate, skip_identify_intent = true;
             done_identify_intent = Promise.resolve({
                 name: this.options.default_intent
             });
-        } else if (this.messenger.identify_event_type() == "postback"){
+        } else if (this.messenger.identify_event_type(this.event) == "postback"){
             // There can be 3 cases.
             // - payload is JSON and contains intent.
             // - payload is JSON.

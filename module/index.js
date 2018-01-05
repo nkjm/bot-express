@@ -5,7 +5,6 @@ require("dotenv").config();
 const REQUIRED_OPTIONS = {
     common: []
 }
-const DEFAULT_MEMORY_RETENTION = 300000;
 const DEFAULT_SKILL_PATH = "../../../../skill/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
@@ -63,19 +62,14 @@ module.exports = (options) => {
     options.language = options.language || DEFAULT_LANGUAGE;
     options.default_intent = options.default_intent || DEFAULT_INTENT;
     options.default_skill = options.default_skill || DEFAULT_SKILL;
-    options.memory_retention = options.memory_retention || DEFAULT_MEMORY_RETENTION;
     if (!!options.skill_path){
         options.skill_path = "../../../../" + options.skill_path;
-    } else if (process.env.BOT_EXPRESS_ENV == "development"){
+    } else if (process.env.BOT_EXPRESS_ENV == "development" || process.env.BOT_EXPRESS_ENV == "test"){
         // This is for Bot Express development environment only.
         options.skill_path = "../../sample_skill/";
     } else {
         options.skill_path = DEFAULT_SKILL_PATH;
     }
-    if (options.enable_ask_retry === null){
-        options.enable_ask_retry = false;
-    }
-    options.message_to_ask_retry = options.message_to_ask_retry || "ごめんなさい、もうちょっと正確にお願いできますか？";
     options.facebook_verify_token = options.facebook_verify_token || options.facebook_app_secret;
 
     // Check if common required options are set.
@@ -88,24 +82,24 @@ module.exports = (options) => {
 
     // Webhook Process
     router.post('/', (req, res, next) => {
-        if (process.env.NODE_ENV != "test"){
+        if (process.env.BOT_EXPRESS_ENV != "test"){
             res.sendStatus(200);
         }
 
         let webhook = new Webhook(options);
-        webhook.run(req).then(
-            (context) => {
-                debug("Successful End of Webhook. Current context follows.");
-                debug(context);
-                if (process.env.NODE_ENV == "test"){
-                    res.json(context);
-                }
-            },
-            (response) => {
-                debug("Abnormal End of Webhook. Error follows.");
-                debug(response);
+        webhook.run(req).then((context) => {
+            debug("Successful End of Webhook. Current context follows.");
+            debug(context);
+            if (process.env.BOT_EXPRESS_ENV == "test"){
+                res.json(context);
             }
-        );
+        }, (response) => {
+            debug("Abnormal End of Webhook. Error follows.");
+            debug(response);
+            if (process.env.BOT_EXPRESS_ENV == "test"){
+                res.status(400).json(response);
+            }
+        });
     });
 
     // Verify Facebook Webhook

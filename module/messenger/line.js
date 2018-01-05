@@ -50,12 +50,6 @@ module.exports = class MessengerLine {
     }
 
     validate_signature(req){
-        // If this is test, we will not actually validate the signature.
-        if (process.env.BOT_EXPRESS_ENV == "test"){
-            debug("This is test so we skip validating signature.");
-            return true;
-        }
-
         let signature = req.get('X-Line-Signature');
         let raw_body = req.raw_body;
 
@@ -72,6 +66,9 @@ module.exports = class MessengerLine {
     }
 
     static identify_event_type(event){
+        if (!event.type){
+            return "unidentified";
+        }
         return event.type;
     }
 

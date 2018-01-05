@@ -36,14 +36,14 @@ module.exports = class BtwFlow extends Flow {
         }
 
         // Run event based handling.
-        if (this.messenger.identify_event_type() == "message" && this.messenger.identify_message_type() != "text"){
+        if (this.messenger.identify_event_type(this.event) == "message" && this.messenger.identify_message_type() != "text"){
             debug("This is a message event but not a text message so we skip translation.");
 
             skip_translate, skip_identify_mind = true;
             done_identify_mind = Promise.resolve({
                 result: "no_idea"
             });
-        } else if (this.messenger.identify_event_type() == "postback"){
+        } else if (this.messenger.identify_event_type(this.event) == "postback"){
             let postback_payload = this.messenger.extract_postback_payload();
 
             try {

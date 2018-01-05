@@ -83,12 +83,6 @@ module.exports = class MessengerFacebook {
     }
 
     validate_signature(req){
-        // If this is test, we will not actually validate the signature.
-        if (process.env.BOT_EXPRESS_ENV == "test"){
-            debug("This is test so we skip validating signature.");
-            return true;
-        }
-
         let signature = req.get('X-Hub-Signature');
         let raw_body = req.raw_body;
 
@@ -128,6 +122,10 @@ module.exports = class MessengerFacebook {
             event_type = "referral";
         } else if (event.account_linking){
             event_type = "account_linking";
+        } else if (event.type && event.type == "bot-express:push"){
+            event_type = "bot-express:push";
+        } else {
+            event_type = "unidentified";
         }
         return event_type;
     }

@@ -49,20 +49,6 @@ class Webhook {
 
         let memory = new Memory(this.options.memory);
 
-        // FOR TEST PURPOSE ONLY: Clear Memory.
-        if (process.env.BOT_EXPRESS_ENV == "test" && req.clear_memory){
-            debug(`Deleting memory of ${req.clear_memory}`);
-
-            return Promise.resolve().then((response) => {
-                return memory.del(req.clear_memory);
-            }).then((response) => {
-                return {
-                    message: "memory cleared",
-                    memory_id: req.clear_memory
-                }
-            });
-        }
-
         // Identify messenger.
         if (req.get("X-Line-Signature") && req.body.events){
             this.options.message_platform_type = "line";
@@ -108,7 +94,7 @@ class Webhook {
             messenger.event = event;
 
             // If this is for webhook validation, we skip processing this.
-            if(messenger.type == "line" && event.replyToken == "00000000000000000000000000000000"){
+            if(messenger.type == "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
                 debug("This is webhook validation so skip processing.");
                 return Promise.resolve();
             }
@@ -123,7 +109,7 @@ class Webhook {
 
             // Recall Memory
             let memory_id;
-            if (messenger.identify_event_type() == "bot-express:push"){
+            if (messenger.identify_event_type(event) == "bot-express:push"){
                 memory_id = messenger.extract_to_id(event);
             } else {
                 memory_id = messenger.extract_sender_id(event);
@@ -137,7 +123,7 @@ class Webhook {
                 messenger.context = context;
 
                 let flow;
-                let event_type = messenger.identify_event_type();
+                let event_type = messenger.identify_event_type(event);
                 debug(`event type is ${event_type}.`);
 
                 if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
@@ -235,7 +221,7 @@ class Webhook {
                 debug("Abnormal End of Flow.");
                 // Clear memory.
                 return memory.del(memory_id).then((response) => {
-                    debug("Context cleard.");
+                    debug("Context cleared.");
                     return Promise.reject(error);
                 });
             })); // End of Completion of Flow

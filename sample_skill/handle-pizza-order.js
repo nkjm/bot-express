@@ -69,7 +69,12 @@ module.exports = class SkillHandlePizzaOrder {
     }
 
     parse_pizza(value, bot, event, context, resolve, reject){
+        if (typeof value !== "string"){
+            return reject();
+        }
+
         let parsed_value;
+
         if (value.match(/マルゲリータ/)){
             parsed_value = "マルゲリータ";
         } else if (value.match(/マリナーラ/)){
@@ -77,11 +82,17 @@ module.exports = class SkillHandlePizzaOrder {
         } else {
             return reject();
         }
+
         return resolve(parsed_value);
     }
 
     parse_size(value, bot, event, context, resolve, reject){
+        if (typeof value !== "string"){
+            return reject();
+        }
+
         let parsed_value;
+
         if (value.match(/[sS]/) || value.match(/小/)){
             parsed_value = "S";
         } else if (value.match(/[mM]/) || value.match(/中/) || value.match(/普通/)){
@@ -91,6 +102,7 @@ module.exports = class SkillHandlePizzaOrder {
         } else {
             return reject();
         }
+        
         return resolve(parsed_value);
     }
 

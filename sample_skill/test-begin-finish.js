@@ -26,10 +26,8 @@ module.exports = class SkillBeginFinish {
         return bot.reply({
             type: "text",
             text: `${context.confirmed.name}さん、さようなら。`
-        }).then(
-            (response) => {
-                return resolve();
-            }
-        )
+        }).then((response) => {
+            return resolve();
+        })
     }
 }

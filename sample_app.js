@@ -56,7 +56,6 @@ server.use('/webhook', bot_express({
     unfollow_skill: "clear-context",
     join_skill: "say-welcome",
     leave_skill: "clear-context",
-    default_skill: process.env.DEFAULT_SKILL,
     google_project_id: process.env.GOOGLE_PROJECT_ID,
     auto_translation: process.env.AUTO_TRANSLATION
 }));

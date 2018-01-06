@@ -78,7 +78,7 @@ class Webhook {
 
         // Signature Validation.
         if (!messenger.validate_signature(req)){
-            return Promise.reject("Signature Validation failed.");
+            return Promise.reject("Signature validation failed.");
         }
         debug("Signature validation suceeded.");
 

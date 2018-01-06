@@ -51,17 +51,17 @@ class Webhook {
 
         // Identify messenger.
         if (req.get("X-Line-Signature") && req.body.events){
-            this.options.message_platform_type = "line";
+            this.options.messenger_type = "line";
         } else if (req.get("X-Hub-Signature") && req.body.object == "page"){
-            this.options.message_platform_type = "facebook";
+            this.options.messenger_type = "facebook";
         } else {
             debug(`This event comes from unsupported message platform. Skip processing.`);
             return Promise.resolve(null);
         }
-        debug(`Messenger is ${this.options.message_platform_type}`);
+        debug(`Messenger is ${this.options.messenger_type}`);
 
         // Check if required options for this message platform are set.
-        for (let req_opt of REQUIRED_OPTIONS[this.options.message_platform_type]){
+        for (let req_opt of REQUIRED_OPTIONS[this.options.messenger_type]){
             if (typeof this.options[req_opt] == "undefined"){
                 debug(`Required option: ${req_opt} is missing.`);
                 return Promise.reject({

@@ -5,6 +5,7 @@ require("dotenv").config();
 const fs = require("fs");
 const request = require("request");
 const debug = require("debug")("bot-express:test");
+const TEST_WEBHOOK_URL = process.env.TEST_WEBHOOK_URL;
 Promise = require("bluebird");
 Promise.promisifyAll(request);
 
@@ -33,7 +34,7 @@ module.exports = class TestUtilEmulator {
     @param {Object} event - Event object.
     */
     send(event){
-        let url = "http://localhost:5000/webhook";
+        let url = TEST_WEBHOOK_URL;
         let body = this._create_body(event);
         let headers = this._create_header(body);
 

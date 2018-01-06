@@ -10,7 +10,7 @@ module.exports = class Messenger {
     * @constructs
     */
     constructor(options, event){
-        this.type = options.message_platform_type;
+        this.type = options.messenger_type;
         this.options = options;
         this.Messenger_classes = {};
         this.context = null; // Will be set later in flow.

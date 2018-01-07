@@ -47,7 +47,7 @@ module.exports = class TestUtilEmulator {
             if (response.statusCode == 200){
                 return response.body;
             }
-            return Promise.reject(response.body);
+            return Promise.reject(new Error(response.body));
         });
     }
 

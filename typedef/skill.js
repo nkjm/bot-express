@@ -39,7 +39,7 @@ Function which is triggerd when all the required parameters are collected.
 /**
 Object which defines how this parameter should be collected, parsed, and reacted.
 @typedef {Object} Skill#skill_parameter
-@prop {Object} message_to_confirm - Message Object to ask for users the value of this parameter. As for message format, you can use either LINE or Facebook Messenger.
+@prop {Object|Skill#message_to_confirm} message_to_confirm - Message Object to ask for users the value of this parameter. As for message format, you can use either LINE or Facebook Messenger. In addition, you can also set function to generate message dynamically.
 @prop {Skill#parser} parser - Function to parse the message from user.
 @prop {Skill#reaction} reaction - Function to react to the message from user. Reaction runs right after paser returns.
 @prop {Array.<String>} sub_skill - List of sub skills. If user intends these skills in the middle of the conversation, we switch context to new intent and get back once finished.
@@ -49,6 +49,17 @@ Object which defines how this parameter should be collected, parsed, and reacted
 Object which contains one skill parameter.
 @typedef {Object} Skill#skill_parameter_container
 @prop {Skill#skill_parameter} * - Skill parameter object.
+*/
+
+/**
+Function to generate message to confirm the value of teh parameter.
+@typedef {Function} Skill#message_to_confirm
+@param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
+@param {Object} event - Event object which triggers this flow.
+@param {context} context - Context information.
+@param {Function} resolve - Method to call when reaction succeeeds.
+@param {Function} reject - Method to call when reaction fails.
+@return {Promise} On successful generation, you need to return the message object using resolve(). On failure, you need to return error using reject().
 */
 
 /**

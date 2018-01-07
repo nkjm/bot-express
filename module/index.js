@@ -93,11 +93,11 @@ module.exports = (options) => {
             if (process.env.BOT_EXPRESS_ENV == "test"){
                 res.json(context);
             }
-        }, (response) => {
+        }, (error) => {
             debug("Abnormal End of Webhook. Error follows.");
-            debug(response);
+            debug(error);
             if (process.env.BOT_EXPRESS_ENV == "test"){
-                res.status(400).json(response);
+                res.status(400).send(error.message);
             }
         });
     });

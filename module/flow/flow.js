@@ -119,21 +119,36 @@ module.exports = class Flow {
             message = this.context.skill[param_type][param_key].message_to_confirm;
         } else {
             debug("While we need to send a message to confirm parameter, the message not found.");
-            return Promise.reject();
+            return Promise.reject(new Error("While we need to send a message to confirm parameter, the message not found."));
+        }
+
+        let done_generate_message;
+        if (typeof message === "function"){
+            debug("message_to_confirm is made of function. We generate message with it.");
+            done_generate_message = new Promise((resolve, reject) => {
+                return message(this.bot, this.event, this.context, resolve, reject);
+            });
+        } else if (typeof message === "object"){
+            debug("message_to_confirm is made of object. We use it as it is.");
+            done_generate_message = Promise.resolve(message);
+        } else {
+            return Promise.reject(new Error("Format of message_to_confirm is invalid."));
         }
 
         // Set confirming.
         this.context.confirming = param_key;
 
         // Send question to the user.
-        if (this.context._flow == "push"){
-            debug("We use send method to collect parameter since this is push flow.");
-            debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
-            return this.messenger.send(this.event.to[`${this.event.to.type}Id`], [message]);
-        } else {
-            debug("We use reply method to collect parameter.");
-            return this.messenger.reply([message]);
-        }
+        return done_generate_message.then((message) => {
+            if (this.context._flow == "push"){
+                debug("We use send method to collect parameter since this is push flow.");
+                debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
+                return this.messenger.send(this.event.to[`${this.event.to.type}Id`], [message]);
+            } else {
+                debug("We use reply method to collect parameter.");
+                return this.messenger.reply([message]);
+            }
+        });
     }
 
     change_parameter(key, value){

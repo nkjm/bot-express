@@ -21,7 +21,8 @@ Object which contains context information.
 /**
 Object which contains intent and related information.
 @typedef {Object} intent
-@prop {String} name - Name of the
+@prop {String} id - Intent id.
+@prop {String} name - Intent name.
 @prop {Object} parameters - Parameters found in the sentence.
 @prop {String} text_response - Text response to the sentence.
 @prop {Object} fulfillment - Object to fulfill the action.

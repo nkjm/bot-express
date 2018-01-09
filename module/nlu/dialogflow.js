@@ -29,6 +29,7 @@ module.exports = class NluDialogflow {
         let promise_got_intent = new Promise((resolve, reject) => {
             ai_request.on('response', (response) => {
                 let intent = {
+                    id: response.id,
                     name: response.result.action,
                     parameters: response.result.parameters,
                     text_response: response.result.fulfillment.speech,

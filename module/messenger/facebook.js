@@ -17,7 +17,7 @@ module.exports = class MessengerFacebook {
 
     multicast(event, to_list, messages){
         // If this is test, we will not actually issue call out.
-        if (process.env.BOT_EXPRESS_ENV == "test"){
+        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
@@ -31,7 +31,7 @@ module.exports = class MessengerFacebook {
 
     send(event, to, messages){
         // If this is test, we will not actually issue call out.
-        if (process.env.BOT_EXPRESS_ENV == "test"){
+        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }

@@ -64,7 +64,7 @@ module.exports = (options) => {
     options.default_skill = options.default_skill || DEFAULT_SKILL;
     if (!!options.skill_path){
         options.skill_path = "../../../../" + options.skill_path;
-    } else if (process.env.BOT_EXPRESS_ENV == "development" || process.env.BOT_EXPRESS_ENV == "test"){
+    } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
         options.skill_path = "../../sample_skill/";
     } else {
@@ -82,7 +82,7 @@ module.exports = (options) => {
 
     // Webhook Process
     router.post('/', (req, res, next) => {
-        if (process.env.BOT_EXPRESS_ENV != "test"){
+        if (!["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             res.sendStatus(200);
         }
 
@@ -90,13 +90,13 @@ module.exports = (options) => {
         webhook.run(req).then((context) => {
             debug("Successful End of Webhook. Current context follows.");
             debug(context);
-            if (process.env.BOT_EXPRESS_ENV == "test"){
+            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
                 res.json(context);
             }
         }, (error) => {
             debug("Abnormal End of Webhook. Error follows.");
             debug(error);
-            if (process.env.BOT_EXPRESS_ENV == "test"){
+            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
                 res.status(400).send(error.message);
             }
         });

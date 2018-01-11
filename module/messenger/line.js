@@ -83,6 +83,9 @@ module.exports = class MessengerLine {
     }
 
     static extract_sender_id(event){
+        if (event.type === "bot-express:push"){
+            return MessengerLine.extract_to_id(event);
+        }
         return event.source[`${event.source.type}Id`]
     }
 

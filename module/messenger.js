@@ -309,7 +309,7 @@ module.exports = class Messenger {
 
         if (this.translater){
             let sender_language = this.context.sender_language;
-            let bot_language = this.options.nlp_options.language;
+            let bot_language = this.options.language;
             if (sender_language && (sender_language != bot_language)){
                 debug(`Translating following message...`);
                 debug(compiled_message);

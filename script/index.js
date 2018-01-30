@@ -19,9 +19,9 @@ server.listen(process.env.PORT || 5000, () => {
 server.use("/webhook", bot_express({
     nlu: {
         type: "dialogflow",
-        language: "ja",
         options: {
-            client_access_token: process.env.DIALOGFLOW_CLIENT_ACCESS_TOKEN
+            client_access_token: process.env.DIALOGFLOW_CLIENT_ACCESS_TOKEN,
+            language: "ja"
         }
     },
     memory: {

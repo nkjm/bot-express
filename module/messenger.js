@@ -30,7 +30,8 @@ module.exports = class Messenger {
         // Instantiates a translater
         if (this.options.google_project_id && this.options.auto_translation == "enable"){
             this.translater = google_translate({
-                projectId: this.options.google_project_id
+                projectId: this.options.google_project_id,
+                key: this.options.google_api_key
             });
         }
     }

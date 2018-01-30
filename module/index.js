@@ -54,6 +54,7 @@ router.use(body_parser.json({
 * @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
 * @param {String} [options.auto_translation] - Flag to enable auto translation. Set this value to "enable" to enable auto translation. When set to "enable", you need to set options.google_project_id and GOOGLE_APPLICATION_CREDENTIALS environment variables.
 * @param {String} [options.google_project_id] - Google Project Id to be used when you want to enable auto translation.
+* @param {String} [options.google_api_key] - Google API Key for translattion.
 */
 module.exports = (options) => {
     debug("\nBot Express\n");

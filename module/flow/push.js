@@ -50,6 +50,7 @@ module.exports = class PushFlow extends Flow {
         if (!skip_instantiate_skill){
             done_instantiate_skill = Promise.resolve(this.event).then((event) => {
                 this.context.intent = event.intent;
+                this.context.sender_language = event.language;
                 this.context.skill = super.instantiate_skill(event.intent.name);
                 this.messenger.skill = this.context.skill;
 

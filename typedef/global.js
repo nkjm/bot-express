@@ -38,4 +38,5 @@ Custom event to start conversation from Bot.
 @prop {String} [to.roomId] - Room id of reciever. Required if to.type is "room".
 @prop {String} [to.groupId] - Group id of reciever. Required if to.type is "group".
 @prop {intent} intent - Intent object to be applied in this conversation.
+@prop {String} language - ISO-639-1 based code of the sender's language.
 */

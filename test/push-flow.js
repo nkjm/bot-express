@@ -40,7 +40,8 @@ for (let messenger_option of messenger_options){
                         },
                         intent: {
                             name: "test-push-flow"
-                        }
+                        },
+                        language: "ja"
                     }
                     return emu.send(event);
                 }).then(function(context){
@@ -73,7 +74,8 @@ for (let messenger_option of messenger_options){
                             parameters: {
                                 diet_type: "lunch"
                             }
-                        }
+                        },
+                        language: "ja"
                     }
                     return emu.send(event);
                 }).then(function(context){

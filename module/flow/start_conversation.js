@@ -55,7 +55,8 @@ module.exports = class StartConversationFlow extends Flow {
         if (this.messenger.identify_event_type(this.event) == "message" && this.messenger.identify_message_type() != "text"){
             debug("This is a message event but not a text message so we use default skill.");
 
-            skip_translate, skip_identify_intent = true;
+            skip_translate = true;
+            skip_identify_intent = true;
             done_identify_intent = Promise.resolve({
                 name: this.options.default_intent
             });
@@ -74,11 +75,14 @@ module.exports = class StartConversationFlow extends Flow {
                         return Promise.reject(new Error("Recieved postback event and the payload indicates that this should contain intent but not found."));
                     }
                     debug("This is a postback event and we found intent inside payload.");
-                    skip_translate, skip_identify_intent = true;
+                    skip_translate = true;
+                    skip_identify_intent = true;
+                    this.context.sender_language = postback_payload.language;
                     done_identify_intent = Promise.resolve(postback_payload.intent);
                 } else {
                     debug("This is a postback event and payload is JSON. It's impossible to identify intent so we use default skill.");
-                    skip_translate, skip_identify_intent = true;
+                    skip_translate = true;
+                    skip_identify_intent = true;
                     done_identify_intent = Promise.resolve({
                         name: this.options.default_intent
                     });

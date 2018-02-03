@@ -32,7 +32,8 @@ for (let messenger_option of messenger_options){
                             _type: "intent",
                             intent: {
                                 name: "test-begin-finish"
-                            }
+                            },
+                            language: "ja"
                         })
                     });
                     return emu.send(event);
@@ -59,7 +60,8 @@ for (let messenger_option of messenger_options){
                             _type: "intent",
                             intent: {
                                 name: "handle-pizza-order"
-                            }
+                            },
+                            language: "ja"
                         })
                     });
                     return emu.send(event);
@@ -91,7 +93,8 @@ for (let messenger_option of messenger_options){
                             _type: "intent",
                             intent: {
                                 name: "bye"
-                            }
+                            },
+                            language: "ja"
                         })
                     });
                     return emu.send(event);

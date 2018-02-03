@@ -31,7 +31,8 @@ for (let messenger_option of messenger_options){
                             _type: "intent",
                             intent: {
                                 name: "juminhyo"
-                            }
+                            },
+                            language: "ja"
                         })
                     });
                     return emu.send(event);
@@ -62,7 +63,8 @@ for (let messenger_option of messenger_options){
                             _type: "intent",
                             intent: {
                                 name: "juminhyo"
-                            }
+                            },
+                            language: "ja"
                         })
                     });
                     return emu.send(event);
@@ -101,7 +103,8 @@ for (let messenger_option of messenger_options){
                             _type: "intent",
                             intent: {
                                 name: "juminhyo"
-                            }
+                            },
+                            language: "ja"
                         })
                     });
                     return emu.send(event);

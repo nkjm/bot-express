@@ -45,7 +45,7 @@ server.use('/webhook', bot_express({
             url: process.env.MONGODB_URL
         }
         */
-        type: "memory-cache",
+        type: "memory-cache"
         retention: Number(process.env.MEMORY_RETENTION)
     },
     beacon_skill: {
@@ -57,6 +57,7 @@ server.use('/webhook', bot_express({
     join_skill: "say-welcome",
     leave_skill: "clear-context",
     google_project_id: process.env.GOOGLE_PROJECT_ID,
+    google_api_key: process.env.GOOGLE_API_KEY,
     auto_translation: process.env.AUTO_TRANSLATION
 }));
 

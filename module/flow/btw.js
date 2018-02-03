@@ -39,7 +39,8 @@ module.exports = class BtwFlow extends Flow {
         if (this.messenger.identify_event_type(this.event) == "message" && this.messenger.identify_message_type() != "text"){
             debug("This is a message event but not a text message so we skip translation.");
 
-            skip_translate, skip_identify_mind = true;
+            skip_translate = true;
+            skip_identify_mind = true;
             done_identify_mind = Promise.resolve({
                 result: "no_idea"
             });
@@ -55,16 +56,20 @@ module.exports = class BtwFlow extends Flow {
                         return Promise.reject(new Error("Recieved postback event and the payload indicates that this should contain intent but not found."));
                     }
 
+                    this.context.sender_language = postback_payload.language;
+
                     if (postback_payload.intent && postback_payload.intent.name == this.context.intent.name){
                         debug(`We conluded that user has in mind to restart conversation.`);
-                        skip_translate, skip_identify_mind = true;
+                        skip_translate = true;
+                        skip_identify_mind = true;
                         done_identify_mind = Promise.resolve({
                             result: "restart_conversation",
                             intent: postback_payload.intent
                         });
                     } else if (postback_payload.intent && postback_payload.intent.name != this.context.intent.name){
                         debug(`We conluded that user has in mind to change intent.`);
-                        skip_translate, skip_identify_mind = true;
+                        skip_translate = true;
+                        skip_identify_mind = true;
                         done_identify_mind = Promise.resolve({
                             result: "change_intent",
                             intent: postback_payload.intent
@@ -72,7 +77,8 @@ module.exports = class BtwFlow extends Flow {
                     }
                 } else {
                     debug("This is a postback event and payload is JSON. It's impossible to identify intent so we use default skill.");
-                    skip_translate, skip_identify_mind = true;
+                    skip_translate = true;
+                    skip_identify_mind = true;
                     done_identify_mind = Promise.resolve({
                         result: "no_idea"
                     });
@@ -92,7 +98,6 @@ module.exports = class BtwFlow extends Flow {
                 done_translate = Promise.resolve().then((response) => {
                     return this.messenger.translater.detect(message_text)
                 }).then((response) => {
-                    this.context.sender_language = response[0].language;
                     debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
 
                     // If sender language is different from bot language, we translate message into bot language.

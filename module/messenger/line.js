@@ -527,6 +527,10 @@ module.exports = class MessengerLine {
                         }
                         debug("Translated message follows.");
                         debug(message);
+                        if (message.template.actions){
+                            debug("Actions follows");
+                            debug(message.template.actions);
+                        }
                         return message;
                     }
                 );

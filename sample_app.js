@@ -45,7 +45,7 @@ server.use('/webhook', bot_express({
             url: process.env.MONGODB_URL
         }
         */
-        type: "memory-cache"
+        type: "memory-cache",
         retention: Number(process.env.MEMORY_RETENTION)
     },
     beacon_skill: {

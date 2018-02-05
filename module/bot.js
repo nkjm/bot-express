@@ -28,20 +28,22 @@ class Bot {
     * Send(Push) message to specified user.
     * @param {String} recipient_id - Recipient user id.
     * @param {MessageObject|Array.<MessageObject>} messages - Messages object[s] to send.
+    * @param {String} language - ISO-639-1 based language code to translate to.
     * @returns {Promise.<Object>} - Returns promise returning response from Messenger API.
     */
-    send(recipient_id, messages){
-        return this._messenger.send(recipient_id, messages);
+    send(recipient_id, messages, language){
+        return this._messenger.send(recipient_id, messages, language);
     }
 
     /**
     * Send(Push) messages to multiple users.
     * @param {Array.<String>} recipient_ids - Array of recipent user id.
     * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to send.
+    * @param {String} language - ISO-639-1 based language code to translate to.
     * @returns {Promise.<Object>} - Returns promise returning response from Messenger API.
     */
     multicast(recipient_ids, messages){
-        return this._messenger.multicast(recipient_ids, messages);
+        return this._messenger.multicast(recipient_ids, messages, language);
     }
 
     /**

@@ -143,11 +143,13 @@ module.exports = class Messenger {
                 this.compile_message(message).then((compiled_message) => {
                     if (!this.translater){
                         // Auto translation is disabled so we won't translate.
+                        debug("Translater is disabled so we won't translate.");
                         return compiled_message;
                     }
 
                     if (!this.context.sender_language || this.context.sender_language === this.options.language){
                         // Auto tranlsation is enabled but sender's language is identical to bot's language so we don't have to tranaslate.
+                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
                         return compiled_message;
                     }
 
@@ -197,11 +199,13 @@ module.exports = class Messenger {
                 this.compile_message(message).then((compiled_message) => {
                     if (!this.translater){
                         // Auto translation is disabled so we won't translate.
+                        debug("Translater is disabled so we won't translate.");
                         return compiled_message;
                     }
 
                     if (!language || language === this.options.language){
                         // Auto tranlsation is enabled but reciever's language is identical to bot's language so we don't have to tranaslate.
+                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
                         return compiled_message;
                     }
 
@@ -246,11 +250,13 @@ module.exports = class Messenger {
                 this.compile_message(message).then((compiled_message) => {
                     if (!this.translater){
                         // Auto translation is disabled so we won't translate.
+                        debug("Translater is disabled so we won't translate.");
                         return compiled_message;
                     }
 
                     if (!language || language === this.options.language){
                         // Auto tranlsation is enabled but reciever's language is identical to bot's language so we don't have to tranaslate.
+                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
                         return compiled_message;
                     }
 

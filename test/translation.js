@@ -46,6 +46,7 @@ describe("Test compile message from line", function(){
             }).then(function(context){
                 // Bot sent template button postback.
                 context.should.have.property("confirmed").and.deep.equal({line_text: "マルゲリータ"});
+                context.translation.should.equal("マルゲリータ");
                 context.previous.message[0].from.should.equal("bot");
                 context.previous.message[0].message.should.deep.equal({
                     type: "template",

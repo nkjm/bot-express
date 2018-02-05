@@ -117,7 +117,7 @@ module.exports = class StartConversationFlow extends Flow {
                 }).then((response) => {
                     debug("Translater response follows.");
                     debug(response);
-                    this.context.translation = response;
+                    this.context.translation = response[0];
                     return response[0];
                 });
             }

@@ -135,10 +135,31 @@ module.exports = class Messenger {
         if (messages){
             this.queue(messages);
         }
+
         let messages_compiled = [];
         for (let message of this.context._message_queue){
-            messages_compiled.push(this.compile_message(message));
+            messages_compiled.push(
+                // Compiling message.
+                this.compile_message(message).then((compiled_message) => {
+                    if (!this.translater){
+                        // Auto translation is disabled so we won't translate.
+                        return compiled_message;
+                    }
+
+                    if (!this.context.sender_language || this.context.sender_language === this.options.language){
+                        // Auto tranlsation is enabled but sender's language is identical to bot's language so we don't have to tranaslate.
+                        return compiled_message;
+                    }
+
+                    debug(`Translating following message...`);
+                    debug(compiled_message);
+
+                    let message_type = this.Messenger_classes[this.type].identify_message_type(compiled_message);
+                    return this.Messenger_classes[this.type].translate_message(this.translater, message_type, compiled_message, this.context.sender_language);
+                })
+            );
         }
+
         let compiled_messages;
         return Promise.all(messages_compiled).then((response) => {
             compiled_messages = response;
@@ -164,7 +185,7 @@ module.exports = class Messenger {
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    send(recipient_id, messages){
+    send(recipient_id, messages, language){
         // If messages is not array, we make it array.
         if (messages.length === undefined){
             messages = [messages];
@@ -172,7 +193,25 @@ module.exports = class Messenger {
 
         let messages_compiled = [];
         for (let message of messages){
-            messages_compiled.push(this.compile_message(message));
+            messages_compiled.push(
+                this.compile_message(message).then((compiled_message) => {
+                    if (!this.translater){
+                        // Auto translation is disabled so we won't translate.
+                        return compiled_message;
+                    }
+
+                    if (!language || language === this.options.language){
+                        // Auto tranlsation is enabled but reciever's language is identical to bot's language so we don't have to tranaslate.
+                        return compiled_message;
+                    }
+
+                    debug(`Translating following message...`);
+                    debug(compiled_message);
+
+                    let message_type = this.Messenger_classes[this.type].identify_message_type(compiled_message);
+                    return this.Messenger_classes[this.type].translate_message(this.translater, message_type, compiled_message, language);
+                })
+            );
         }
         let compiled_messages;
         return Promise.all(messages_compiled).then((response) => {
@@ -195,7 +234,7 @@ module.exports = class Messenger {
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    multicast(recipient_ids, messages){
+    multicast(recipient_ids, messages, language){
         // If messages is not array, we make it array.
         if (messages.length === undefined){
             messages = [messages];
@@ -203,7 +242,25 @@ module.exports = class Messenger {
 
         let messages_compiled = [];
         for (let message of messages){
-            messages_compiled.push(this.compile_message(message));
+            messages_compiled.push(
+                this.compile_message(message).then((compiled_message) => {
+                    if (!this.translater){
+                        // Auto translation is disabled so we won't translate.
+                        return compiled_message;
+                    }
+
+                    if (!language || language === this.options.language){
+                        // Auto tranlsation is enabled but reciever's language is identical to bot's language so we don't have to tranaslate.
+                        return compiled_message;
+                    }
+
+                    debug(`Translating following message...`);
+                    debug(compiled_message);
+
+                    let message_type = this.Messenger_classes[this.type].identify_message_type(compiled_message);
+                    return this.Messenger_classes[this.type].translate_message(this.translater, message_type, compiled_message, language);
+                })
+            );
         }
         let compiled_messages;
         return Promise.all(messages_compiled).then((response) => {
@@ -295,17 +352,6 @@ module.exports = class Messenger {
             debug(compiled_message);
         }
 
-        if (this.translater){
-            let sender_language = this.context.sender_language;
-            let bot_language = this.options.language;
-            if (sender_language && (sender_language != bot_language)){
-                debug(`Translating following message...`);
-                debug(compiled_message);
-
-                let message_type = this.Messenger_classes[this.type].identify_message_type(compiled_message);
-                return this.Messenger_classes[this.type].translate_message(this.translater, message_type, compiled_message, sender_language);
-            }
-        }
         return Promise.resolve(compiled_message);
     }
 

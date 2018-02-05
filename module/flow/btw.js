@@ -98,21 +98,22 @@ module.exports = class BtwFlow extends Flow {
                 done_translate = Promise.resolve().then((response) => {
                     return this.messenger.translater.detect(message_text)
                 }).then((response) => {
+                    this.context.sender_language = response[0].language;
                     debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
 
                     // If sender language is different from bot language, we translate message into bot language.
                     if (this.options.language === this.context.sender_language){
-                        debug("We do not translate message text.");
-                        return [message_text];
+                        debug("Won't translate message text.");
+                        return message_text;
                     } else {
                         debug("Translating message text...");
-                        return this.messenger.translater.translate(message_text, this.options.language)
+                        return this.messenger.translater.translate(message_text, this.options.language).then((response) => {
+                            debug("Translater response follows.");
+                            debug(response);
+                            this.context.translation = response[0];
+                            return response[0];
+                        });
                     }
-                }).then((response) => {
-                    debug("Translater response follows.");
-                    debug(response);
-                    this.context.translation = response[0];
-                    return response[0];
                 });
             }
         }

@@ -98,7 +98,6 @@ module.exports = class BtwFlow extends Flow {
                 done_translate = Promise.resolve().then((response) => {
                     return this.messenger.translater.detect(message_text)
                 }).then((response) => {
-                    this.context.sender_language = response[0].language;
                     debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
 
                     // If sender language is different from bot language, we translate message into bot language.
@@ -112,7 +111,7 @@ module.exports = class BtwFlow extends Flow {
                             debug(response);
                             this.context.translation = response[0];
                             return response[0];
-                        });
+                        })
                     }
                 });
             }

@@ -47,6 +47,7 @@ module.exports = class ReplyFlow extends Flow {
                     (response) => {
                         debug("Translater response follows.");
                         debug(response);
+                        this.context.translation = response;
                         return response[0];
                     }
                 );

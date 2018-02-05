@@ -21,7 +21,8 @@ module.exports = class FollowFlow extends Flow {
                 message: []
             },
             _message_queue: [],
-            sender_language: null
+            sender_language: null,
+            translation: null
         };
         messenger.context = context;
         super(messenger, event, context, options);

@@ -140,26 +140,22 @@ module.exports = class Messenger {
             messages_compiled.push(this.compile_message(message));
         }
         let compiled_messages;
-        return Promise.all(messages_compiled).then(
-            (response) => {
-                compiled_messages = response;
-                if (this.event.type == "bot-express:push"){
-                    return this.service.send(this.event, this.event.to[`${this.event.to.type}Id`], compiled_messages);
-                }
-                return this.service.reply(this.event, compiled_messages);
+        return Promise.all(messages_compiled).then((response) => {
+            compiled_messages = response;
+            if (this.event.type == "bot-express:push"){
+                return this.service.send(this.event, this.event.to[`${this.event.to.type}Id`], compiled_messages);
             }
-        ).then(
-            (response) => {
-                for (let compiled_message of compiled_messages){
-                    this.context.previous.message.unshift({
-                        from: "bot",
-                        message: compiled_message
-                    });
-                }
-                this.context._message_queue = [];
-                return response;
+            return this.service.reply(this.event, compiled_messages);
+        }).then((response) => {
+            for (let compiled_message of compiled_messages){
+                this.context.previous.message.unshift({
+                    from: "bot",
+                    message: compiled_message
+                });
             }
-        );
+            this.context._message_queue = [];
+            return response;
+        });
     }
 
     /**
@@ -179,22 +175,18 @@ module.exports = class Messenger {
             messages_compiled.push(this.compile_message(message));
         }
         let compiled_messages;
-        return Promise.all(messages_compiled).then(
-            (response) => {
-                compiled_messages = response;
-                return this.service.send(this.event, recipient_id, compiled_messages);
+        return Promise.all(messages_compiled).then((response) => {
+            compiled_messages = response;
+            return this.service.send(this.event, recipient_id, compiled_messages);
+        }).then((response) => {
+            for (let compiled_message of compiled_messages){
+                this.context.previous.message.unshift({
+                    from: "bot",
+                    message: compiled_message
+                });
             }
-        ).then(
-            (response) => {
-                for (let compiled_message of compiled_messages){
-                    this.context.previous.message.unshift({
-                        from: "bot",
-                        message: compiled_message
-                    });
-                }
-                return response;
-            }
-        );
+            return response;
+        });
     }
 
     /**
@@ -214,22 +206,18 @@ module.exports = class Messenger {
             messages_compiled.push(this.compile_message(message));
         }
         let compiled_messages;
-        return Promise.all(messages_compiled).then(
-            (response) => {
-                compiled_messages = response;
-                return this.service.multicast(this.event, recipient_ids, compiled_messages);
+        return Promise.all(messages_compiled).then((response) => {
+            compiled_messages = response;
+            return this.service.multicast(this.event, recipient_ids, compiled_messages);
+        }).then((response) => {
+            for (let compiled_message of compiled_messages){
+                this.context.previous.message.unshift({
+                    from: "bot",
+                    message: compiled_message
+                });
             }
-        ).then(
-            (response) => {
-                for (let compiled_message of compiled_messages){
-                    this.context.previous.message.unshift({
-                        from: "bot",
-                        message: compiled_message
-                    });
-                }
-                return response;
-            }
-        );
+            return response;
+        });
     }
 
     /**

@@ -15,6 +15,7 @@ Object which contains context information.
 @prop {Array.<Object>} intent.parameters - Entities identified by NLP
 @prop {Skill} skill - Skill object currelty applied.
 @prop {String} sender_language - Automatically detected senders language.
+@prop {String} translation - Translated text of current message.
 @prop {String} _flow - Flow applied to current event.
 */
 

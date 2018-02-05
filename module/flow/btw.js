@@ -111,6 +111,7 @@ module.exports = class BtwFlow extends Flow {
                 }).then((response) => {
                     debug("Translater response follows.");
                     debug(response);
+                    this.context.translation = response;
                     return response[0];
                 });
             }

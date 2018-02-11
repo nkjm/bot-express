@@ -30,7 +30,7 @@ module.exports = class NluDialogflow {
             ai_request.on('response', (response) => {
                 let intent = {
                     id: response.result.metadata.intentId,
-                    name: response.result.action,
+                    name: response.result.action || "input.unknown",
                     parameters: response.result.parameters,
                     text_response: response.result.fulfillment.speech,
                     fulfillment: response.result.fulfillment

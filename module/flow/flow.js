@@ -460,9 +460,10 @@ module.exports = class Flow {
             confirmed: this.context.confirmed,
             previous: this.context.previous,
             skill: this.context.skill,
-            sender_language: this.context.sender_language
+            sender_language: this.context.sender_language,
+            translation: this.context.translation
         }
-        return this.restart_conversation(intent);
+        return this.change_intent(intent);
     }
 
     restart_conversation(intent){
@@ -523,9 +524,10 @@ module.exports = class Flow {
     }
 
     change_intent(intent){
+        this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
-        this.context.intent = intent;
+
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){

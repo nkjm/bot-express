@@ -47,7 +47,7 @@ module.exports = class MessengerGoogle {
             let concated_message = "";
             messages.forEach(message => {
                 if (typeof message === "string"){
-                    concated_message += message;
+                    concated_message += message + "\n";
                 } else {
                     if (message.speech) concated_message += message.speech;
                     if (message.title) concated_message += message.title;

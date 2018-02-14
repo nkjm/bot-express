@@ -186,7 +186,7 @@ module.exports = class Messenger {
             if (this.event.type == "bot-express:push"){
                 return this.service.send(this.event, this.event.to[`${this.event.to.type}Id`], compiled_messages);
             }
-            if (to_collect){
+            if (to_collect || this.context.parent){
                 return this.service.reply_to_collect(this.event, compiled_messages);
             }
             return this.service.reply(this.event, compiled_messages);

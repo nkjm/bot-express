@@ -631,6 +631,7 @@ module.exports = class Flow {
                 debug(`We finished sub skill and get back to parent skill "${this.context.parent.intent.name}".`);
                 this.context.parent.previous.message = this.context.previous.message.concat(this.context.parent.previous.message);
                 this.context = this.context.parent;
+                delete this.context.parent;
             } else if (this.context.skill.clear_context_on_finish){
                 // This is Root Skill. If clear_context_on_finish flag is true, we clear context.
                 debug(`Clearing context.`);

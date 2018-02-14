@@ -78,6 +78,10 @@ module.exports = class MessengerFacebook {
         );
     }
 
+    reply_to_collect(event, messages){
+        return this.reply(event, messages);
+    }
+
     reply(event, messages){
         return this.send(event, event.sender.id, messages);
     }

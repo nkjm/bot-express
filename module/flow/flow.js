@@ -146,7 +146,7 @@ module.exports = class Flow {
                 return this.messenger.send(this.event.to[`${this.event.to.type}Id`], [message]);
             } else {
                 debug("We use reply method to collect parameter.");
-                return this.messenger.reply([message]);
+                return this.messenger.reply_to_collect([message]);
             }
         });
     }

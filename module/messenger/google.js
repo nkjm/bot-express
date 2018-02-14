@@ -24,7 +24,11 @@ module.exports = class MessengerGoogle {
         return Promise.reject(new Error("This method is not supported."));
     }
 
-    reply(event, messages){
+    reply_to_collect(event, messages){
+        this.reply(event, messages, true);
+    }
+
+    reply(event, messages, to_collect){
         return new Promise((resolve, reject) => {
             // If this is test, we will not actually issue call out.
             if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
@@ -35,7 +39,10 @@ module.exports = class MessengerGoogle {
                 return reject(new Error("No message found"));
             }
             if (messages.length === 1){
-                return resolve(this.sdk.ask(messages[0]));
+                if (to_collect){
+                    return resolve(this.sdk.ask(messages[0]));
+                }
+                return resolve(this.sdk.tell(messages[0]));
             }
             let concated_message = "";
             messages.forEach(message => {
@@ -49,7 +56,10 @@ module.exports = class MessengerGoogle {
             if (concated_message === ""){
                 return reject(new Error("No message found"));
             }
-            return resolve(this.sdk.ask(concated_message));
+            if (to_collect){
+                return resolve(this.sdk.ask(concated_message));
+            }
+            return resolve(this.sdk.tell(concated_message));
         })
     }
 

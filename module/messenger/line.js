@@ -44,6 +44,10 @@ module.exports = class MessengerLine {
         return this.sdk.pushMessage(to, messages);
     }
 
+    reply_to_collect(event, messages){
+        return this.reply(event, messages);
+    }
+
     reply(event, messages){
         // If this is test, we will not actually issue call out.
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){

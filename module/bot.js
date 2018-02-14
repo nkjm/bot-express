@@ -7,7 +7,7 @@
 class Bot {
     constructor(messenger){
         /**
-        @prop {String} type - Type of messenger. The value can be "line" or "facebook".
+        @prop {String} type - Type of messenger. The value can be "line","facebook" and "google".
         @prop {Object} plugin - Object which has direct access to each messenger libraries.
         */
         this.type = messenger.type;

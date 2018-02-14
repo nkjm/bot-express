@@ -136,11 +136,20 @@ module.exports = class Messenger {
     }
 
     /**
+    * Reply messages to sender to collect parameter
+    * @param {Array.<MessageObject>} messages - The array of message objects.
+    * @returns {Array.<Promise>}
+    */
+    reply_to_collect(messages = null){
+        return this.reply(messages, true)
+    }
+
+    /**
     * Reply messages to sender.
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    reply(messages = null){
+    reply(messages = null, to_collect = false){
         if (messages){
             this.queue(messages);
         }
@@ -176,6 +185,9 @@ module.exports = class Messenger {
             compiled_messages = response;
             if (this.event.type == "bot-express:push"){
                 return this.service.send(this.event, this.event.to[`${this.event.to.type}Id`], compiled_messages);
+            }
+            if (to_collect){
+                return this.service.reply_to_collect(this.event, compiled_messages);
             }
             return this.service.reply(this.event, compiled_messages);
         }).then((response) => {

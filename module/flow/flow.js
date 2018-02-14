@@ -128,8 +128,8 @@ module.exports = class Flow {
             done_generate_message = new Promise((resolve, reject) => {
                 return message(this.bot, this.event, this.context, resolve, reject);
             });
-        } else if (typeof message === "object"){
-            debug("message_to_confirm is made of object. We use it as it is.");
+        } else if (typeof message === "object" || typeof message === "string"){
+            debug("message_to_confirm is made of object|string. We use it as it is.");
             done_generate_message = Promise.resolve(message);
         } else {
             return Promise.reject(new Error("Format of message_to_confirm is invalid."));
@@ -312,7 +312,7 @@ module.exports = class Flow {
             debug("Going to check if we can identify the intent.");
             let nlu = new Nlu(this.options.nlu);
             done_identify_intent = nlu.identify_intent(payload, {
-                session_id: this.messenger.extract_sender_id()
+                session_id: this.messenger.extract_session_id()
             });
         }
 
@@ -595,7 +595,7 @@ module.exports = class Flow {
             message: this.messenger.extract_message()
         });
 
-        // If pause flat has been set, we stop processing following actions and exit.
+        // If pause flag has been set, we stop processing following actions and exit.
         if (this.context._pause){
             debug("Detected pause flag. We stop processing collect() and finish().");
             this.context._pause = false;

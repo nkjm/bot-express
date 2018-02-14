@@ -139,6 +139,9 @@ module.exports = class MessengerFacebook {
         return event.sender.id;
     }
 
+    static extract_session_id(event){
+        return MessengerFacebook.extract_sender_id(event);
+    }
 
     static extract_param_value(event){
         let param_value;

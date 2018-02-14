@@ -84,11 +84,16 @@ module.exports = (options) => {
     // Webhook Process
     router.post('/', (req, res, next) => {
         if (!["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-            res.sendStatus(200);
+            if (!req.get("google-actions-api-version")){
+                res.sendStatus(200);
+            }
         }
 
+        options.req = req;
+        options.res = res;
+
         let webhook = new Webhook(options);
-        webhook.run(req).then((context) => {
+        webhook.run().then((context) => {
             debug("Successful End of Webhook. Current context follows.");
             debug(context);
             if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){

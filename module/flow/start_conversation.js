@@ -128,8 +128,9 @@ module.exports = class StartConversationFlow extends Flow {
             done_identify_intent = done_translate.then((message_text) => {
                 let nlu = new Nlu(this.options.nlu);
                 debug("NLU Abstraction instantiated.");
+                debug(`Going to identify intent of ${message_text}...`);
                 return nlu.identify_intent(message_text, {
-                    session_id: this.messenger.extract_sender_id()
+                    session_id: this.messenger.extract_session_id()
                 });
             });
         }

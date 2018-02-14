@@ -110,6 +110,15 @@ class Bot {
     }
 
     /**
+    * Extract session id.
+    * @param {EventObject} event - Event to extract message text.
+    * @returns {String} - Extracted sender's user id.
+    */
+    extract_session_id(event){
+        return this._messenger.extract_session_id(event);
+    }
+
+    /**
     * Identify the event type.
     * @param {EventObject} event - Event to identify event type.
     * @returns {String} - Event type. In case of LINE, it can be "message", "follow", "unfollow", "join", "leave", "postback", "beacon". In case of Facebook, it can be "echo", "message", "delivery", "read", "postback", "optin", "referral", "account_linking".

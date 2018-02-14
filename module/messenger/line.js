@@ -11,6 +11,10 @@ Promise.promisifyAll(request);
 module.exports = class MessengerLine {
 
     constructor(options){
+        if (!options.line_channel_secret || !options.line_access_token){
+            return
+        }
+
         this._channel_secret = options.line_channel_secret;
         this._access_token = options.line_access_token;
 
@@ -87,6 +91,10 @@ module.exports = class MessengerLine {
             return MessengerLine.extract_to_id(event);
         }
         return event.source[`${event.source.type}Id`]
+    }
+
+    static extract_session_id(event){
+        return MessengerLine.extract_sender_id(event);
     }
 
     static extract_to_id(event){

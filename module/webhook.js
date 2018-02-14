@@ -4,7 +4,8 @@ require("dotenv").config();
 
 const REQUIRED_OPTIONS = {
     line: ["line_channel_secret", "line_access_token"],
-    facebook: ["facebook_app_secret", "facebook_page_access_token"]
+    facebook: ["facebook_app_secret", "facebook_page_access_token"],
+    google: []
 }
 
 // Import NPM Packages
@@ -41,19 +42,20 @@ class Webhook {
 
     /**
     Main function.
-    @param {Object} req - HTTP Request from messenger.
     @returns {Promise.<context>}
     */
-    run(req){
+    run(){
         debug("Webhook runs.\n\n");
 
         let memory = new Memory(this.options.memory);
 
         // Identify messenger.
-        if (req.get("X-Line-Signature") && req.body.events){
+        if (this.options.req.get("X-Line-Signature") && this.options.req.body.events){
             this.options.messenger_type = "line";
-        } else if (req.get("X-Hub-Signature") && req.body.object == "page"){
+        } else if (this.options.req.get("X-Hub-Signature") && this.options.req.body.object == "page"){
             this.options.messenger_type = "facebook";
+        } else if (this.options.req.get("google-actions-api-version")){
+            this.options.messenger_type = "google";
         } else {
             debug(`This event comes from unsupported message platform. Skip processing.`);
             return Promise.resolve(null);
@@ -77,13 +79,13 @@ class Webhook {
         debug("Messenger abstraction instantiated.");
 
         // Signature Validation.
-        if (!messenger.validate_signature(req)){
+        if (!messenger.validate_signature(this.options.req)){
             return Promise.reject("Signature validation failed.");
         }
         debug("Signature validation suceeded.");
 
         // Set Events.
-        let events = messenger.extract_events(req.body);
+        let events = messenger.extract_events(this.options.req.body);
 
         // Process events.
         let done_all_flows = [];

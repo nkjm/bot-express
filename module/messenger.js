@@ -88,6 +88,15 @@ module.exports = class Messenger {
     }
 
     /**
+    * Extract session id.
+    * @param {EventObject} event - Event to extract message text.
+    * @returns {String}
+    */
+    extract_session_id(event){
+        return this.Messenger_classes[this.type].extract_session_id(event || this.event);
+    }
+
+    /**
     * Extract reciever's user/room/group id.
     * @param {EventObject} event - Event to extract message text.
     * @returns {String}
@@ -460,6 +469,8 @@ module.exports = class Messenger {
             if (!!message.quick_replies || !!message.attachment || !!message.text){
                 // Provider is facebook. Type is quick reply.
                 message_format = "facebook";
+            } else if (typeof message === "string"){
+                message_format = "google";
             }
         }
         if (!message_format){

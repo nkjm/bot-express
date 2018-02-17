@@ -10,6 +10,7 @@ Promise.promisifyAll(request);
 module.exports = class MessengerGoogle {
 
     constructor(options){
+        this.project_id = options.google_project_id;
         this.sdk = new ActionsSdkApp({
             request: options.req,
             response: options.res
@@ -64,14 +65,7 @@ module.exports = class MessengerGoogle {
     }
 
     validate_signature(req){
-        return true; // Tentative.
-        /*
-        this.sdk.isRequestFromAssistant().then(() => {
-            return true;
-        }).catch(() => {
-            return false;
-        })
-        */
+        return this.sdk.isRequestFromGoogle(this.project_id);
     }
 
     static extract_events(body){
@@ -117,7 +111,7 @@ module.exports = class MessengerGoogle {
         throw new Error("This method is not supported.");
     }
 
-    static check_supported_event_type(flow, event){
+    static check_supported_event_type(event, flow){
         return true; // Tentative
     }
 

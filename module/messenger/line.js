@@ -1,11 +1,10 @@
 'use strict';
 
-Promise = require("bluebird");
 const request = require("request");
 const crypto = require("crypto");
 const debug = require("debug")("bot-express:messenger");
 const line_bot_sdk = require("@line/bot-sdk");
-
+const secure_compare = require('secure-compare');
 Promise.promisifyAll(request);
 
 module.exports = class MessengerLine {
@@ -58,15 +57,18 @@ module.exports = class MessengerLine {
     }
 
     validate_signature(req){
-        let signature = req.get('X-Line-Signature');
-        let raw_body = req.raw_body;
+        return new Promise((resolve, reject) => {
+            let signature = req.get('X-Line-Signature');
+            let raw_body = req.raw_body;
 
-        // Signature Validation
-        let hash = crypto.createHmac('sha256', this._channel_secret).update(raw_body).digest('base64');
-        if (hash != signature) {
-            return false;
-        }
-        return true;
+            // Signature Validation
+            let hash = crypto.createHmac('sha256', this._channel_secret).update(raw_body).digest('base64');
+
+            if (secure_compare(hash, signature)){
+                return resolve();
+            }
+            return reject();
+        })
     }
 
     static extract_events(body){
@@ -152,7 +154,7 @@ module.exports = class MessengerLine {
         return event.postback.data;
     }
 
-    static check_supported_event_type(flow, event){
+    static check_supported_event_type(event, flow){
         switch(flow){
             case "start_conversation":
                 if (event.type == "message" || event.type == "postback"){

@@ -5,11 +5,12 @@ require("dotenv").config();
 const REQUIRED_OPTIONS = {
     line: ["line_channel_secret", "line_access_token"],
     facebook: ["facebook_app_secret", "facebook_page_access_token"],
-    google: []
+    google: ["google_project_id"]
 }
 
 // Import NPM Packages
 Promise = require("bluebird");
+
 const Memory = require("./memory");
 const debug = require("debug")("bot-express:webhook");
 
@@ -38,6 +39,8 @@ Webhook to receive all request from messenger.
 class Webhook {
     constructor(options){
         this.options = options;
+        this.memory = new Memory(options.memory);
+        this.messenger;
     }
 
     /**
@@ -46,8 +49,6 @@ class Webhook {
     */
     run(){
         debug("Webhook runs.\n\n");
-
-        let memory = new Memory(this.options.memory);
 
         // Identify messenger.
         if (this.options.req.get("X-Line-Signature") && this.options.req.body.events){
@@ -75,169 +76,182 @@ class Webhook {
         debug("Messenger specific required options all set.");
 
         // Instantiate messenger instance.
-        let messenger = new Messenger(this.options);
+        this.messenger = new Messenger(this.options);
         debug("Messenger abstraction instantiated.");
 
-        // Signature Validation.
-        if (!messenger.validate_signature(this.options.req)){
-            return Promise.reject("Signature validation failed.");
-        }
-        debug("Signature validation suceeded.");
+        /**
+        * Overview of Webhook Promise Chain
+        1. Validate signature
+        2. Process events
+          2-1. Recall memory
+          2-2. Run flow
+          2-3. Update memory
+        3. Return contexts
+        **/
 
-        // Set Events.
-        let events = messenger.extract_events(this.options.req.body);
-
-        // Process events.
-        let done_all_flows = [];
-        for (let event of events){
-            debug(`Processing following event.`);
-            debug(event);
-
-            messenger.event = event;
-
-            // If this is for webhook validation, we skip processing this.
-            if(messenger.type == "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
-                debug("This is webhook validation so skip processing.");
-                return Promise.resolve();
-            }
-
-            /**
-            * Overview of Webhook Promise Chain
-
-            1. Recall memory.
-            2. Run flow.
-            3. Update memory.
-            **/
-
-            // Recall Memory
-            let memory_id;
-            if (messenger.identify_event_type(event) == "bot-express:push"){
-                memory_id = messenger.extract_to_id(event);
-            } else {
-                memory_id = messenger.extract_sender_id(event);
-            }
-            debug(`memory id is ${memory_id}.`);
-
-            // Run flow.
-            let done_flow = Promise.resolve().then((response) => {
-                return memory.get(memory_id);
-            }).then((context) => {
-                messenger.context = context;
-
-                let flow;
-                let event_type = messenger.identify_event_type(event);
-                debug(`event type is ${event_type}.`);
-
-                if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
-                    // ### Follow | Unfollow | Join | Leave Flow ###
-                    if (!this.options[event_type + "_skill"]){
-                        return Promise.reject(new BotExpressWebhookSkip(`This is ${event_type} flow but ${event_type}_skill not found so skip.`));
-                    }
-
-                    try {
-                        flow = new flows[event_type](messenger, event, this.options);
-                    } catch(err) {
-                        return Promise.reject(err);
-                    }
-                    return flow.run();
-                } else if (event_type == "beacon"){
-                    // ### Beacon Flow ###
-                    let beacon_event_type = messenger.extract_beacon_event_type();
-
-                    if (!beacon_event_type){
-                        return Promise.reject(new BotExpressWebhookSkip(`Unsupported beacon event so we skip this event.`));
-                    }
-                    if (!this.options.beacon_skill || !this.options.beacon_skill[beacon_event_type]){
-                        return Promise.reject(new BotExpressWebhookSkip(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`));
-                    }
-                    debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
-
-                    messenger.context = context;
-                    try {
-                        flow = new flows[event_type](messenger, event, this.options, beacon_event_type);
-                    } catch(err) {
-                        return Promise.reject(err);
-                    }
-                    return flow.run();
-                } else if (event_type == "bot-express:push"){
-                    // ### Push Flow ###
-                    try {
-                        flow = new flows["push"](messenger, event, this.options);
-                    } catch(err) {
-                        return Promise.reject(err);
-                    }
-                    return flow.run();
-                } else if (!context){
-                    // ### Start Conversation Flow ###
-                    try {
-                        flow = new flows["start_conversation"](messenger, event, this.options);
-                    } catch(err) {
-                        return Promise.reject(err);
-                    }
-                    return flow.run();
-                } else {
-                    if (context.confirming){
-                        // ### Reply Flow ###
-                        try {
-                            flow = new flows["reply"](messenger, event, context, this.options);
-                        } catch(err){
-                            return Promise.reject(err);
-                        }
-                        return flow.run();
-                    } else {
-                        // ### BTW Flow ###
-                        try {
-                            flow = new flows["btw"](messenger, event, context, this.options);
-                        } catch(err){
-                            return Promise.reject(err);
-                        }
-                        return flow.run();
-                    }
-                }
-            });
-
-            done_all_flows = [];
-
-            // Update memory.
-            done_all_flows.push(done_flow.then((context) => {
-                debug("Successful End of Flow.");
-
-                // Update memory.
-                if (!context){
-                    return memory.del(memory_id).then((response) => {
-                        debug("Clearing context");
-                        return null;
-                    })
-                } else {
-                    return memory.put(memory_id, context).then((response) => {
-                        debug("Updating context");
-                        return context;
-                    })
-                }
-            }).catch((error) => {
-                if (error.name == "BotExpressWebhookSkip"){
-                    debug(error.message);
-                    return;
-                }
-
-                debug("Abnormal End of Flow.");
-                // Clear memory.
-                return memory.del(memory_id).then((response) => {
-                    debug("Context cleared.");
-                    return Promise.reject(error);
-                });
-            })); // End of Completion of Flow
-
-        } // End of Process Events.
-
-        return Promise.all(done_all_flows).then((responses) => {
-            debug("All events processed.");
+        return Promise.resolve().then(() => {
+            // Validate Signature
+            return this.messenger.validate_signature(this.options.req);
+        }).then(() => {
+            debug("Signature validation succeeded.");
+            // Process events
+            let events = this.messenger.extract_events(this.options.req.body);
+            return this.process_events(events);
+        }).then((responses) => {
             if (responses && responses.length === 1){
                 return responses[0];
             } else {
                 return responses;
             }
+        }).catch((error) => {
+            return Promise.reject(error);
+        })
+    }
+
+
+    /**
+    Process events.
+    @param {Array.<Object>} - Array of event object.
+    @returns {Promise}
+    */
+    process_events(events){
+        let done_process_events = [];
+        events.forEach((event) => {
+            done_process_events.push(this.process_event(event));
+        })
+        return Promise.all(done_process_events);
+    }
+
+    /**
+    Process events
+    @param {Object} - Event object.
+    @returns {Promise}
+    */
+    process_event(event){
+        debug(`Processing following event.`);
+        debug(event);
+
+        // If this is for webhook validation, we skip processing this.
+        if (this.messenger.type === "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
+            debug("This is webhook validation so skip processing.");
+            return Promise.resolve();
+        }
+
+        // Recall Memory
+        let memory_id;
+        if (this.messenger.identify_event_type(event) === "bot-express:push"){
+            memory_id = this.messenger.extract_to_id(event);
+        } else {
+            memory_id = this.messenger.extract_sender_id(event);
+        }
+        debug(`memory id is ${memory_id}.`);
+
+        // Run flow.
+        let done_flow = Promise.resolve().then((response) => {
+            return this.memory.get(memory_id);
+        }).then((context) => {
+            let flow;
+            let event_type = this.messenger.identify_event_type(event);
+            debug(`event type is ${event_type}.`);
+
+            if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
+                // ### Follow | Unfollow | Join | Leave Flow ###
+                if (!this.options[event_type + "_skill"]){
+                    return Promise.reject(new BotExpressWebhookSkip(`This is ${event_type} flow but ${event_type}_skill not found so skip.`));
+                }
+
+                try {
+                    flow = new flows[event_type](this.messenger, event, this.options);
+                } catch(err) {
+                    return Promise.reject(err);
+                }
+                return flow.run();
+            } else if (event_type == "beacon"){
+                // ### Beacon Flow ###
+                let beacon_event_type = this.messenger.extract_beacon_event_type(event);
+
+                if (!beacon_event_type){
+                    return Promise.reject(new BotExpressWebhookSkip(`Unsupported beacon event so we skip this event.`));
+                }
+                if (!this.options.beacon_skill || !this.options.beacon_skill[beacon_event_type]){
+                    return Promise.reject(new BotExpressWebhookSkip(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`));
+                }
+                debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
+
+                try {
+                    flow = new flows[event_type](this.messenger, event, this.options, beacon_event_type);
+                } catch(err) {
+                    return Promise.reject(err);
+                }
+                return flow.run();
+            } else if (event_type == "bot-express:push"){
+                // ### Push Flow ###
+                try {
+                    flow = new flows["push"](this.messenger, event, this.options);
+                } catch(err) {
+                    return Promise.reject(err);
+                }
+                return flow.run();
+            } else if (!context){
+                // ### Start Conversation Flow ###
+                try {
+                    flow = new flows["start_conversation"](this.messenger, event, this.options);
+                } catch(err) {
+                    return Promise.reject(err);
+                }
+                return flow.run();
+            } else {
+                if (context.confirming){
+                    // ### Reply Flow ###
+                    try {
+                        flow = new flows["reply"](this.messenger, event, context, this.options);
+                    } catch(err){
+                        return Promise.reject(err);
+                    }
+                    return flow.run();
+                } else {
+                    // ### BTW Flow ###
+                    try {
+                        flow = new flows["btw"](this.messenger, event, context, this.options);
+                    } catch(err){
+                        return Promise.reject(err);
+                    }
+                    return flow.run();
+                }
+            }
         });
+
+        // Update memory.
+        let done_update_memory = done_flow.then((context) => {
+            debug("Successful End of Flow.");
+
+            // Update memory.
+            if (!context){
+                return this.memory.del(memory_id).then((response) => {
+                    debug("Clearing context");
+                    return null;
+                })
+            } else {
+                return this.memory.put(memory_id, context).then((response) => {
+                    debug("Updating context");
+                    return context;
+                })
+            }
+        }).catch((error) => {
+            if (error.name == "BotExpressWebhookSkip"){
+                debug(error.message);
+                return;
+            }
+
+            debug("Abnormal End of Flow.");
+            // Clear memory.
+            return this.memory.del(memory_id).then((response) => {
+                debug("Context cleared.");
+                return Promise.reject(error);
+            });
+        });
+
+        return done_update_memory;
     }
 }
 

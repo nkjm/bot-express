@@ -30,13 +30,13 @@ module.exports = class BtwFlow extends Flow {
         debug("### This is BTW Flow. ###");
 
         // Check if this event type is supported in this flow.
-        if (!this.messenger.check_supported_event_type("btw")){
+        if (!this.messenger.check_supported_event_type(this.event, "btw")){
             debug(`This is unsupported event type in this flow so skip processing.`);
             return Promise.resolve(this.context);
         }
 
         // Run event based handling.
-        if (this.messenger.identify_event_type(this.event) == "message" && this.messenger.identify_message_type() != "text"){
+        if (this.bot.identify_event_type() == "message" && this.bot.identify_message_type() != "text"){
             debug("This is a message event but not a text message so we skip translation.");
 
             skip_translate = true;
@@ -44,8 +44,8 @@ module.exports = class BtwFlow extends Flow {
             done_identify_mind = Promise.resolve({
                 result: "no_idea"
             });
-        } else if (this.messenger.identify_event_type(this.event) == "postback"){
-            let postback_payload = this.messenger.extract_postback_payload();
+        } else if (this.bot.identify_event_type(this.event) == "postback"){
+            let postback_payload = this.messenger.extract_postback_payload(this.event);
 
             try {
                 postback_payload = JSON.parse(postback_payload);
@@ -90,7 +90,7 @@ module.exports = class BtwFlow extends Flow {
 
         // Translate.
         if (!skip_translate){
-            let message_text = this.messenger.extract_message_text();
+            let message_text = this.bot.extract_message_text();
 
             if (!this.messenger.translater){
                 done_translate = Promise.resolve(message_text);
@@ -120,6 +120,7 @@ module.exports = class BtwFlow extends Flow {
         // Identify mind.
         if (!skip_identify_mind){
             done_identify_mind = done_translate.then((message_text) => {
+                debug(`Going to identify mind of ${message_text}...`);
                 return super.identify_mind(message_text);
             });
         }

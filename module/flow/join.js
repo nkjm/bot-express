@@ -24,7 +24,6 @@ module.exports = class JoinFlow extends Flow {
             sender_language: null,
             translation: null
         };
-        messenger.context = context;
         super(messenger, event, context, options);
     }
 

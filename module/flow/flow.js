@@ -8,11 +8,11 @@ Promise = require('bluebird');
 
 module.exports = class Flow {
     constructor(messenger, event, context, options){
-        this.messenger = messenger;
-        this.bot = new Bot(messenger);
+        this.context = context;
         this.event = event;
         this.options = options;
-        this.context = context;
+        this.messenger = messenger;
+        this.bot = new Bot(this.options, this.event, this.context, messenger);
 
         if (this.context.intent && this.context.intent.name){
             if (!this.context.skill){
@@ -47,7 +47,7 @@ module.exports = class Flow {
         if (skill == "builtin_default"){
             debug("Use built-in default skill.");
             let skill_class = require("../skill/default");
-            skill_instance = new skill_class(this.bot, this.event);
+            skill_instance = new skill_class();
         } else {
             debug(`Look for ${skill} skill.`);
             let skill_class;
@@ -58,7 +58,7 @@ module.exports = class Flow {
                 debug("Skill not found.");
                 throw(exception);
             }
-            skill_instance = new skill_class(this.bot, this.event);
+            skill_instance = new skill_class();
         }
 
         return skill_instance;
@@ -109,10 +109,10 @@ module.exports = class Flow {
         let param_key = this.context.to_confirm[0];
         let param_type = this._check_parameter_type(param_key);
 
-        if (!!this.context.skill[param_type][param_key].message_to_confirm[this.messenger.type]){
+        if (!!this.context.skill[param_type][param_key].message_to_confirm[this.bot.type]){
             // Found message platform specific message object.
             debug("Found messenger specific message object.");
-            message = this.context.skill[param_type][param_key].message_to_confirm[this.messenger.type];
+            message = this.context.skill[param_type][param_key].message_to_confirm[this.bot.type];
         } else if (!!this.context.skill[param_type][param_key].message_to_confirm){
             // Found common message object. We compile this message object to get message platform specific message object.
             debug("Found common message object.");
@@ -143,10 +143,10 @@ module.exports = class Flow {
             if (this.context._flow == "push"){
                 debug("We use send method to collect parameter since this is push flow.");
                 debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
-                return this.messenger.send(this.event.to[`${this.event.to.type}Id`], [message]);
+                return this.bot.send(this.event.to[`${this.event.to.type}Id`], [message], this.context.sender_language);
             } else {
                 debug("We use reply method to collect parameter.");
-                return this.messenger.reply_to_collect([message]);
+                return this.bot.reply_to_collect([message]);
             }
         });
     }
@@ -312,7 +312,7 @@ module.exports = class Flow {
             debug("Going to check if we can identify the intent.");
             let nlu = new Nlu(this.options.nlu);
             done_identify_intent = nlu.identify_intent(payload, {
-                session_id: this.messenger.extract_session_id()
+                session_id: this.bot.extract_session_id()
             });
         }
 
@@ -592,7 +592,7 @@ module.exports = class Flow {
     finish(){
         this.context.previous.message.unshift({
             from: "user",
-            message: this.messenger.extract_message()
+            message: this.bot.extract_message()
         });
 
         // If pause flag has been set, we stop processing following actions and exit.

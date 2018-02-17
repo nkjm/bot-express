@@ -25,7 +25,6 @@ module.exports = class StartConversationFlow extends Flow {
             sender_language: null,
             translation: null
         };
-        messenger.context = context;
         super(messenger, event, context, options);
     }
 
@@ -47,13 +46,13 @@ module.exports = class StartConversationFlow extends Flow {
         debug("### This is Start Conversation Flow. ###");
 
         // Check if this event type is supported in this flow.
-        if (!this.messenger.check_supported_event_type("start_conversation")){
+        if (!this.messenger.check_supported_event_type(this.event, "start_conversation")){
             debug(`This is unsupported event type in this flow so skip processing.`);
             return Promise.resolve(this.context);
         }
 
         // Run event based handling.
-        if (this.messenger.identify_event_type(this.event) == "message" && this.messenger.identify_message_type() != "text"){
+        if (this.bot.identify_event_type() == "message" && this.bot.identify_message_type() != "text"){
             debug("This is a message event but not a text message so we use default skill.");
 
             skip_translate = true;
@@ -61,12 +60,12 @@ module.exports = class StartConversationFlow extends Flow {
             done_identify_intent = Promise.resolve({
                 name: this.options.default_intent
             });
-        } else if (this.messenger.identify_event_type(this.event) == "postback"){
+        } else if (this.bot.identify_event_type() == "postback"){
             // There can be 3 cases.
             // - payload is JSON and contains intent.
             // - payload is JSON.
             // - payload is not JSON (just a string).
-            let postback_payload = this.messenger.extract_postback_payload();
+            let postback_payload = this.messenger.extract_postback_payload(this.event);
             try {
                 postback_payload = JSON.parse(postback_payload);
                 debug(`Postback payload is JSON format.`);
@@ -95,7 +94,7 @@ module.exports = class StartConversationFlow extends Flow {
 
         // Translate.
         if (!skip_translate){
-            let message_text = this.messenger.extract_message_text();
+            let message_text = this.bot.extract_message_text();
 
             if (!this.messenger.translater){
                 done_translate = Promise.resolve(message_text);
@@ -130,7 +129,7 @@ module.exports = class StartConversationFlow extends Flow {
                 debug("NLU Abstraction instantiated.");
                 debug(`Going to identify intent of ${message_text}...`);
                 return nlu.identify_intent(message_text, {
-                    session_id: this.messenger.extract_session_id()
+                    session_id: this.bot.extract_session_id()
                 });
             });
         }
@@ -140,7 +139,6 @@ module.exports = class StartConversationFlow extends Flow {
             done_instantiate_skill = done_identify_intent.then((intent) => {
                 this.context.intent = intent;
                 this.context.skill = super.instantiate_skill(intent.name);
-                this.messenger.skill = this.context.skill;
 
                 // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
                 // After that, we depend on context.to_confirm to identify to_confirm parameters.

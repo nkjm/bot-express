@@ -25,7 +25,6 @@ module.exports = class PushFlow extends Flow {
             sender_language: null,
             translation: null
         };
-        messenger.context = context;
         super(messenger, event, context, options);
     }
 
@@ -53,7 +52,6 @@ module.exports = class PushFlow extends Flow {
                 this.context.intent = event.intent;
                 this.context.sender_language = event.language;
                 this.context.skill = super.instantiate_skill(event.intent.name);
-                this.messenger.skill = this.context.skill;
 
                 // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
                 // After that, we depend on context.to_confirm to identify to_confirm parameters.

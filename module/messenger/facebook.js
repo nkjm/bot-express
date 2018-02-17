@@ -1,9 +1,9 @@
 'use strict';
 
-Promise = require('bluebird');
 const request = require('request');
 const crypto = require('crypto');
 const debug = require("debug")("bot-express:messenger");
+const secure_compare = require('secure-compare');
 
 Promise.promisifyAll(request);
 
@@ -87,15 +87,18 @@ module.exports = class MessengerFacebook {
     }
 
     validate_signature(req){
-        let signature = req.get('X-Hub-Signature');
-        let raw_body = req.raw_body;
+        return new Promise((resolve, reject) => {
+            let signature = req.get('X-Hub-Signature');
+            let raw_body = req.raw_body;
 
-        // Signature Validation
-        let hash = "sha1=" + crypto.createHmac("sha1", this._app_secret).update(raw_body).digest("hex");
-        if (hash != signature) {
-            return false;
-        }
-        return true;
+            // Signature Validation
+            let hash = "sha1=" + crypto.createHmac("sha1", this._app_secret).update(raw_body).digest("hex");
+
+            if (secure_compare(hash, signature)){
+                return resolve();
+            }
+            return reject();
+        })
     }
 
     static extract_events(body){
@@ -198,7 +201,7 @@ module.exports = class MessengerFacebook {
         return event.postback.payload;
     }
 
-    static check_supported_event_type(flow, event){
+    static check_supported_event_type(event, flow){
         switch(flow){
             case "beacon":
                 return false;

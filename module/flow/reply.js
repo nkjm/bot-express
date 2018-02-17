@@ -18,17 +18,17 @@ module.exports = class ReplyFlow extends Flow {
         debug("### This is Reply Flow. ###");
 
         // Check if this event type is supported in this flow.
-        if (!this.messenger.check_supported_event_type("reply")){
+        if (!this.messenger.check_supported_event_type(this.event, "reply")){
             debug(`This is unsupported event type in this flow so skip processing.`);
             return Promise.resolve(this.context);
         }
 
-        let param_value = this.messenger.extract_param_value();
+        let param_value = this.messenger.extract_param_value(this.event);
 
         let is_postback = false;
-        if (this.messenger.type == "line"){
+        if (this.bot.type == "line"){
             if (this.event.type == "postback") is_postback = true;
-        } else if (this.messenger.type == "facebook"){
+        } else if (this.bot.type == "facebook"){
             if (this.event.postback) is_postback = true;
         }
 

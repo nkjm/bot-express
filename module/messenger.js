@@ -9,13 +9,11 @@ module.exports = class Messenger {
     /**
     * @constructs
     */
-    constructor(options, event){
+    constructor(options){
         this.type = options.messenger_type;
         this.options = options;
-        this.Messenger_classes = {};
-        this.context = null; // Will be set later in flow.
-        this.event = event;
         this.plugin = {};
+        this.Messenger_classes = {};
 
         // Load messenger libraries located under messenger directory.
         let messenger_scripts = fs.readdirSync(__dirname + "/messenger");
@@ -44,20 +42,20 @@ module.exports = class Messenger {
         return this.Messenger_classes[this.type].extract_events(body);
     }
 
-    extract_beacon_event_type(){
-        return this.Messenger_classes[this.type].extract_beacon_event_type(this.event);
+    extract_beacon_event_type(event){
+        return this.Messenger_classes[this.type].extract_beacon_event_type(event);
     }
 
-    extract_param_value(){
-        return this.Messenger_classes[this.type].extract_param_value(this.event);
+    extract_param_value(event){
+        return this.Messenger_classes[this.type].extract_param_value(event);
     }
 
-    extract_postback_payload(){
-        return this.Messenger_classes[this.type].extract_postback_payload(this.event);
+    extract_postback_payload(event){
+        return this.Messenger_classes[this.type].extract_postback_payload(event);
     }
 
-    check_supported_event_type(flow){
-        return this.Messenger_classes[this.type].check_supported_event_type(flow, this.event);
+    check_supported_event_type(event, flow){
+        return this.Messenger_classes[this.type].check_supported_event_type(event, flow);
     }
 
     /**
@@ -66,7 +64,7 @@ module.exports = class Messenger {
     * @returns {MessageObject} - Extracted message.
     */
     extract_message(event){
-        return this.Messenger_classes[this.type].extract_message(event || this.event);
+        return this.Messenger_classes[this.type].extract_message(event);
     }
 
     /**
@@ -75,7 +73,7 @@ module.exports = class Messenger {
     * @returns {String} - Extracted message text.
     */
     extract_message_text(event){
-        return this.Messenger_classes[this.type].extract_message_text(event || this.event);
+        return this.Messenger_classes[this.type].extract_message_text(event);
     }
 
     /**
@@ -84,7 +82,7 @@ module.exports = class Messenger {
     * @returns {String}
     */
     extract_sender_id(event){
-        return this.Messenger_classes[this.type].extract_sender_id(event || this.event);
+        return this.Messenger_classes[this.type].extract_sender_id(event);
     }
 
     /**
@@ -93,7 +91,7 @@ module.exports = class Messenger {
     * @returns {String}
     */
     extract_session_id(event){
-        return this.Messenger_classes[this.type].extract_session_id(event || this.event);
+        return this.Messenger_classes[this.type].extract_session_id(event);
     }
 
     /**
@@ -102,7 +100,6 @@ module.exports = class Messenger {
     * @returns {String}
     */
     extract_to_id(event){
-        if (!event) event = this.event;
         if (event.type == "bot-express:push"){
             return event.to[`${event.to.type}Id`];
         }
@@ -115,7 +112,6 @@ module.exports = class Messenger {
     * @returns {String} - Event type. In case of LINE, it can be "message", "follow", "unfollow", "join", "leave", "postback", "beacon". In case of Facebook, it can be "echo", "message", "delivery", "read", "postback", "optin", "referral", "account_linking".
     */
     identify_event_type(event){
-        if (!event) event = this.event;
         if (event.type && event.type.match(/^bot-express:/)){
             return event.type;
         }
@@ -129,128 +125,38 @@ module.exports = class Messenger {
     * In case of Facebook, it can be "text", "image", "audio", "video", "file", "button_template", "generic_template", "list_template", "open_graph_template", "receipt_template", "airline_boardingpass_template", "airline_checkin_template", "airline_itinerary_template", "airline_update_template".
     */
     identify_message_type(message){
-        if (!message){
-            message = this.extract_message(this.event);
-        }
         return this.Messenger_classes[this.type].identify_message_type(message);
     }
 
     /**
     * Reply messages to sender to collect parameter
+    * @param {Object} event - Event object.
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    reply_to_collect(messages = null){
-        return this.reply(messages, true)
+    reply_to_collect(event, messages){
+        return this.service.reply_to_collect(event, messages);
     }
 
     /**
     * Reply messages to sender.
+    * @param {Object} event - Event object.
     * @param {Array.<MessageObject>} messages - The array of message objects.
-    * @returns {Array.<Promise>}
+    * @returns {Promise.<Object>}
     */
-    reply(messages = null, to_collect = false){
-        if (messages){
-            this.queue(messages);
-        }
-
-        let messages_compiled = [];
-        for (let message of this.context._message_queue){
-            messages_compiled.push(
-                // Compiling message.
-                this.compile_message(message).then((compiled_message) => {
-                    if (!this.translater){
-                        // Auto translation is disabled so we won't translate.
-                        debug("Translater is disabled so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    if (!this.context.sender_language || this.context.sender_language === this.options.language){
-                        // Auto tranlsation is enabled but sender's language is identical to bot's language so we don't have to tranaslate.
-                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    debug(`Translating following message...`);
-                    debug(compiled_message);
-
-                    let message_type = this.Messenger_classes[this.type].identify_message_type(compiled_message);
-                    return this.Messenger_classes[this.type].translate_message(this.translater, message_type, compiled_message, this.context.sender_language);
-                })
-            );
-        }
-
-        let compiled_messages;
-        return Promise.all(messages_compiled).then((response) => {
-            compiled_messages = response;
-            if (this.event.type == "bot-express:push"){
-                return this.service.send(this.event, this.event.to[`${this.event.to.type}Id`], compiled_messages);
-            }
-            if (to_collect || this.context.parent){
-                return this.service.reply_to_collect(this.event, compiled_messages);
-            }
-            return this.service.reply(this.event, compiled_messages);
-        }).then((response) => {
-            for (let compiled_message of compiled_messages){
-                this.context.previous.message.unshift({
-                    from: "bot",
-                    message: compiled_message
-                });
-            }
-            this.context._message_queue = [];
-            return response;
-        });
+    reply(event, messages){
+        return this.service.reply(event, messages);
     }
 
     /**
     * Send(Push) message to specified user.
+    * @param {Object} event - Event object.
     * @param {String} recipient_id - Recipient user id.
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    send(recipient_id, messages, language){
-        // If messages is not array, we make it array.
-        if (messages.length === undefined){
-            messages = [messages];
-        }
-
-        let messages_compiled = [];
-        for (let message of messages){
-            messages_compiled.push(
-                this.compile_message(message).then((compiled_message) => {
-                    if (!this.translater){
-                        // Auto translation is disabled so we won't translate.
-                        debug("Translater is disabled so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    if (!language || language === this.options.language){
-                        // Auto tranlsation is enabled but reciever's language is identical to bot's language so we don't have to tranaslate.
-                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    debug(`Translating following message...`);
-                    debug(compiled_message);
-
-                    let message_type = this.Messenger_classes[this.type].identify_message_type(compiled_message);
-                    return this.Messenger_classes[this.type].translate_message(this.translater, message_type, compiled_message, language);
-                })
-            );
-        }
-        let compiled_messages;
-        return Promise.all(messages_compiled).then((response) => {
-            compiled_messages = response;
-            return this.service.send(this.event, recipient_id, compiled_messages);
-        }).then((response) => {
-            for (let compiled_message of compiled_messages){
-                this.context.previous.message.unshift({
-                    from: "bot",
-                    message: compiled_message
-                });
-            }
-            return response;
-        });
+    send(event, recipient_id, messages){
+        return this.service.send(event, recipient_id, messages);
     }
 
     /**
@@ -259,96 +165,10 @@ module.exports = class Messenger {
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    multicast(recipient_ids, messages, language){
-        // If messages is not array, we make it array.
-        if (messages.length === undefined){
-            messages = [messages];
-        }
-
-        let messages_compiled = [];
-        for (let message of messages){
-            messages_compiled.push(
-                this.compile_message(message).then((compiled_message) => {
-                    if (!this.translater){
-                        // Auto translation is disabled so we won't translate.
-                        debug("Translater is disabled so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    if (!language || language === this.options.language){
-                        // Auto tranlsation is enabled but reciever's language is identical to bot's language so we don't have to tranaslate.
-                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    debug(`Translating following message...`);
-                    debug(compiled_message);
-
-                    let message_type = this.Messenger_classes[this.type].identify_message_type(compiled_message);
-                    return this.Messenger_classes[this.type].translate_message(this.translater, message_type, compiled_message, language);
-                })
-            );
-        }
-        let compiled_messages;
-        return Promise.all(messages_compiled).then((response) => {
-            compiled_messages = response;
-            return this.service.multicast(this.event, recipient_ids, compiled_messages);
-        }).then((response) => {
-            for (let compiled_message of compiled_messages){
-                this.context.previous.message.unshift({
-                    from: "bot",
-                    message: compiled_message
-                });
-            }
-            return response;
-        });
+    multicast(event, recipient_ids, messages){
+        return this.service.multicast(event, recipient_ids, messages);
     }
 
-    /**
-    * Queue messages. The messages will be sent out when reply(MESSAGES) function is called.
-    * @param {Array.<MessageObject>} messages - The array of message objects.
-    * @returns {Null}
-    */
-    queue(messages){
-        if (typeof this.context._message_queue == "undefined"){
-            this.context._message_queue = [];
-        }
-        this.context._message_queue = this.context._message_queue.concat(messages);
-    }
-
-    /**
-    * Stop processing final actions including collecting parameters and finish() and keep context.
-    * @returns {Null}
-    */
-    pause(){
-        this.context._pause = true;
-    }
-
-    /**
-    * Change the message to collect specified parameter.
-    * @param {String} parameter_key - Name of the parameter to collect.
-    * @param {MessageObject} message - The message object.
-    * @returns {Null}
-    */
-    change_message_to_confirm(parameter_key, message){
-        let param_type;
-        if (!!this.context.skill.required_parameter && !!this.context.skill.required_parameter[parameter_key]){
-            param_type = "required_parameter";
-        } else if (!!this.context.skill.optional_parameter && !!this.context.skill.optional_parameter[parameter_key]){
-            param_type = "optional_parameter";
-        } else if (!!this.context.skill.dynamic_parameter && !!this.context.skill.dynamic_parameter[parameter_key]){
-            param_type = "dynamic_parameter";
-        } else {
-            param_type = "not_applicable";
-        }
-
-        if (param_type == "not_applicable"){
-            debug("The parameter to change message not found.");
-            throw new Error("The parameter to change message not found.")
-        }
-
-        this.context.skill[param_type][parameter_key].message_to_confirm = message;
-    }
 
     /**
     * Compile message format to the specified format.
@@ -380,90 +200,6 @@ module.exports = class Messenger {
         }
 
         return Promise.resolve(compiled_message);
-    }
-
-
-    /**
-    * Collect specified parameter.
-    * @param {String|SkillParameterObject} arg - Name of the parameter to collect or parameter object to collect.
-    * @returns {Null}
-    */
-    collect(arg){
-        if (typeof arg == "string"){
-            return this._collect_by_parameter_key(arg);
-        } else if (typeof arg == "object"){
-            return this._collect_by_parameter_obj(arg);
-        } else {
-            throw("Invalid argument for messenger.collect()");
-        }
-    }
-
-    /**
-    * Collect specified parameter.
-    * @private
-    * @param {String} parameter_key - Name of the parameter to collect.
-    * @returns {Null}
-    */
-    _collect_by_parameter_key(parameter_key){
-        debug("Going to collect parameter. Message should be defined in skill.");
-
-        // If there is confirmed parameter, we remove it to re-confirm.
-        if (this.context.confirmed[parameter_key]){
-            delete this.context.confirmed[parameter_key];
-        }
-
-        // If the parameter is already in the to_confirm list, we remove it to avoid duplicate.
-        let index_to_remove = this.context.to_confirm.indexOf(parameter_key);
-        if (index_to_remove !== -1){
-            debug(`Removing ${parameter_key} from to_confirm.`);
-            this.context.to_confirm.splice(index_to_remove, 1);
-        }
-
-        debug(`We add optional parameter "${parameter_key}" to the top of to_confirm list.`);
-        this.context.to_confirm.unshift(parameter_key);
-    }
-
-    /**
-    * Collect specified parameter.
-    * @private
-    * @param {SkillParameterObject} parameter - The parameter object to collect.
-    * @returns {Null}
-    */
-    _collect_by_parameter_obj(parameter){
-        debug("Going to collect parameter. Message should be enveloped in the argument.");
-
-        if (Object.keys(parameter).length != 1){
-            throw("Malformed parameter.");
-        }
-
-        let param_key = Object.keys(parameter)[0];
-
-        if (this.context.skill.required_parameter && this.context.skill.required_parameter[param_key]){
-            // If we have parameter of same parameter key, override it.
-            Object.assign(this.context.skill.required_parameter, parameter);
-        } else if (this.context.skill.optional_parameter && this.context.skill.optional_parameter[param_key]){
-            // If we have parameter of same parameter key, override it.
-            Object.assign(this.context.skill.optional_parameter, parameter);
-        } else {
-            // If we do not have parameter of same parameter key, add it as dynamic parameter.
-            if (this.context.skill.dynamic_parameter === undefined) this.context.skill.dynamic_parameter = {};
-            Object.assign(this.context.skill.dynamic_parameter, parameter);
-        }
-
-        // If there is confirmed parameter, we remove it to re-confirm.
-        if (this.context.confirmed[param_key]){
-            delete this.context.confirmed[param_key];
-        }
-
-        // If the parameter is already in the to_confirm list, we remove it to avoid duplicate.
-        let index_to_remove = this.context.to_confirm.indexOf(param_key);
-        if (index_to_remove !== -1){
-            debug(`Removing ${param_key} from to_confirm.`);
-            this.context.to_confirm.splice(index_to_remove, 1);
-        }
-
-        debug(`We add dynamic parameter "${param_key}" to the top of to_confirm list.`);
-        this.context.to_confirm.unshift(param_key);
     }
 
     /**

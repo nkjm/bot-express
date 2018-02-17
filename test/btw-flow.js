@@ -28,7 +28,7 @@ for (let messenger_option of messenger_options){
 
         describe("Restart conversation", function(){
             it("will trigger restart_conversation.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ライトの色をかえたい");
@@ -55,7 +55,7 @@ for (let messenger_option of messenger_options){
 
         describe("Change intent", function(){
             it("will trigger change intent.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ライトの色をかえたい");
@@ -83,7 +83,7 @@ for (let messenger_option of messenger_options){
 
         describe("Change parameter", function(){
             it("will trigger change parameter.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ライトの色をかえたい");
@@ -110,7 +110,7 @@ for (let messenger_option of messenger_options){
 
         describe("Unidentifiable message", function(){
             it("will trigger default skill.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ライトの色をかえたい");
@@ -138,7 +138,7 @@ for (let messenger_option of messenger_options){
 
         describe("Postback which contains intent object.", function(){
             it("will trigger change intent.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "こんにちは");
@@ -176,7 +176,7 @@ for (let messenger_option of messenger_options){
 
         describe("Postback which contains intent object and parameters.", function(){
             it("will trigger change intent and set parameters.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "こんにちは");

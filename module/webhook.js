@@ -236,6 +236,7 @@ class Webhook {
                     return null;
                 })
             } else {
+                delete context.skill;
                 return this.memory.put(memory_id, context).then((response) => {
                     debug("Updating context");
                     return context;

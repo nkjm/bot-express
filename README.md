@@ -88,6 +88,4 @@ Webhook supports following event at present.
 - messages
 - messaging-postbacks
 
-
-
-Supported number of instance of bot-express based chatbot is 1 since bot-express uses memory-cache as context store.
+If you deploy cluster of bot-express based application, you need to use redis as context store. Please refer to the [document](https://nkjm.github.io/bot-express/module-bot-express.html) for detail.

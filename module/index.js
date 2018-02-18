@@ -39,7 +39,7 @@ router.use(body_parser.json({
 * @param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
 * @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, client_access_token is required.
 * @param {Object} [options.memory] - Option object for memory to store context.
-* @param {String} [options.memory.type="memory-cache"] - Store type of context. Supported store type is memory-cache.
+* @param {String} [options.memory.type="memory-cache"] - Store type of context. Supported store type is memory-cache and redis.
 * @param {Number} [options.memory.retention="600"] - Lifetime of the context in seconds.
 * @param {Object} [options.memory.options] - Options depending on the specific store type.
 * @param {String} [options.default_skill] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.

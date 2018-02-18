@@ -70,4 +70,4 @@ Webhookでサポートしているイベントは下記の通りです。
 - messages
 - messaging-postbacks
 
-キャッシュにmemory-cacheを利用しているため、サポートされているBotの実行環境はシングルインスタンスとなります。
+bot-expressでclusterを構成する場合、memoryタイプにredisを使用してcontextを保存する必要があります。詳しくは[リファレンス](https://nkjm.github.io/bot-express/module-bot-express.html)を参照してください。

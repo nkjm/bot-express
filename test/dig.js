@@ -23,7 +23,7 @@ for (let messenger_option of messenger_options){
 
         describe("Ask supported color when user is asked for what color likes to change to.", function(){
             it("switches intent to answer-available-color and get back.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ライトの色をかえたい");

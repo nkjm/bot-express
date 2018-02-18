@@ -23,7 +23,7 @@ for (let messenger_option of messenger_options){
 
         describe("5 for satisfaction", function(){
             it("will trigger bot.queue().", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -55,7 +55,7 @@ for (let messenger_option of messenger_options){
 
         describe("1 for satisfaction", function(){
             it("will trigger bot.queue() and bot.collect()", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {

@@ -2,7 +2,6 @@
 
 const memory_cache = require("memory-cache");
 const debug = require("debug")("bot-express:memory");
-Promise = require("bluebird");
 
 class MemoryMemoryCache {
     constructor(options){
@@ -37,6 +36,11 @@ class MemoryMemoryCache {
                 return reject(e);
             }
         });
+    }
+
+    close(){
+        // memory-cache does not have to close connection so this is dummy.
+        return Promise.resolve();
     }
 }
 

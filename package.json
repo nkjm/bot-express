@@ -36,6 +36,7 @@
     "express": "^4.16.2",
     "memory-cache": "^0.2.0",
     "morgan": "^1.8.1",
+    "redis": "^2.8.0",
     "request": "^2.79.0",
     "secure-compare": "^3.0.1"
   },
@@ -47,7 +48,6 @@
     "mocha": "*",
     "moji": "*",
     "mongodb": "^3.0.1",
-    "redis": "^2.8.0",
     "soap": "*",
     "striptags": "*"
   }

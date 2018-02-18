@@ -31,22 +31,20 @@ server.use('/webhook', bot_express({
         {page_id: process.env.FACEBOOK_PAGE_ID, page_access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN}
     ],
     memory: {
-        /* redis
-        type: "redis",
-        retention: 180,
+        type: process.env.MEMORY_TYPE, // memory-cache | redis | mongodb
+        retention: Number(process.env.MEMORY_RETENTION),
+        // redis
         options: {
             host: process.env.REDIS_HOST,
-            port: process.env.REDIS_PORT
-        }*/
-        /* mongodb
-        type: "mongodb",
-        retention: 180,
+            port: process.env.REDIS_PORT,
+            password: process.env.REDIS_PASSWORD
+        }
+        // mongodb
+        /*
         options: {
             url: process.env.MONGODB_URL
         }
         */
-        type: "memory-cache",
-        retention: Number(process.env.MEMORY_RETENTION)
     },
     beacon_skill: {
         enter: "survey",

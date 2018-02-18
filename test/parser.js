@@ -23,7 +23,7 @@ for (let messenger_option of messenger_options){
 
         describe("NLP return some params but no corresponding parameter found in skill", function(){
             it("will skip that parameter.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -47,7 +47,7 @@ for (let messenger_option of messenger_options){
 
         describe("There is corresponding parameter and parser. If parser succeeds,", function(){
             it("will apply the value.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -72,7 +72,7 @@ for (let messenger_option of messenger_options){
 
         describe("There is corresponding parameter and parser. If parser fails,", function(){
             it("does not apply the value and ask samke question once again.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -98,7 +98,7 @@ for (let messenger_option of messenger_options){
 
         describe("There is corresponding parameter but no parser found", function(){
             it("will apply the value as it is unless the value is empty.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {

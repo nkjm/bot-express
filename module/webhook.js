@@ -105,6 +105,10 @@ class Webhook {
             }
         }).catch((error) => {
             return Promise.reject(error);
+        }).finally((response) => {
+            return this.memory.close().then(() => {
+                return response;
+            })
         })
     }
 
@@ -249,7 +253,7 @@ class Webhook {
                 debug("Context cleared.");
                 return Promise.reject(error);
             });
-        });
+        })
 
         return done_update_memory;
     }

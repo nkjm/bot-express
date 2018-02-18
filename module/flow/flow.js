@@ -15,9 +15,8 @@ module.exports = class Flow {
         this.bot = new Bot(this.options, this.event, this.context, messenger);
 
         if (this.context.intent && this.context.intent.name){
-            if (!this.context.skill){
-                this.context.skill = this.instantiate_skill(this.context.intent.name);
-            }
+            debug(`Init and reviving skill instance.`);
+            this.context.skill = this.revive_skill(this.instantiate_skill(this.context.intent.name));
 
             // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
             // After that, we depend on context.to_confirm to identify to_confirm parameters.
@@ -90,6 +89,53 @@ module.exports = class Flow {
         return to_confirm;
     }
 
+
+    /**
+    * Function to revive skill instance from change log.
+    @param {Object} - Skill instance.
+    @return {Object} - Revived skill instance.
+    */
+    revive_skill(skill){
+        if (!skill){
+            throw new Error("Skill not found.");
+        }
+        if (!this.context.param_change_history || this.context.param_change_history.length === 0){
+            return skill;
+        }
+
+        this.context.param_change_history.forEach((log) => {
+            if (log.param.message_to_confirm){
+                if (typeof log.param.message_to_confirm === "string"){
+                    debug(`message_to_confirm is string. We try to make it function...`);
+                    try {
+                        log.param.message_to_confirm = Function.call(this, "return " + log.param.message_to_confirm)();
+                    } catch (error) {
+                        debug(`message_to_confirm looks like just a string so we use it as it is.`);
+                    }
+                }
+            }
+            if (log.param.parser){
+                log.param.parser = Function.call(this, "return " + log.param.parser)();
+            }
+            if (log.param.reaction){
+                log.param.reaction = Function.call(this, "return " + log.param.reaction)();
+            }
+
+            if (log.type === "dynamic_parameter" && skill.dynamic_parameter === undefined){
+                skill.dynamic_parameter = {};
+                skill.dynamic_parameter[log.key] = log.param;
+                return;
+            }
+            if (skill[log.type][log.key] === undefined){
+                skill[log.type][log.key] = log.param;
+                return;
+            }
+            Object.assign(skill[log.type][log.key], log.param);
+        })
+
+        return skill;
+    }
+
     /**
     Check if the intent is related to the parameter.
     @param {String} param - Name of the parameter.
@@ -107,7 +153,7 @@ module.exports = class Flow {
         }
         let message;
         let param_key = this.context.to_confirm[0];
-        let param_type = this._check_parameter_type(param_key);
+        let param_type = this.bot.check_parameter_type(param_key);
 
         if (!!this.context.skill[param_type][param_key].message_to_confirm[this.bot.type]){
             // Found message platform specific message object.
@@ -158,7 +204,7 @@ module.exports = class Flow {
     apply_parameter(key, value, is_change = false){
         debug(`Applying parameter.`);
 
-        let parameter_type = this._check_parameter_type(key);
+        let parameter_type = this.bot.check_parameter_type(key);
         if (parameter_type == "not_applicable"){
             debug("This is not the parameter we should care about. We just skip this.");
             return Promise.resolve();
@@ -176,23 +222,6 @@ module.exports = class Flow {
                 }
             }
         );
-    }
-
-    /**
-    Check parameter type.
-    @private
-    @param {String} key - Parameter name.
-    @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
-    */
-    _check_parameter_type(key){
-        if (!!this.context.skill.required_parameter && !!this.context.skill.required_parameter[key]){
-            return "required_parameter";
-        } else if (!!this.context.skill.optional_parameter && !!this.context.skill.optional_parameter[key]){
-            return "optional_parameter";
-        } else if (!!this.context.skill.dynamic_parameter && !!this.context.skill.dynamic_parameter[key]){
-            return "dynamic_parameter";
-        }
-        return "not_applicable";
     }
 
     /**
@@ -268,7 +297,7 @@ module.exports = class Flow {
 
     react(error, key, value){
         return new Promise((resolve, reject) => {
-            let param_type = this._check_parameter_type(key);
+            let param_type = this.bot.check_parameter_type(key);
 
             if (this.context.skill[param_type] && this.context.skill[param_type][key]){
                 if (this.context.skill[param_type][key].reaction){
@@ -323,7 +352,7 @@ module.exports = class Flow {
 
                     // Check if this is dig.
                     if (this.context._flow == "reply" && this.context.confirming){
-                        let param_type = this._check_parameter_type(this.context.confirming);
+                        let param_type = this.bot.check_parameter_type(this.context.confirming);
 
                         // Check if sub skill is configured in the confirming parameter.
                         if (this.context.skill[param_type][this.context.confirming].sub_skill &&
@@ -378,7 +407,7 @@ module.exports = class Flow {
                     }
                     debug(`Check if "${payload}" is suitable for ${param_key}.`);
                     parameters_parsed.push(
-                        this._parse_parameter(this._check_parameter_type(param_key), param_key, payload, true).then(
+                        this._parse_parameter(this.bot.check_parameter_type(param_key), param_key, payload, true).then(
                             (response) => {
                                 debug(`Value fits to ${param_key}.`);
                                 return {

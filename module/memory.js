@@ -41,7 +41,7 @@ class Memory {
     Get the context by key.
     @function
     @param {String} key - Key of the context.
-    @returns {context} context - Context object.
+    @returns {Promise.<context>} context - Context object.
     */
     get(key){
         return this.store.get(key);
@@ -53,7 +53,7 @@ class Memory {
     @param {String} key - Key of the context.
     @param {context} context - Context object to store.
     @param {Number} retention - Lifetime of the context in seconds.
-    @returns null
+    @returns {Promise.<null>}
     */
     put(key, context, retention = this.retention){
         return this.store.put(key, context, retention);
@@ -63,10 +63,19 @@ class Memory {
     Delete the context by key.
     @function
     @param {String} key - Key of the context.
-    @returns null
+    @returns {Promise.<null>}
     */
     del(key){
         return this.store.del(key);
+    }
+
+    /**
+    Close the connection.
+    @function
+    @returns {Promise.null}
+    */
+    close(){
+        return this.store.close();
     }
 }
 

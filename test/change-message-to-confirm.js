@@ -26,7 +26,7 @@ for (let messenger_option of messenger_options){
     describe("Test change_message_to_confirm() from " + emu.messenger_type, function(){
         describe("Invalid value for satisfaction", function(){
             it("will trigger change_message_to_confirm()", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = {

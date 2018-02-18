@@ -2,7 +2,6 @@
 
 const debug = require("debug")("bot-express:memory");
 const redis = require("redis");
-Promise = require("bluebird");
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 
@@ -30,6 +29,10 @@ class MemoryRedis {
 
     del(key){
         return this.client.delAsync(key);
+    }
+
+    close(){
+        return this.client.quitAsync();
     }
 }
 

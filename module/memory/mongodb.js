@@ -2,7 +2,6 @@
 
 const MongoClient = require("mongodb").MongoClient;
 const debug = require("debug")("bot-express:memory");
-Promise = require("bluebird");
 
 class MemoryMongodb {
     constructor(options){
@@ -29,6 +28,11 @@ class MemoryMongodb {
         return this.connected.then((response) => {
             return this.db.collection('bot-express').deleteOne({_id: key});
         });
+    }
+
+    close(){
+        // TBD
+        return Promise.resolve();
     }
 }
 

@@ -24,7 +24,7 @@ for (let messenger_option of messenger_options){
 
         describe("In start conversation flow", function(){
             it("should run through begin, required param and finish.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -52,7 +52,7 @@ for (let messenger_option of messenger_options){
 
         describe("When intent is changed in the middle of the conversation", function(){
             it("should run through begin, required param and finish.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -85,7 +85,7 @@ for (let messenger_option of messenger_options){
 
         describe("When intent is changed in the middle of the conversation", function(){
             it("should run through begin, required param and finish.", function(){
-                this.timeout(5000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {

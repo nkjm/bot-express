@@ -23,7 +23,7 @@ for (let messenger_option of messenger_options){
 
         describe("Message made of object", function(){
             it("will be used as it is.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -45,7 +45,7 @@ for (let messenger_option of messenger_options){
 
         describe("Message made of function - resolve", function(){
             it("will generate message dynamically.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 let event = emu.create_message_event(user_id, "マルゲリータ");
                 return emu.send(event).then(function(context){
@@ -57,7 +57,7 @@ for (let messenger_option of messenger_options){
 
         describe("Message made of function - reject", function(){
             it("will stop processing.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 let event = emu.create_message_event(user_id, "S");
                 return emu.send(event).catch(function(error){
@@ -68,7 +68,7 @@ for (let messenger_option of messenger_options){
 
         describe("Message made of function - throw error", function(){
             it("will stop processing.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {

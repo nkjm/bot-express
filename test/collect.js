@@ -23,7 +23,7 @@ for (let messenger_option of messenger_options){
 
         describe("collect undefined parameter using collect_by_parameter_obj()", function(){
             it("will collect parameter as dynamic parameter.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -55,7 +55,7 @@ for (let messenger_option of messenger_options){
 
         describe("collect optional parameter using collect_by_parameter_key()", function(){
             it("will collect optional parameter.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -95,7 +95,7 @@ for (let messenger_option of messenger_options){
 
         describe("collect required parameter using collect_by_parameter_obj()", function(){
             it("will collect required parameter with overriden message.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {

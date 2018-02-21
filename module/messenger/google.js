@@ -50,7 +50,7 @@ module.exports = class MessengerGoogle {
             messages.forEach(message => {
                 if (typeof message === "string"){
                     concated_message += message;
-                    if (offset < messages.length)
+                    if (offset < messages.length){
                         concated_message += "\n";
                     }
                 } else {

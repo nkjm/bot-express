@@ -46,13 +46,18 @@ module.exports = class MessengerGoogle {
                 return resolve(this.sdk.tell(messages[0]));
             }
             let concated_message = "";
+            let offset = 1;
             messages.forEach(message => {
                 if (typeof message === "string"){
-                    concated_message += message + "\n";
+                    concated_message += message;
+                    if (offset < messages.length)
+                        concated_message += "\n";
+                    }
                 } else {
                     if (message.speech) concated_message += message.speech;
                     if (message.title) concated_message += message.title;
                 }
+                offset++;
             })
             if (concated_message === ""){
                 return reject(new Error("No message found"));

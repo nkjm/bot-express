@@ -662,9 +662,12 @@ module.exports = class Flow {
                 this.context = this.context.parent;
                 delete this.context.parent;
             } else if (this.context.skill.clear_context_on_finish){
-                // This is Root Skill. If clear_context_on_finish flag is true, we clear context.
+                // This is Root skill. If clear_context_on_finish flag is true, we clear context.
                 debug(`Clearing context.`);
                 this.context = null;
+            } else {
+                // This is Root skill. And we need to keep context. But we should still discard param change history.
+                this.context.param_change_history = [];
             }
 
             return this.context;

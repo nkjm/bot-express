@@ -21,7 +21,7 @@ module.exports = class SkillJuminhyo {
                         text: "住民票ですね。今回必要なのは世帯全員分ですか？あるいはご本人だけ？",
                         actions: [
                             {type:"message", label:"世帯全員分", text:"世帯全員分"},
-                            {type:"message", label:"本人だけ", text:"本人だけ"},
+                            {type:"message", label:"本人だけ", text:"本人だけ"}
                         ]
                     }
                 },

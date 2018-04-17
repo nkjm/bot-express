@@ -66,6 +66,7 @@ module.exports = class MessengerLine {
             if (err instanceof HTTPError){
                 debug("HTTPError");
                 debug(err.statusCode);
+                debug(err.statusMessage);
                 debug(err);
             } else if (err instanceof JSONParseError){
                 debug("JSONParseError");
@@ -73,6 +74,7 @@ module.exports = class MessengerLine {
                 debug(err);
             }
         })
+
     }
 
     validate_signature(req){

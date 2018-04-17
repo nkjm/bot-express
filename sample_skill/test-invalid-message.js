@@ -14,8 +14,6 @@ module.exports = class SkillTestInvalidMessage {
         }
         return bot.reply(message).then((response) => {
             return resolve();
-        }).catch((e) => {
-            reject(e);
         })
     }
 }

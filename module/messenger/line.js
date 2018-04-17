@@ -3,16 +3,9 @@
 const request = require("request");
 const crypto = require("crypto");
 const debug = require("debug")("bot-express:messenger");
-const line_bot_sdk = require("@line/bot-sdk");
+//const line_bot_sdk = require("@line/bot-sdk");
 const secure_compare = require('secure-compare');
 Promise.promisifyAll(request);
-
-// CommonJS (destructuring can be used for Node.js >= 6)
-const HTTPError = require('@line/bot-sdk').HTTPError;
-const JSONParseError = require('@line/bot-sdk').JSONParseError;
-const ReadError = require('@line/bot-sdk').ReadError;
-const RequestError = require('@line/bot-sdk').RequestError;
-const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFailed;
 
 module.exports = class MessengerLine {
 
@@ -24,11 +17,14 @@ module.exports = class MessengerLine {
         this._channel_secret = options.line_channel_secret;
         this._access_token = options.line_access_token;
 
+        // Disabled SDK since we can't get detail in exception.
+        /*
         const sdk_config = {
             channelAccessToken: this._access_token,
             channelSecret: this._channel_secret
         };
         this.sdk = new line_bot_sdk.Client(sdk_config);
+        */
     }
 
     multicast(event, to, messages){
@@ -38,7 +34,27 @@ module.exports = class MessengerLine {
             return Promise.resolve();
         }
 
-        return this.sdk.multicast(to, messages);
+        // return this.sdk.multicast(to, messages);
+
+        let url = "https://api.line.me/v2/bot/message/multicast";
+        let headers = {
+            Authorization: `Bearer ${this._access_token}`
+        }
+        let body = {
+            to: to,
+            messages: messages
+        }
+        return request.postAsync({
+            url: url,
+            headers: headers,
+            body: body,
+            json: true
+        }).then((response) => {
+            if (response.statusCode == 200){
+                return response.body;
+            }
+            return Promise.reject(response.body);
+        });
     }
 
     send(event, to, messages){
@@ -47,7 +63,28 @@ module.exports = class MessengerLine {
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
-        return this.sdk.pushMessage(to, messages);
+
+        //return this.sdk.pushMessage(to, messages);
+
+        let url = "https://api.line.me/v2/bot/message/push";
+        let headers = {
+            Authorization: `Bearer ${this._access_token}`
+        }
+        let body = {
+            to: to,
+            messages: messages
+        }
+        return request.postAsync({
+            url: url,
+            headers: headers,
+            body: body,
+            json: true
+        }).then((response) => {
+            if (response.statusCode == 200){
+                return response.body;
+            }
+            return Promise.reject(response.body);
+        });
     }
 
     reply_to_collect(event, messages){
@@ -56,15 +93,13 @@ module.exports = class MessengerLine {
 
     reply(event, messages){
         // If this is test, we will not actually issue call out.
-
-        /*
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
-        */
 
         //return this.sdk.replyMessage(event.replyToken, messages);
+
         let url = "https://api.line.me/v2/bot/message/reply";
         let headers = {
             Authorization: `Bearer ${this._access_token}`

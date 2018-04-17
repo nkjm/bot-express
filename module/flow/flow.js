@@ -186,13 +186,21 @@ module.exports = class Flow {
 
         // Send question to the user.
         return done_generate_message.then((message) => {
+            let messages;
+            if (typeof message === "object" && message.length){
+                // The message is array so we use as it is.
+                messages = message;
+            } else {
+                // The message is single object so we make it array.
+                messages = [message];
+            }
             if (this.context._flow == "push"){
                 debug("We use send method to collect parameter since this is push flow.");
                 debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
-                return this.bot.send(this.event.to[`${this.event.to.type}Id`], [message], this.context.sender_language);
+                return this.bot.send(this.event.to[`${this.event.to.type}Id`], messages, this.context.sender_language);
             } else {
                 debug("We use reply method to collect parameter.");
-                return this.bot.reply_to_collect([message]);
+                return this.bot.reply_to_collect(messages);
             }
         });
     }

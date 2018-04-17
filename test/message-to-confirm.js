@@ -30,15 +30,17 @@ for (let messenger_option of messenger_options){
                         data: JSON.stringify({
                             _type: "intent",
                             intent: {
-                                name: "test-message-to-confirm"
+                                name: "test-message-to-confirm",
+                                parameters: {
+                                    param_to_test: "made_of_object"
+                                }
                             }
                         })
                     });
                     return emu.send(event);
                 }).then(function(context){
-                    // Now bot is asking pizza type.
-                    context.should.have.property("confirming", "pizza");
-                    context.previous.message[0].message.altText.should.equal("ご注文のピザはお決まりでしょうか？ マルゲリータ、マリナーラからお選びください。");
+                    context.should.have.property("confirming", "made_of_object");
+                    context.previous.message[0].message.text.should.equal("hello");
                 });
             });
         });
@@ -47,10 +49,22 @@ for (let messenger_option of messenger_options){
             it("will generate message dynamically.", function(){
                 this.timeout(15000);
 
-                let event = emu.create_message_event(user_id, "マルゲリータ");
-                return emu.send(event).then(function(context){
-                    context.should.have.property("confirming", "size");
-                    context.previous.message[0].message.altText.should.equal("マルゲリータですね。サイズはいかがしましょうか？ S、M、Lからお選びください。");
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_postback_event(user_id, {
+                        data: JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "test-message-to-confirm",
+                                parameters: {
+                                    param_to_test: "made_of_function"
+                                }
+                            }
+                        })
+                    });
+                    return emu.send(event);
+                }).then(function(context){
+                    context.should.have.property("confirming", "made_of_function");
+                    context.previous.message[0].message.text.should.equal("testing made_of_function");
                 });
             });
         });
@@ -59,14 +73,26 @@ for (let messenger_option of messenger_options){
             it("will stop processing.", function(){
                 this.timeout(15000);
 
-                let event = emu.create_message_event(user_id, "S");
-                return emu.send(event).catch(function(error){
-                    error.message.should.equal("Could not generate message for some reason.");
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_postback_event(user_id, {
+                        data: JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "test-message-to-confirm",
+                                parameters: {
+                                    param_to_test: "made_of_function_reject"
+                                }
+                            }
+                        })
+                    });
+                    return emu.send(event);
+                }).catch(function(error){
+                    error.message.should.equal("rejected");
                 });
             });
         });
 
-        describe("Message made of function - throw error", function(){
+        describe("Message made of function - exception", function(){
             it("will stop processing.", function(){
                 this.timeout(15000);
 
@@ -75,22 +101,68 @@ for (let messenger_option of messenger_options){
                         data: JSON.stringify({
                             _type: "intent",
                             intent: {
-                                name: "test-message-to-confirm"
+                                name: "test-message-to-confirm",
+                                parameters: {
+                                    param_to_test: "made_of_function_exception"
+                                }
+                            }
+                        })
+                    });
+                    return emu.send(event);
+                }).catch(function(error){
+                    error.message.should.equal("excepted");
+                });
+            });
+        });
+
+        describe("Array of messages made of object", function(){
+            it("will send multiple message", function(){
+                this.timeout(15000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_postback_event(user_id, {
+                        data: JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "test-message-to-confirm",
+                                parameters: {
+                                    param_to_test: "multiple_messages_made_of_object"
+                                }
                             }
                         })
                     });
                     return emu.send(event);
                 }).then(function(context){
-                    let event = emu.create_message_event(user_id, "マルゲリータ");
+                    context.should.have.property("confirming", "multiple_messages_made_of_object");
+                    context.previous.message[0].message.text.should.equal("message2");
+                    context.previous.message[1].message.text.should.equal("message1");
+                });
+            })
+        })
+
+        describe("Array of messages made of function", function(){
+            it("will send multiple message", function(){
+                this.timeout(15000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_postback_event(user_id, {
+                        data: JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "test-message-to-confirm",
+                                parameters: {
+                                    param_to_test: "multiple_messages_made_of_function"
+                                }
+                            }
+                        })
+                    });
                     return emu.send(event);
                 }).then(function(context){
-                    let event = emu.create_message_event(user_id, "M");
-                    return emu.send(event);
-                }).catch(function(error){
-                    error.message.should.equal("Error occured for some reason.");
+                    context.should.have.property("confirming", "multiple_messages_made_of_function");
+                    context.previous.message[0].message.text.should.equal("testing multiple_messages_made_of_function message2");
+                    context.previous.message[1].message.text.should.equal("testing multiple_messages_made_of_function message1");
                 });
-            });
-        });
-
+            })
+        })
     });
 }

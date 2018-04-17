@@ -3,7 +3,7 @@
 const request = require("request");
 const crypto = require("crypto");
 const debug = require("debug")("bot-express:messenger");
-//const line_bot_sdk = require("@line/bot-sdk");
+const line_bot_sdk = require("@line/bot-sdk");
 const secure_compare = require('secure-compare');
 Promise.promisifyAll(request);
 
@@ -17,14 +17,11 @@ module.exports = class MessengerLine {
         this._channel_secret = options.line_channel_secret;
         this._access_token = options.line_access_token;
 
-        // Disabled SDK since we can't get detail in exception.
-        /*
         const sdk_config = {
             channelAccessToken: this._access_token,
             channelSecret: this._channel_secret
         };
         this.sdk = new line_bot_sdk.Client(sdk_config);
-        */
     }
 
     multicast(event, to, messages){

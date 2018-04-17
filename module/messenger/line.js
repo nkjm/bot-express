@@ -7,6 +7,13 @@ const line_bot_sdk = require("@line/bot-sdk");
 const secure_compare = require('secure-compare');
 Promise.promisifyAll(request);
 
+// CommonJS (destructuring can be used for Node.js >= 6)
+const HTTPError = require('@line/bot-sdk').HTTPError;
+const JSONParseError = require('@line/bot-sdk').JSONParseError;
+const ReadError = require('@line/bot-sdk').ReadError;
+const RequestError = require('@line/bot-sdk').RequestError;
+const SignatureValidationFailed = require('@line/bot-sdk').SignatureValidationFailed;
+
 module.exports = class MessengerLine {
 
     constructor(options){
@@ -55,7 +62,17 @@ module.exports = class MessengerLine {
             return Promise.resolve();
         }
         */
-        return this.sdk.replyMessage(event.replyToken, messages);
+        return this.sdk.replyMessage(event.replyToken, messages).catch((err) => {
+            if (err instanceof HTTPError){
+                debug("HTTPError");
+                debug(err.statusCode);
+                debug(err);
+            } else if (err instanceof JSONParseError){
+                debug("JSONParseError");
+                debug(err.statusCode);
+                debug(err);
+            }
+        })
     }
 
     validate_signature(req){

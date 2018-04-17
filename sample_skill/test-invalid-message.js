@@ -7,7 +7,7 @@ module.exports = class SkillTestInvalidMessage {
             altText: "test",
             template: {
                 type: "buttons",
-                title: "this title exceeds the threshold aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                title: "this title exceeds the threshold aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                 text: "test",
                 actions: [{type: "message", label: "test", text: "test"}]
             }

@@ -49,10 +49,12 @@ module.exports = class MessengerLine {
 
     reply(event, messages){
         // If this is test, we will not actually issue call out.
+        /*
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
+        */
         return this.sdk.replyMessage(event.replyToken, messages);
     }
 

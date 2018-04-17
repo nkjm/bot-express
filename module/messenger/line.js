@@ -56,25 +56,34 @@ module.exports = class MessengerLine {
 
     reply(event, messages){
         // If this is test, we will not actually issue call out.
+
         /*
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
         */
-        return this.sdk.replyMessage(event.replyToken, messages).catch((err) => {
-            if (err instanceof HTTPError){
-                debug("HTTPError");
-                debug(err.statusCode);
-                debug(err.statusMessage);
-                debug(err);
-            } else if (err instanceof JSONParseError){
-                debug("JSONParseError");
-                debug(err.statusCode);
-                debug(err);
-            }
-        })
 
+        //return this.sdk.replyMessage(event.replyToken, messages);
+        let url = "https://api.line.me/v2/bot/message/reply";
+        let headers = {
+            Authorization: `Bearer ${this._access_token}`
+        }
+        let body = {
+            replyToken: event.replyToken,
+            messages: messages
+        }
+        return request.postAsync({
+            url: url,
+            headers: headers,
+            body: body,
+            json: true
+        }).then((response) => {
+            if (response.statusCode == 200){
+                return response.body;
+            }
+            return Promise.reject(response.body);
+        });
     }
 
     validate_signature(req){

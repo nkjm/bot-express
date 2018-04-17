@@ -4,10 +4,11 @@ module.exports = class SkillTestInvalidMessage {
     finish(bot, event, context, resolve, reject){
         let message = {
             type: "template",
-            altText: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            altText: "test",
             template: {
                 type: "buttons",
-                text: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1", // exceeds 1 letter.
+                title: "this title exceeds the threshold aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                text: "test",
                 actions: [{type: "message", label: "test", text: "test"}]
             }
         }

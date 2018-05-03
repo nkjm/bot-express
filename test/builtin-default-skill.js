@@ -23,7 +23,7 @@ for (let messenger_option of messenger_options){
 
         describe("Unidentifiable message", function(){
             it("should trigger start conversation flow and pick up default skill.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ほげほげ");

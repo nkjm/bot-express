@@ -22,7 +22,7 @@ describe("Test compile message from line", function(){
 
     describe("handle-pizza-order-in-various-format", function(){
         it(`will translate message object from ${emu.messenger_type} to facebook.`, function(){
-            this.timeout(115000);
+            this.timeout(15000);
 
             return emu.clear_context(user_id).then(function(){
                 let event = emu.create_postback_event(user_id, {
@@ -397,7 +397,7 @@ describe("Test compile message from facebook", function(){
 
     describe("handle-pizza-order-in-various-format", function(){
         it(`will translate message object from ${emu.messenger_type} to line.`, function(){
-            this.timeout(115000);
+            this.timeout(15000);
 
             return emu.clear_context(user_id).then(function(){
                 let event = emu.create_postback_event(user_id, {

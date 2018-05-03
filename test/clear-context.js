@@ -27,7 +27,7 @@ for (let messenger_option of messenger_options){
 
         describe("bot-express:push event which indicates bye intent", function(){
             it("should keep context", function(){
-                this.timeout(5000);
+                this.timeout(15000);
                 let event = {
                     type: "bot-express:push",
                     to: {
@@ -46,7 +46,7 @@ for (let messenger_option of messenger_options){
 
         describe("bot-express:push event which indicates clear-context intent", function(){
             it("should clear context", function(){
-                this.timeout(5000);
+                this.timeout(15000);
                 let event = {
                     type: "bot-express:push",
                     to: {

@@ -22,7 +22,7 @@ for (let messenger_option of messenger_options){
 
         describe("join event", function(){
             it("should trigger join skill.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return Promise.resolve().then(function(){
                     let event = {

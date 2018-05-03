@@ -28,7 +28,7 @@ for (let messenger_option of messenger_options){
 
         describe("Unsupported event", function(){
             it("should be skipped", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_unsupported_event(user_id);
@@ -42,7 +42,7 @@ for (let messenger_option of messenger_options){
 
         describe("Identifiable message", function(){
             it("should trigger start conversation flow and pick up suitable skill.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
@@ -59,7 +59,7 @@ for (let messenger_option of messenger_options){
 
         describe("Identifiable message including parameters.", function(){
             it("should trigger start conversation flow and set parameters.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "マルゲリータのLサイズをお願いしたいのですが");
@@ -79,7 +79,7 @@ for (let messenger_option of messenger_options){
 
         describe("Unidentifiable message", function(){
             it("should trigger start conversation flow and set default intent.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ほげほげ");
@@ -93,7 +93,7 @@ for (let messenger_option of messenger_options){
 
         describe("Postback which contains intent object.", function(){
             it("should trigger start conversation flow and set specified intent.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event;
@@ -127,7 +127,7 @@ for (let messenger_option of messenger_options){
 
         describe("Postback which contains intent object with parameters.", function(){
             it("should trigger start conversation flow and set specified intent and parameters.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event;

@@ -23,7 +23,7 @@ for (let messenger_option of messenger_options){
 
         describe("Buttons Template which includes just 1 button which is datetimepicker", function(){
             it("will be processed and selected date should be saved in confirmed.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {
@@ -65,7 +65,7 @@ for (let messenger_option of messenger_options){
 
         describe("Buttons Template which includes 2 buttons which is url and datetimepicker", function(){
             it("will be processed and selected date should be saved in confirmed.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {

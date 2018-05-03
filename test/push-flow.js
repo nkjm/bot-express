@@ -29,7 +29,7 @@ for (let messenger_option of messenger_options){
 
         describe("bot-express:push event", function(){
             it("should trigger specified skill.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = {
@@ -60,7 +60,7 @@ for (let messenger_option of messenger_options){
 
         describe("bot-express:push event with parameters", function(){
             it("should trigger specified skill.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = {

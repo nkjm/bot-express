@@ -28,7 +28,7 @@ for (let messenger_option of messenger_options){
 
         describe("Identifiable request", function(){
             it("will trigger the skill and go through start conversation flow.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
@@ -49,7 +49,7 @@ for (let messenger_option of messenger_options){
 
         describe("Invalid answer for pizza", function(){
             it("will be rejected by parser and bot asks same question once again.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 let event = emu.create_message_event(user_id, "ジェノベーゼで。");
                 return emu.send(event).then(function(context){
@@ -68,7 +68,7 @@ for (let messenger_option of messenger_options){
 
         describe("Valid answer for pizza", function(){
             it("will be accepted and bot set pizza マルゲリータ and asks pizza size.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 let event = emu.create_message_event(user_id, "マルゲリータで。");
                 return emu.send(event).then(function(context){
@@ -86,7 +86,7 @@ for (let messenger_option of messenger_options){
 
         describe("Valid answer for size", function(){
             it("goes reply flow and size is set to M.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 let event = emu.create_message_event(user_id, "Mサイズで。");
                 return emu.send(event).then(function(context){
@@ -102,7 +102,7 @@ for (let messenger_option of messenger_options){
 
         describe("Valid answer for address", function(){
             it("goes reply flow and address is set to 港区北青山1-1-1.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 let event = emu.create_message_event(user_id, "港区北青山1-1-1");
                 return emu.send(event).then(function(context){
@@ -125,7 +125,7 @@ for (let messenger_option of messenger_options){
 
         describe("Valid answer for name", function(){
             it("goes reply flow and skill completed.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 let event = emu.create_message_event(user_id, "中嶋一樹");
                 return emu.send(event).then(function(context){
@@ -136,7 +136,7 @@ for (let messenger_option of messenger_options){
 
         describe("Identifiable request with valid parameter", function(){
             it("goes start conversation flow and pizza type and size are set. And confirm address to delivery.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "マリナーラのLサイズをお願いしたいのですが");
@@ -157,7 +157,7 @@ for (let messenger_option of messenger_options){
 
         describe("Geo message", function(){
             it("goes reply flow and address, latitude, longitude are set.", function(){
-                this.timeout(5000);
+                this.timeout(15000);
 
                 let event;
                 if (emu.messenger_type == "line"){

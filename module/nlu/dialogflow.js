@@ -1,44 +1,90 @@
 'use strict';
 
-const apiai = require("apiai");
+const dialogflow = require("dialogflow");
 const debug = require("debug")("bot-express:nlu");
 const default_language = "ja";
-const required_options = ["client_access_token"];
+const required_options = ["project_id", "client_email", "private_key"];
 
 Promise = require("bluebird");
 
 module.exports = class NluDialogflow {
+    /**
+    @constructor
+    @param {Object} options
+    @param {String} options.project_id
+    @param {String} [options.key_filename] - Full path to the a .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
+    @param {String} [options.client_email] - The parameter you can find in .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
+    @param {String} [options.private_key] - The parameter you can find in .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
+    */
     constructor(options){
         required_options.map((required_option) => {
             if (!options[required_option]){
-                throw new Error(`Required option "${required_option}" of Dialogflow not set.`);
+                throw new Error(`Required option "${required_option}" of NluDialogflow not set.`);
             }
         })
-        this._client_access_token = options.client_access_token;
-        this._developer_access_token = options.developer_access_token;
+        this._project_id = options.project_id;
         this._language = options.language || default_language;
+
+        let session_client_option = {
+            project_id: options.project_id
+        }
+
+        if (options.key_filename){
+            session_client_option.keyFilename = options.key_filename;
+        } else if (options.client_email && options.private_key){
+            session_client_option.credentials = {
+                client_email: options.client_email,
+                private_key: options.private_key.replace(/\\n/g, '\n')
+            }
+        } else {
+            throw new Error(`key_filename or (client_email and private_key) option is required forNluDialogflow.`);
+        }
+
+        this._session_client = new dialogflow.SessionsClient(session_client_option);
     }
 
     identify_intent(sentence, options){
         if (!options.session_id){
-            throw new Error(`Required option "session_id" for apiai.indentify_intent() not set.`);
+            throw new Error(`Required option "session_id" for NluDialogflow.indentify_intent() not set.`);
         }
 
-        let ai_instance = apiai(this._client_access_token, {language: this._language});
-        let ai_request = ai_instance.textRequest(sentence, {sessionId: options.session_id});
-        let promise_got_intent = new Promise((resolve, reject) => {
-            ai_request.on('response', (response) => {
-                let intent = {
-                    id: response.result.metadata.intentId,
-                    name: response.result.action || "input.unknown",
-                    parameters: response.result.parameters,
-                    text_response: response.result.fulfillment.speech,
-                    fulfillment: response.result.fulfillment
+        const session_path = this._session_client.sessionPath(this._project_id, options.session_id);
+
+        // The text query request.
+        const request = {
+            session: session_path,
+            queryInput: {
+                text: {
+                    text: sentence,
+                    languageCode: this._language
                 }
-                return resolve(intent);
-            });
-            ai_request.end();
+            }
+        };
+
+        // Send request and log result
+        return Promise.resolve().then(() => {
+            return this._session_client.detectIntent(request);
+        }).then(responses => {
+            let result = responses[0].queryResult;
+
+            let intent = {
+                id: result.intent.name,
+                name: result.action || "input.unknown",
+                parameters: {},
+                text_response: result.fulfillmentText,
+                fulfillment: result.fulfillmentMessages,
+                dialogflow: responses[0]
+            }
+
+            if (result.parameters && result.parameters.fields){
+                for (let param_key of Object.keys(result.parameters.fields)){
+                    if (result.parameters.fields[param_key] && result.parameters.fields[param_key].kind){
+                        intent.parameters[param_key] = result.parameters.fields[param_key][result.parameters.fields[param_key].kind];
+                    }
+                }
+            }
+
+            return intent;
         });
-        return promise_got_intent;
     }
 }

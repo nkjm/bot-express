@@ -150,7 +150,6 @@ for (let messenger_option of messenger_options){
                     context.should.have.property("to_confirm").have.lengthOf(2);
                     context.to_confirm[0].should.equal("address");
                     context.to_confirm[1].should.equal("name");
-                    context.previous.confirmed.should.deep.equal(["size","pizza"]);
                 });
             });
         });
@@ -198,7 +197,6 @@ for (let messenger_option of messenger_options){
                     context.should.have.property("confirming", "name");
                     context.should.have.property("to_confirm").have.lengthOf(1);
                     context.to_confirm[0].should.equal("name");
-                    context.previous.confirmed.should.deep.equal(["address","size","pizza"]);
                 });
             });
         });

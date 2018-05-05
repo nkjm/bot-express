@@ -1,6 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:skill");
+const parser = require("../sample_service/parser");
 const mecab = require("mecabaas-client");
 
 module.exports = class SkillHandlePizzaOrder {
@@ -22,32 +23,19 @@ module.exports = class SkillHandlePizzaOrder {
                     }
                 },
                 parser: (value, bot, event, context, resolve, reject) => {
-                    if (typeof value !== "string"){
-                        return reject();
-                    }
-
-                    let parsed_value;
-
-                    if (value.match(/マルゲリータ/)){
-                        parsed_value = "マルゲリータ";
-                    } else if (value.match(/マリナーラ/)){
-                        parsed_value = "マリナーラ";
-                    } else {
-                        return reject();
-                    }
-
-                    return resolve(parsed_value);
+                    return parser.parse("pizza", value, resolve, reject);
                 },
                 reaction: (error, value, bot, event, context, resolve, reject) => {
-                    if (!error){
-                        bot.queue({
-                            type: "text",
-                            text: `${value}ですね。ありがとうございます。`
-                        });
-                    } else {
+                    if (error){
+                        if (value == "") return resolve();
                         bot.change_message_to_confirm("pizza", {
                             type: "text",
                             text: "恐れ入りますが当店ではマルゲリータかマリナーラしかございません。どちらになさいますか？"
+                        });
+                    } else {
+                        bot.queue({
+                            type: "text",
+                            text: `${value}ですね。ありがとうございます。`
                         });
                     }
                     return resolve();
@@ -163,13 +151,11 @@ module.exports = class SkillHandlePizzaOrder {
 
     // パラメーターが全部揃ったら実行する処理を記述します。
     finish(bot, event, context, resolve, reject){
-        let messages = [{
+        const messages = [{
             text: `${context.confirmed.name} 様、ご注文ありがとうございました！${context.confirmed.pizza}の${context.confirmed.size}サイズを30分以内にご指定の${context.confirmed.address.address}までお届けに上がります。`
         }];
-        return bot.reply(messages).then(
-            (response) => {
-                return resolve(response);
-            }
-        );
+        return bot.reply(messages).then(response => {
+            return resolve(response);
+        });
     }
 };

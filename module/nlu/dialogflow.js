@@ -4,6 +4,7 @@ const dialogflow = require("dialogflow");
 const debug = require("debug")("bot-express:nlu");
 const default_language = "ja";
 const required_options = ["project_id"];
+const cache = require("memory-cache");
 
 Promise = require("bluebird");
 
@@ -26,14 +27,21 @@ module.exports = class NluDialogflow {
         this._project_id = options.project_id;
         this._language = options.language || default_language;
 
-        let session_client_option = {
+        // We reuse the sessions client from cache if possible.
+        this._sessions_client = cache.get("dialogflow_sessions_client");
+        if (this._sessions_client){
+            debug("Dialogflow sessions client found in cache.");
+            return;
+        }
+
+        let sessions_client_option = {
             project_id: options.project_id
         }
 
         if (options.key_filename){
-            session_client_option.keyFilename = options.key_filename;
+            sessions_client_option.keyFilename = options.key_filename;
         } else if (options.client_email && options.private_key){
-            session_client_option.credentials = {
+            sessions_client_option.credentials = {
                 client_email: options.client_email,
                 private_key: options.private_key.replace(/\\n/g, '\n')
             }
@@ -41,7 +49,8 @@ module.exports = class NluDialogflow {
             throw new Error(`key_filename or (client_email and private_key) option is required forNluDialogflow.`);
         }
 
-        this._session_client = new dialogflow.SessionsClient(session_client_option);
+        this._sessions_client = new dialogflow.SessionsClient(sessions_client_option);
+        cache.put("dialogflow_sessions_client", this._sessions_client);
     }
 
     identify_intent(sentence, options){
@@ -49,7 +58,7 @@ module.exports = class NluDialogflow {
             throw new Error(`Required option "session_id" for NluDialogflow.indentify_intent() not set.`);
         }
 
-        const session_path = this._session_client.sessionPath(this._project_id, options.session_id);
+        const session_path = this._sessions_client.sessionPath(this._project_id, options.session_id);
 
         // The text query request.
         const request = {
@@ -64,7 +73,7 @@ module.exports = class NluDialogflow {
 
         // Send request and log result
         return Promise.resolve().then(() => {
-            return this._session_client.detectIntent(request);
+            return this._sessions_client.detectIntent(request);
         }).then(responses => {
             let result = responses[0].queryResult;
 

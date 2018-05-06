@@ -1,6 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:parser");
+const cache = require("memory-cache");
 const dialogflow = require("dialogflow");
 const structjson = require("./dialogflow/structjson");
 const default_language = "ja";
@@ -31,22 +32,31 @@ module.exports = (options, param, bot, event, context, resolve, reject) => {
     }
     const language = options.language || default_language;
 
-    let sessions_client_option = {
-        project_id: options.project_id
-    }
-
-    if (options.key_filename){
-        sessions_client_option.keyFilename = options.key_filename;
-    } else if (options.client_email && options.private_key){
-        sessions_client_option.credentials = {
-            client_email: options.client_email,
-            private_key: options.private_key.replace(/\\n/g, '\n')
-        }
+    // We reuse the sessions client from cache if possible.
+    let sessions_client;
+    sessions_client = cache.get("dialogflow_sessions_client");
+    if (sessions_client){
+        debug("Dialogflow sessions client found in cache.");
     } else {
-        throw new Error(`key_filename or (client_email and private_key) option is required for ParserDialogflow.`);
+        let sessions_client_option = {
+            project_id: options.project_id
+        }
+
+        if (options.key_filename){
+            sessions_client_option.keyFilename = options.key_filename;
+        } else if (options.client_email && options.private_key){
+            sessions_client_option.credentials = {
+                client_email: options.client_email,
+                private_key: options.private_key.replace(/\\n/g, '\n')
+            }
+        } else {
+            throw new Error(`key_filename or (client_email and private_key) option is required for ParserDialogflow.`);
+        }
+
+        sessions_client = new dialogflow.SessionsClient(sessions_client_option);
+        cache.put("dialogflow_sessions_client", sessions_client);
     }
 
-    const sessions_client = new dialogflow.SessionsClient(sessions_client_option);
     const session_path = sessions_client.sessionPath(options.project_id, options.project_id);
 
     if (typeof param.value != "string") return reject();

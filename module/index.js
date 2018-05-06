@@ -38,6 +38,9 @@ router.use(body_parser.json({
 * @param {String} options.nlu - Option object for NLU Service.
 * @param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
 * @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, client_access_token is required.
+* @param {Array.<Object>} [options.parser] - Array of option object for Parser Service.
+* @param {String} [options.parser[].type] - Name of the builtin parser. Supported value is "dialogflow".
+* @param {Object} [options.parser[].options] - Option object for the builtin parser.
 * @param {Object} [options.memory] - Option object for memory to store context.
 * @param {String} [options.memory.type="memory-cache"] - Store type of context. Supported store type is memory-cache and redis.
 * @param {Number} [options.memory.retention="600"] - Lifetime of the context in seconds.

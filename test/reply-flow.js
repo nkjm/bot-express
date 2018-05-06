@@ -28,7 +28,7 @@ for (let messenger_option of messenger_options){
 
         describe("Correct answer", function(){
             it("will be accepted and fires reaction.", function(){
-                this.timeout(8000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
@@ -52,7 +52,7 @@ for (let messenger_option of messenger_options){
 
         describe("Incorrect answer", function(){
             it("will be rejected and bot asks same parameter.", function(){
-                this.timeout(8000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
@@ -76,7 +76,7 @@ for (let messenger_option of messenger_options){
 
         describe("Restart conversation in the middle of the conversation", function(){
             it("will trigger restart conversation.", function(){
-                this.timeout(8000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
@@ -99,7 +99,7 @@ for (let messenger_option of messenger_options){
 
         describe("Change intent in the middle of the conversation", function(){
             it("will trigger change intent.", function(){
-                this.timeout(8000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
@@ -119,7 +119,7 @@ for (let messenger_option of messenger_options){
 
         describe("Change parameter in the middle of the conversation", function(){
             it("will rejected and bot asks for same parameter. *Will be accepted in the futer.", function(){
-                this.timeout(8000);
+                this.timeout(15000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ピザを注文したいのですが");

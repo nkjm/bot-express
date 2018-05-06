@@ -4,6 +4,7 @@ const debug = require("debug")("bot-express:flow");
 const BotExpressParseError = require("../error/parse");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");
+const Parser = require("../parser");
 Promise = require('bluebird');
 
 module.exports = class Flow {
@@ -256,12 +257,15 @@ module.exports = class Flow {
                 return reject(new BotExpressParseError(message));
             }
 
+            let parser;
             if (!!this.context.skill[type][key].parser){
                 debug("Parse method found in parameter definition.");
-                return this.context.skill[type][key].parser(value, this.bot, this.event, this.context, resolve, parse_reject);
+                parser = this.context.skill[type][key].parser;
+                //return this.context.skill[type][key].parser(value, this.bot, this.event, this.context, resolve, parse_reject);
             } else if (!!this.context.skill["parse_" + key]){
                 debug("Parse method found in default parser function name.");
-                return this.context.skill["parse_" + key](value, this.bot, this.event, this.context, resolve, parse_reject);
+                parser = this.context.skill["parse_" + key];
+                //return this.context.skill["parse_" + key](value, this.bot, this.event, this.context, resolve, parse_reject);
             } else {
                 if (strict){
                     return parse_reject("PARSER NOT FOUND");
@@ -272,6 +276,18 @@ module.exports = class Flow {
                 } else {
                     return resolve(value);
                 }
+            }
+
+            if (typeof parser === "function"){
+                // We use the defined function.
+                return parser(value, this.bot, this.event, this.context, resolve, parse_reject);
+            } else if (typeof parser === "string"){
+                // We use builtin parser.
+                let builtin_parser = new Parser(this.options.parser);
+                return builtin_parser.parse(parser, {key: key, value: value}, this.bot, this.event, this.context, resolve, parse_reject);
+            } else {
+                // Invalid parser.
+                throw new Error(`Parser for the parameter: ${key} is invalid.`);
             }
         });
     }

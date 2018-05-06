@@ -3,7 +3,7 @@
 const dialogflow = require("dialogflow");
 const debug = require("debug")("bot-express:nlu");
 const default_language = "ja";
-const required_options = ["project_id", "client_email", "private_key"];
+const required_options = ["project_id"];
 
 Promise = require("bluebird");
 
@@ -15,13 +15,14 @@ module.exports = class NluDialogflow {
     @param {String} [options.key_filename] - Full path to the a .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
     @param {String} [options.client_email] - The parameter you can find in .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
     @param {String} [options.private_key] - The parameter you can find in .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
+    @param {String} [options.language] - The language to analyze.
     */
     constructor(options){
-        required_options.map((required_option) => {
+        for (let required_option of required_options){
             if (!options[required_option]){
                 throw new Error(`Required option "${required_option}" of NluDialogflow not set.`);
             }
-        })
+        }
         this._project_id = options.project_id;
         this._language = options.language || default_language;
 

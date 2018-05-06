@@ -22,9 +22,7 @@ module.exports = class SkillHandlePizzaOrder {
                         ]
                     }
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
-                    return parser.parse("pizza", value, resolve, reject);
-                },
+                parser: "dialogflow",
                 reaction: (error, value, bot, event, context, resolve, reject) => {
                     if (error){
                         if (value == "") return resolve();
@@ -55,25 +53,7 @@ module.exports = class SkillHandlePizzaOrder {
                         ]
                     }
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
-                    if (typeof value !== "string"){
-                        return reject();
-                    }
-
-                    let parsed_value;
-
-                    if (value.match(/[sS]/) || value.match(/小/)){
-                        parsed_value = "S";
-                    } else if (value.match(/[mM]/) || value.match(/中/) || value.match(/普通/)){
-                        parsed_value = "M";
-                    } else if (value.match(/[lL]/) || value.match(/大/)){
-                        parsed_value = "L";
-                    } else {
-                        return reject();
-                    }
-
-                    return resolve(parsed_value);
-                }
+                parser: "dialogflow"
             },
             address: {
                 message_to_confirm: {

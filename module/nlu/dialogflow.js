@@ -77,6 +77,10 @@ module.exports = class NluDialogflow {
         }).then(responses => {
             let result = responses[0].queryResult;
 
+            if (!result.intent){
+                result.intent = {}
+            }
+
             let intent = {
                 id: result.intent.name,
                 name: result.action || "input.unknown",

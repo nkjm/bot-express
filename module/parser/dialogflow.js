@@ -71,12 +71,12 @@ module.exports = (options, param, bot, event, context, resolve, reject) => {
             }
         }
     }).then(responses => {
-        const parameters = structjson.jsonToStructProto(
-            structjson.structProtoToJson(responses[0].queryResult.parameters)
-        );
+        const parameters = structjson.structProtoToJson(responses[0].queryResult.parameters);
+        debug("Detected parameters are following.");
+        debug(parameters);
 
-        if (parameters.fields[param.key] && parameters.fields[param.key][parameters.fields[param.key].kind]){
-            return resolve(parameters.fields[param.key][parameters.fields[param.key].kind]);
+        if (parameters[param.key]){
+            return resolve(parameters[param.key]);
         }
         return reject();
     })

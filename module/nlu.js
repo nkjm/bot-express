@@ -22,6 +22,10 @@ class Nlu {
 
         let scripts = fs.readdirSync(__dirname + "/nlu");
         for (let script of scripts){
+            if (!script.match(/.js$/)){
+                // Skip directory or other non-js file.
+                continue;
+            }
             if (script.replace(".js", "") == options.type){
                 debug("Found plugin for specified NLU service. Loading " + script + "...");
                 let Service = require("./nlu/" + options.type);

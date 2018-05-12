@@ -5,6 +5,7 @@ const debug = require("debug")("bot-express:nlu");
 const default_language = "ja";
 const required_options = ["project_id"];
 const cache = require("memory-cache");
+const structjson = require("./dialogflow/structjson");
 
 Promise = require("bluebird");
 
@@ -90,12 +91,8 @@ module.exports = class NluDialogflow {
                 dialogflow: responses[0]
             }
 
-            if (result.parameters && result.parameters.fields){
-                for (let param_key of Object.keys(result.parameters.fields)){
-                    if (result.parameters.fields[param_key] && result.parameters.fields[param_key].kind){
-                        intent.parameters[param_key] = result.parameters.fields[param_key][result.parameters.fields[param_key].kind];
-                    }
-                }
+            if (result.parameters){
+                intent.parameters = structjson.structProtoToJson(result.parameters);
             }
 
             return intent;

@@ -71,6 +71,10 @@ module.exports = (options, param, bot, event, context, resolve, reject) => {
             }
         }
     }).then(responses => {
+        if (responses[0].queryResult.action){
+            debug("Builtin parser found an intent but it seems for another purpose so reject it.");
+            return reject();
+        }
         const parameters = structjson.structProtoToJson(responses[0].queryResult.parameters);
         debug("Detected parameters are following.");
         debug(parameters);

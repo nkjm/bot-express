@@ -94,7 +94,7 @@ module.exports = class SkillHandlePizzaOrder {
             name: {
                 message_to_confirm: {
                     type: "text",
-                    text: "最後に、お客様のお名前を教えていただけますか？"
+                    text: "お客様のお名前を教えていただけますか？"
                 },
                 parser: (value, bot, event, context, resolve, reject) => {
                     let lastname, firstname, fullname;
@@ -117,6 +117,33 @@ module.exports = class SkillHandlePizzaOrder {
                             return reject(response);
                         }
                     )
+                }
+            },
+            review: {
+                message_to_confirm: (bot, event, context, resolve, reject) => {
+                    let message = {
+                        type: "template",
+                        altText: `最後にご注文内容の確認です。${context.confirmed.pizza}の${context.confirmed.size}サイズでよろしかったでしょうか？`,
+                        template: {
+                            type: "confirm",
+                            text: `最後にご注文内容の確認です。${context.confirmed.pizza}の${context.confirmed.size}サイズでよろしかったでしょうか？`,
+                            actions: [
+                                {type: "message", label: "はい", text: "はい"},
+                                {type: "message", label: "いいえ", text: "いいえ"}
+                            ]
+                        }
+                    }
+                    return resolve(message);
+                },
+                parser: {type: "dialogflow", parameter: "yes_no"},
+                reaction: (error, value, bot, event, context, resolve, reject) => {
+                    if (error) return resolve();
+
+                    if (value === "いいえ"){
+                        bot.collect("size");
+                        bot.collect("pizza");
+                    }
+                    return resolve();
                 }
             }
         }

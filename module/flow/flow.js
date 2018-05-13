@@ -14,6 +14,7 @@ module.exports = class Flow {
         this.options = options;
         this.messenger = messenger;
         this.bot = new Bot(this.options, this.event, this.context, messenger);
+        this.builtin_parser = new Parser(this.options.parser);
 
         if (this.context.intent && this.context.intent.name){
             debug(`Init and reviving skill instance.`);
@@ -278,13 +279,27 @@ module.exports = class Flow {
                 }
             }
 
+            /**
+            As parser, we support 3 types which are function, string and object.
+            In case of function, we use it as it is.
+            In case of string and object, we use builtin parser.
+            As for the object, following is the format.
+            @param {Object} parser
+            @param {String} parser.type - Type of builting parser. Supported value is dialogflow.
+            @param {String} [parser.parameter] - The parameter name which is defined in dialogflow. When this value is undefined, we use the parameter name of the skill.
+            */
             if (typeof parser === "function"){
                 // We use the defined function.
                 return parser(value, this.bot, this.event, this.context, resolve, parse_reject);
             } else if (typeof parser === "string"){
                 // We use builtin parser.
-                let builtin_parser = new Parser(this.options.parser);
-                return builtin_parser.parse(parser, {key: key, value: value}, this.bot, this.event, this.context, resolve, parse_reject);
+                return this.builtin_parser.parse(parser, {key: key, value: value}, this.bot, this.event, this.context, resolve, parse_reject);
+            } else if (typeof parser === "object"){
+                // We use builtin parser.
+                if (!parser.type){
+                    throw new Error(`Parser object is invalid. Required property: "type" not found.`);
+                }
+                return this.builtin_parser.parse(parser.type, {key: parser.parameter || key, value: value}, this.bot, this.event, this.context, resolve, parse_reject);
             } else {
                 // Invalid parser.
                 throw new Error(`Parser for the parameter: ${key} is invalid.`);

@@ -117,7 +117,14 @@ module.exports = class Flow {
                 }
             }
             if (log.param.parser){
-                log.param.parser = Function.call(this, "return " + log.param.parser)();
+                if (typeof log.param.parser === "string"){
+                    debug(`parser is string. We try to make it function...`);
+                    try {
+                        log.param.parser = Function.call(this, "return " + log.param.parser)();
+                    } catch (error) {
+                        debug(`parser looks like built-in parser so we use it as it is.`);
+                    }
+                }
             }
             if (log.param.reaction){
                 log.param.reaction = Function.call(this, "return " + log.param.reaction)();
@@ -290,15 +297,18 @@ module.exports = class Flow {
             */
             if (typeof parser === "function"){
                 // We use the defined function.
+                debug(`Parser is function so we use it as it is.`)
                 return parser(value, this.bot, this.event, this.context, resolve, parse_reject);
             } else if (typeof parser === "string"){
                 // We use builtin parser.
+                debug(`Parser is string so we use builtin parser: ${parser}.`);
                 return this.builtin_parser.parse(parser, {key: key, value: value}, this.bot, this.event, this.context, resolve, parse_reject);
             } else if (typeof parser === "object"){
                 // We use builtin parser.
                 if (!parser.type){
                     throw new Error(`Parser object is invalid. Required property: "type" not found.`);
                 }
+                debug(`Parser is object so we use builtin parser: ${parser.type}.`);
                 return this.builtin_parser.parse(parser.type, {key: parser.parameter || key, value: value}, this.bot, this.event, this.context, resolve, parse_reject);
             } else {
                 // Invalid parser.

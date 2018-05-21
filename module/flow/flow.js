@@ -711,6 +711,7 @@ module.exports = class Flow {
         if (this.context._exit){
             debug("Detected exit flag. We stop processing finish().");
             this.context.confirming = null;
+            this.context._exit = false;
             return Promise.resolve(this.context);
         }
 

@@ -445,6 +445,15 @@ module.exports = class Flow {
 
                 // This can be change parameter or no idea.
                 debug("We could not identify intent so this can be change parameter or no idea.");
+
+                if (this.context._flow === "reply"){
+                    debug(`Since this is in reply flow, we will not check if it is change parameter. We conclude this is no idea.`);
+                    return {
+                        result: "no_idea",
+                        intent: intent
+                    }
+                }
+
                 let is_fit = false;
                 let all_param_keys = [];
                 if (this.context.skill.required_parameter){

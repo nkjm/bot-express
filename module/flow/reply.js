@@ -83,16 +83,15 @@ module.exports = class ReplyFlow extends Flow {
                             } else if (response.result == "change_intent"){
                                 return super.change_intent(response.intent);
                             } else if (response.result == "change_parameter"){
+                                /**
+                                Now there is not chance to run this case since detecting change parameter in reply flow is very likely to be false positive.
+                                */
                                 debug(`While we concluded this is change_parameter, it still can be false positive unless developer configured accruate parser to every single parameters. So we do not perform change_parameter() at this momenet. We just take reaction.`);
-                                return super.react(error, this.context.confirming, translated_param_value);
-                                /*
-                                // Will be activated later.
                                 return super.change_parameter(response.parameter.key, translated_param_value).then(
                                     (applied_parameter) => {
                                         return super.react(null, applied_parameter.key, applied_parameter.value);
                                     }
                                 );
-                                */
                             } else if (response.result == "no_idea"){
                                 return super.react(error, this.context.confirming, translated_param_value);
                             }

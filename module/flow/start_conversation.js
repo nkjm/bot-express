@@ -157,9 +157,16 @@ module.exports = class StartConversationFlow extends Flow {
             });
         }
 
+
         // Process parameters.
         if (!skip_process_params){
             done_process_params = done_begin.then((response) => {
+                // If pause or exit flag found, we skip remaining process.
+                if (this.context._pause || this.context._exit){
+                    debug(`Detected pause or exit flag so we skip processing parameters.`);
+                    return Promise.resolve();
+                }
+
                 // If we find some parameters from initial message, add them to the conversation.
                 let parameters_processed = [];
                 if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){

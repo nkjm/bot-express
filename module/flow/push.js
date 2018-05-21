@@ -71,6 +71,12 @@ module.exports = class PushFlow extends Flow {
             });
         }
 
+        // If pause or exit flag found, we skip remaining process.
+        if (this.context._pause || this.context._exit){
+            skip_process_params = true;
+            done_process_params = Promise.resolve();
+        }
+
         // Process parameters.
         if (!skip_process_params){
             done_process_params = done_begin.then((response) => {

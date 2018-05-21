@@ -212,6 +212,14 @@ class Bot {
     }
 
     /**
+    * Stop processing all remaining actions and clear context.
+    * @returns {Null}
+    */
+    exit(){
+        this._context._exit = true;
+    }
+
+    /**
     Check parameter type.
     @private
     @param {String} key - Parameter name.

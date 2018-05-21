@@ -346,6 +346,12 @@ module.exports = class Flow {
 
     react(error, key, value){
         return new Promise((resolve, reject) => {
+            // If pause or exit flag found, we skip remaining process.
+            if (this.context._pause || this.context._exit){
+                debug(`Detected pause or exit flag so we skip reaction.`);
+                return resolve();
+            }
+
             let param_type = this.bot.check_parameter_type(key);
 
             if (this.context.skill[param_type] && this.context.skill[param_type][key]){
@@ -569,6 +575,12 @@ module.exports = class Flow {
 
         return this.begin().then(
             (response) => {
+                // If we found pause or exit flag, we skip remaining process.
+                if (this.context._pause || this.context._exit){
+                    debug(`Detected pause or exit flag so we skip processing parameters.`);
+                    return Promise.resolve();
+                }
+
                 // If we find some parameters from initial message, add them to the conversation.
                 let parameters_processed = [];
                 if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
@@ -621,6 +633,12 @@ module.exports = class Flow {
 
         return this.begin().then(
             (response) => {
+                // If we found pause or exit flag, we skip remaining process.
+                if (this.context._pause || this.context._exit){
+                    debug(`Detected pause or exit flag so we skip processing parameters.`);
+                    return Promise.resolve();
+                }
+
                 // If we find some parameters from initial message, add them to the conversation.
                 let all_parameters_processed = [];
                 if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
@@ -673,10 +691,17 @@ module.exports = class Flow {
             message: this.bot.extract_message()
         });
 
-        // If pause flag has been set, we stop processing following actions and exit.
+        // If pause flag has been set, we stop processing remaining actions while keeping context.
         if (this.context._pause){
-            debug("Detected pause flag. We stop processing collect() and finish().");
+            debug("Detected pause flag. We stop processing finish().");
             this.context._pause = false;
+            return Promise.resolve(this.context);
+        }
+
+        // If exit flag has been set, we stop processing remaining actions and clear context.
+        if (this.context._exit){
+            debug("Detected exit flag. We stop processing finish().");
+            this.context = null;
             return Promise.resolve(this.context);
         }
 

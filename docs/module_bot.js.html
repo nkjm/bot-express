@@ -240,6 +240,14 @@ class Bot {
     }
 
     /**
+    * Stop processing all remaining actions and clear context.
+    * @returns {Null}
+    */
+    exit(){
+        this._context._exit = true;
+    }
+
+    /**
     Check parameter type.
     @private
     @param {String} key - Parameter name.
@@ -284,7 +292,10 @@ class Bot {
     @param {Skill#skill_parameter} param - Skill parameter object.
     @return {Null}
     */
-    _save_param_change_log(param_type, param_key, param){
+    _save_param_change_log(param_type, param_key, param_orig){
+        // We copy param_orig to param to prevent propagate the change in this function to original object.
+        let param = Object.assign({}, param_orig);
+
         if (!this._context.param_change_history){
             this._context.param_change_history= [];
         }
@@ -295,7 +306,9 @@ class Bot {
             }
         }
         if (param.parser){
-            param.parser = param.parser.toString();
+            if (typeof param.parser === "function"){
+                param.parser = param.parser.toString();
+            }
         }
         if (param.reaction){
             param.reaction = param.reaction.toString();
@@ -315,8 +328,10 @@ class Bot {
     */
     collect(arg){
         if (typeof arg == "string"){
+            debug(`Reserving collection of parameter: ${arg}.`);
             return this._collect_by_parameter_key(arg);
         } else if (typeof arg == "object"){
+            debug(`Reserving collection of parameter: ${Object.keys(arg)[0]}.`);
             return this._collect_by_parameter_obj(arg);
         } else {
             throw(new Error("Invalid argument for messenger.collect()"));
@@ -330,8 +345,6 @@ class Bot {
     * @returns {Null}
     */
     _collect_by_parameter_key(parameter_key){
-        debug("Going to collect parameter. Message should be defined in skill.");
-
         // If there is confirmed parameter, we remove it to re-confirm.
         if (this._context.confirmed[parameter_key]){
             delete this._context.confirmed[parameter_key];
@@ -344,7 +357,7 @@ class Bot {
             this._context.to_confirm.splice(index_to_remove, 1);
         }
 
-        debug(`We put parameter "${parameter_key}" to the top of to_confirm list.`);
+        debug(`Reserved collection of parameter: ${parameter_key}. We put it to the top of to_confirm list.`);
         this._context.to_confirm.unshift(parameter_key);
     }
 
@@ -355,8 +368,6 @@ class Bot {
     * @returns {Null}
     */
     _collect_by_parameter_obj(param_container){
-        debug("Going to collect parameter. Message should be enveloped in the argument.");
-
         if (Object.keys(param_container).length !== 1){
             throw("Malformed parameter container object. You can pass just 1 parameter.");
         }
@@ -365,14 +376,17 @@ class Bot {
 
         if (this._context.skill.required_parameter &amp;&amp; this._context.skill.required_parameter[param_key]){
             // If we have parameter of same parameter key, override it.
+            debug(`Found the parameter in required_parameter so we override it.`);
             Object.assign(this._context.skill.required_parameter, param_container);
             this._save_param_change_log("required_parameter", param_key, param_container[param_key]);
         } else if (this._context.skill.optional_parameter &amp;&amp; this._context.skill.optional_parameter[param_key]){
             // If we have parameter of same parameter key, override it.
+            debug(`Found the parameter in optional_parameter so we override it.`);
             Object.assign(this._context.skill.optional_parameter, param_container);
             this._save_param_change_log("optional_parameter", param_key, param_container[param_key]);
         } else {
             // If we do not have parameter of same parameter key, add it as dynamic parameter.
+            debug(`The parameter not found in skill so we add it as dynamic parameter.`);
             if (this._context.skill.dynamic_parameter === undefined) this._context.skill.dynamic_parameter = {};
             Object.assign(this._context.skill.dynamic_parameter, param_container);
             this._save_param_change_log("dynamic_parameter", param_key, param_container[param_key]);
@@ -380,17 +394,18 @@ class Bot {
 
         // If there is confirmed parameter, we remove it to re-confirm.
         if (this._context.confirmed[param_key]){
+            debug(`We found confirmed value for this parameter so removing it to re-confirm.`);
             delete this._context.confirmed[param_key];
         }
 
         // If the parameter is already in the to_confirm list, we remove it to avoid duplicate.
         let index_to_remove = this._context.to_confirm.indexOf(param_key);
         if (index_to_remove !== -1){
-            debug(`Removing ${param_key} from to_confirm.`);
+            debug(`We found the parameter in to_confirm so removing it to avoid duplicate.`);
             this._context.to_confirm.splice(index_to_remove, 1);
         }
 
-        debug(`We add dynamic parameter "${param_key}" to the top of to_confirm list.`);
+        debug(`Reserved collection of parameter: ${param_key}. We put it to the top of to_confirm list.`);
         this._context.to_confirm.unshift(param_key);
     }
 
@@ -479,7 +494,7 @@ module.exports = Bot;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun May 13 2018 16:37:27 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun May 20 2018 13:57:38 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

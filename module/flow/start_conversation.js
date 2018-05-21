@@ -162,8 +162,8 @@ module.exports = class StartConversationFlow extends Flow {
         if (!skip_process_params){
             done_process_params = done_begin.then((response) => {
                 // If pause or exit flag found, we skip remaining process.
-                if (this.context._pause || this.context._exit){
-                    debug(`Detected pause or exit flag so we skip processing parameters.`);
+                if (this.context._pause || this.context._exit || this.context._init){
+                    debug(`Detected pause or exit or init flag so we skip processing parameters.`);
                     return Promise.resolve();
                 }
 

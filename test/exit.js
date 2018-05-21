@@ -51,7 +51,7 @@ for (let messenger_option of messenger_options){
         });
 
         describe("Reaction call bot.exit()", function(){
-            it("should skip remaining process and clear context.", function(){
+            it("should skip remaining process and clear context.confirming.", function(){
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {data: JSON.stringify({
@@ -71,13 +71,14 @@ for (let messenger_option of messenger_options){
                     let event = emu.create_message_event(user_id, "e");
                     return emu.send(event);
                 }).then(function(context){
-                    should.not.exist(context);
+                    context.intent.name.should.equal("test-exit");
+                    should.not.exist(context.confirming);
                 })
             });
         });
 
-        describe("Begin call bot.exit()", function(){
-            it("should skip remaining process including parsing param. Finally it clears context.", function(){
+        describe("Begin calls bot.exit()", function(){
+            it("should skip remaining process including parsing param. Finally it clears context.confirming.", function(){
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_postback_event(user_id, {data: JSON.stringify({
                         _type: "intent",
@@ -91,7 +92,8 @@ for (let messenger_option of messenger_options){
                     })})
                     return emu.send(event);
                 }).then(function(context){
-                    should.not.exist(context);
+                    context.intent.name.should.equal("test-exit");
+                    should.not.exist(context.confirming);
                 })
             })
         });

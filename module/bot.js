@@ -204,7 +204,7 @@ class Bot {
     }
 
     /**
-    * Stop processing final actions including collecting parameters and finish() and keep context.
+    * Stop processing all remaining actions and keep context.
     * @returns {Null}
     */
     pause(){
@@ -212,11 +212,19 @@ class Bot {
     }
 
     /**
-    * Stop processing all remaining actions and clear context.
+    * Stop processing all remaining actions and keep context except for confirming.
     * @returns {Null}
     */
     exit(){
         this._context._exit = true;
+    }
+
+    /**
+    * Stop processing all remaining actions and clear context completely.
+    * @returns {Null}
+    */
+    init(){
+        this._context._inti = true;
     }
 
     /**

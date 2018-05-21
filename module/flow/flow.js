@@ -347,8 +347,8 @@ module.exports = class Flow {
     react(error, key, value){
         return new Promise((resolve, reject) => {
             // If pause or exit flag found, we skip remaining process.
-            if (this.context._pause || this.context._exit){
-                debug(`Detected pause or exit flag so we skip reaction.`);
+            if (this.context._pause || this.context._exit || this.context._init){
+                debug(`Detected pause or exit or init flag so we skip reaction.`);
                 return resolve();
             }
 
@@ -585,8 +585,8 @@ module.exports = class Flow {
         return this.begin().then(
             (response) => {
                 // If we found pause or exit flag, we skip remaining process.
-                if (this.context._pause || this.context._exit){
-                    debug(`Detected pause or exit flag so we skip processing parameters.`);
+                if (this.context._pause || this.context._exit || this.context._init){
+                    debug(`Detected pause or exit or init flag so we skip processing parameters.`);
                     return Promise.resolve();
                 }
 
@@ -643,8 +643,8 @@ module.exports = class Flow {
         return this.begin().then(
             (response) => {
                 // If we found pause or exit flag, we skip remaining process.
-                if (this.context._pause || this.context._exit){
-                    debug(`Detected pause or exit flag so we skip processing parameters.`);
+                if (this.context._pause || this.context._exit || this.context._init){
+                    debug(`Detected pause or exit or init flag so we skip processing parameters.`);
                     return Promise.resolve();
                 }
 
@@ -707,9 +707,16 @@ module.exports = class Flow {
             return Promise.resolve(this.context);
         }
 
-        // If exit flag has been set, we stop processing remaining actions and clear context.
+        // If exit flag has been set, we stop processing remaining actions while keeping context except for confirming.
         if (this.context._exit){
             debug("Detected exit flag. We stop processing finish().");
+            this.context.confirming = null;
+            return Promise.resolve(this.context);
+        }
+
+        // If exit flag has been set, we stop processing remaining actions and clear context completely.
+        if (this.context._init){
+            debug("Detected init flag. We stop processing finish().");
             this.context = null;
             return Promise.resolve(this.context);
         }

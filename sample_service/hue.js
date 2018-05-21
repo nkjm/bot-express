@@ -12,7 +12,7 @@ Promise.promisifyAll(request);
 module.exports = class Hue {
     static change_color(color){
         // If this is test, we will not actually issue call out.
-        if (process.env.BOT_EXPRESS_ENV == "test"){
+        if (process.env.BOT_EXPRESS_ENV == "test" || process.env.BOT_EXPRESS_ENV == "development"){
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
@@ -30,7 +30,7 @@ module.exports = class Hue {
 
     static turn_on(){
         // If this is test, we will not actually issue call out.
-        if (process.env.BOT_EXPRESS_ENV == "test"){
+        if (process.env.BOT_EXPRESS_ENV == "test" || process.env.BOT_EXPRESS_ENV == "development"){
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }
@@ -46,7 +46,7 @@ module.exports = class Hue {
 
     static turn_off(){
         // If this is test, we will not actually issue call out.
-        if (process.env.BOT_EXPRESS_ENV == "test"){
+        if (process.env.BOT_EXPRESS_ENV == "test" || process.env.BOT_EXPRESS_ENV == "development"){
             debug("This is test so we skip the actual call out.");
             return Promise.resolve();
         }

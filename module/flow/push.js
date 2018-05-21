@@ -71,15 +71,14 @@ module.exports = class PushFlow extends Flow {
             });
         }
 
-        // If pause or exit flag found, we skip remaining process.
-        if (this.context._pause || this.context._exit){
-            skip_process_params = true;
-            done_process_params = Promise.resolve();
-        }
-
         // Process parameters.
         if (!skip_process_params){
             done_process_params = done_begin.then((response) => {
+                // If pause or exit flag found, we skip remaining process.
+                if (this.context._pause || this.context._exit || this.context._init){
+                    return Promise.resolve();
+                }
+
                 // If we find some parameters from initial message, add them to the conversation.
                 let parameters_processed = [];
                 if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){

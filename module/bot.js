@@ -224,7 +224,7 @@ class Bot {
     * @returns {Null}
     */
     init(){
-        this._context._inti = true;
+        this._context._init = true;
     }
 
     /**

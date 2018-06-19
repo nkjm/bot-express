@@ -87,12 +87,25 @@ module.exports = class NluDialogflow {
                 name: result.action || "input.unknown",
                 parameters: {},
                 text_response: result.fulfillmentText,
-                fulfillment: result.fulfillmentMessages,
+                fulfillment: [],
                 dialogflow: responses[0]
             }
 
             if (result.parameters){
                 intent.parameters = structjson.structProtoToJson(result.parameters);
+            }
+
+            if (result.fulfillmentMessages){
+                for (let fulfillmentMessage of result.fulfillmentMessages){
+                    if (fulfillmentMessage.text && fulfillmentMessage.text.text && fulfillmentMessage.text.text[0]){
+                        intent.fulfillment.push({
+                            type: "text",
+                            text: fulfillmentMessage.text.text[0]
+                        });
+                    } else if (fulfillmentMessage.payload){
+                        intent.fulfillment.push(structjson.structProtoToJson(fulfillmentMessage.payload));
+                    }
+                }
             }
 
             return intent;

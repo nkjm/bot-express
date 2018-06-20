@@ -295,10 +295,10 @@ class Bot {
             if (this._context.skill[param_type] && this._context.skill[param_type][param_key]){
                 if (this._context.skill[param_type][param_key].reaction){
                     debug(`Reaction for ${param_key} found. Performing reaction...`);
-                    return this._context.skill[param_type][param_key].reaction(error, value, this, this._event, this._context, resolve, reject);
+                    return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context, resolve, reject);
                 } else if (this._context.skill["reaction_" + param_key]){
                     debug(`Reaction for ${param_key} found. Performing reaction...`);
-                    return this._context.skill["reaction_" + param_key](error, value, this, this._event, this._context, resolve, reject);
+                    return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context, resolve, reject);
                 } else {
                     // This parameter does not have reaction so do nothing.
                     debug(`Reaction for ${param_key} not found.`);

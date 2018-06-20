@@ -266,6 +266,52 @@ class Bot {
     }
 
     /**
+    Manually apply value to the parameter. This will skip parser but still trigger reaction.
+    @param {String} param_key - Name of the parameter to apply.
+    @param {Any} value - Value to apply.
+    */
+    apply_parameter(param_key, value){
+        return new Promise((resolve, reject) => {
+            this._context.confirmed[param_key] = value;
+
+            // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
+            this._context.previous.confirmed.unshift(param_key);
+
+            // Remove item from to_confirm if it exits.
+            let index_to_remove = this._context.to_confirm.indexOf(param_key);
+            if (index_to_remove !== -1){
+                debug(`Removing ${param_key} from to_confirm.`);
+                this._context.to_confirm.splice(index_to_remove, 1);
+            }
+
+            // Clear confirming.
+            if (this._context.confirming === param_key){
+                debug(`Clearing confirming.`);
+                this._context.confirming = null;
+            }
+
+            let param_type = this.check_parameter_type(param_key);
+
+            if (this._context.skill[param_type] && this._context.skill[param_type][param_key]){
+                if (this._context.skill[param_type][param_key].reaction){
+                    debug(`Reaction for ${param_key} found. Performing reaction...`);
+                    return this._context.skill[param_type][param_key].reaction(error, value, this, this._event, this._context, resolve, reject);
+                } else if (this._context.skill["reaction_" + param_key]){
+                    debug(`Reaction for ${param_key} found. Performing reaction...`);
+                    return this._context.skill["reaction_" + param_key](error, value, this, this._event, this._context, resolve, reject);
+                } else {
+                    // This parameter does not have reaction so do nothing.
+                    debug(`Reaction for ${param_key} not found.`);
+                    return resolve();
+                }
+            } else {
+                debug(`There is no parameter we should care about. So skip reaction.`);
+                return resolve(`There is no parameter we should care about. So skip reaction.`);
+            }
+        })
+    }
+
+    /**
     * Function to record the change log to revive this change into skill instance in the next event.
     @param {String} param_type - required_parameter | optional_parameter | dynamic_parameter
     @param {String} param_key - Name of the parameter.

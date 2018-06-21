@@ -66,6 +66,7 @@ server.use('/webhook', bot_express({
     unfollow_skill: "clear-context",
     join_skill: "say-welcome",
     leave_skill: "clear-context",
+    modify_previous_parameter_intent: "modify-previous-parameter",
     google_project_id: process.env.GOOGLE_PROJECT_ID,
     google_api_key: process.env.GOOGLE_API_KEY,
     auto_translation: process.env.AUTO_TRANSLATION

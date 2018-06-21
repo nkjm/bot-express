@@ -402,7 +402,15 @@ module.exports = class Flow {
 
         return done_identify_intent.then(
             (intent) => {
-                if (intent.name != this.options.default_intent){
+                if (this.options.modify_previous_parameter_intent && intent.name === this.options.modify_previous_parameter_intent){
+                    // This is modify previous parameter.
+                    debug(`We conclude this is modify previous parameter.`);
+                    return {
+                        result: "modify_previous_parameter",
+                        intent: intent,
+                        payload: payload
+                    }
+                } else if (intent.name != this.options.default_intent){
                     // This is dig or change intent or restart conversation.
 
                     // Check if this is dig.
@@ -545,6 +553,17 @@ module.exports = class Flow {
         );
     }
 
+    modify_previous_parameter(){
+        return new Promise((resolve, reject) => {
+            if (this.context.previous && this.context.previous.confirmed && this.context.previous.confirmed.length > 0){
+                if (this.bot.check_parameter_type(this.context.previous.confirmed[0]) != "not_applicable") {
+                    this.bot.collect(this.context.previous.confirmed[0]);
+                }
+            }
+            return resolve();
+        })
+    }
+
     dig(intent){
         this.context.parent = {
             intent: this.context.intent,
@@ -552,7 +571,7 @@ module.exports = class Flow {
             confirming: this.context.confirming,
             confirmed: this.context.confirmed,
             previous: this.context.previous,
-            skill: this.context.skill,
+            param_change_history: this.context.param_change_history,
             sender_language: this.context.sender_language,
             translation: this.context.translation
         }

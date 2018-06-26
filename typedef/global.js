@@ -17,6 +17,7 @@ Object which contains context information.
 @prop {Array.<Object>} param_change_history - Change log to revive skill instance in the next event.
 @prop {String} sender_language - Automatically detected ISO-639-1 based code of the senders language.
 @prop {String} translation - Translated text of current message.
+@prop {Boolean} _in_progress - Flag to indicate if bot is currenty processing an event from this user.
 @prop {String} _flow - Flow applied to current event.
 */
 

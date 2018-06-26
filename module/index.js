@@ -10,6 +10,7 @@ const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
 const DEFAULT_NLP = "dialogflow";
 const DEFAULT_LANGUAGE = "ja";
+const DEFAULT_PARALLEL_EVENT = "ignore";
 
 const express = require("express");
 const router = express.Router();
@@ -57,6 +58,7 @@ router.use(body_parser.json({
 * @param {String} [options.modify_previous_parameter_intent] - Intent name to modify the previously collected parameter.
 * @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
 * @param {String} [options.auto_translation] - Flag to enable auto translation. Set this value to "enable" to enable auto translation. When set to "enable", you need to set options.google_project_id and GOOGLE_APPLICATION_CREDENTIALS environment variables.
+* @param {String} [options.parallel_event="ignore"] - Flag to decide the behavior in receiving parallel event. If set to "ignore", bot ignores the event during processing the event from same user. Supported value are "ignore" and "allow".
 * @param {String} [options.google_project_id] - Google Project Id to be used when you want to enable auto translation.
 * @param {String} [options.google_api_key] - Google API Key for translattion.
 */
@@ -67,6 +69,7 @@ module.exports = (options) => {
     options.language = options.language || DEFAULT_LANGUAGE;
     options.default_intent = options.default_intent || DEFAULT_INTENT;
     options.default_skill = options.default_skill || DEFAULT_SKILL;
+    options.parallel_event = options.parallel_event || DEFAULT_PARALLEL_EVENT;
     if (!!options.skill_path){
         options.skill_path = "../../../../" + options.skill_path;
     } else if (process.env.BOT_EXPRESS_ENV == "development"){

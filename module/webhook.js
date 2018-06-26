@@ -131,7 +131,7 @@ class Webhook {
     @param {Object} - Event object.
     @returns {Promise}
     */
-    process_event(event){
+    async process_event(event){
         debug(`Processing following event.`);
         debug(event);
 
@@ -141,7 +141,7 @@ class Webhook {
             return Promise.resolve();
         }
 
-        // Recall Memory
+        // Identify memory id
         let memory_id;
         if (this.messenger.identify_event_type(event) === "bot-express:push"){
             memory_id = this.messenger.extract_to_id(event);
@@ -154,6 +154,19 @@ class Webhook {
         let done_flow = Promise.resolve().then((response) => {
             return this.memory.get(memory_id);
         }).then((context) => {
+            if (context && context._in_progress && options.parallel_event == "ignore"){
+                debug(`Bot is currenlty processing another event from this user so ignore this event.`);
+                return;
+            }
+
+            // Make in progress flag
+            if (context){
+                context._in_progress = true;
+                await this.memory.put(memory_id, context);
+            } else {
+                await this.memory.put(memory_id, { _in_progress: true });
+            }
+
             let flow;
             let event_type = this.messenger.identify_event_type(event);
             debug(`event type is ${event_type}.`);
@@ -237,6 +250,7 @@ class Webhook {
                 })
             } else {
                 delete context.skill;
+                context._in_progress = false;
                 return this.memory.put(memory_id, context).then((response) => {
                     debug("Updating context");
                     return context;

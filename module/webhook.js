@@ -137,8 +137,8 @@ class Webhook {
 
         // If this is for webhook validation, we skip processing this.
         if (this.messenger.type === "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
-            debug("This is webhook validation so skip processing.");
-            return Promise.resolve();
+            debug(`This is webhook validation so skip.`);
+            return Promise.reject(new BotExpressWebhookSkip(`This is webhook validation so skip processing.`));
         }
 
         // Identify memory id
@@ -156,7 +156,7 @@ class Webhook {
         }).then((context) => {
             if (context && context._in_progress && this.options.parallel_event == "ignore"){
                 debug(`Bot is currenlty processing another event from this user so ignore this event.`);
-                return;
+                return Promise.reject(new BotExpressWebhookSkip(`This is webhook validation so skip processing.`));
             }
 
             // Make in progress flag

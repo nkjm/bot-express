@@ -162,10 +162,15 @@ class Webhook {
             // Make in progress flag
             if (context){
                 context._in_progress = true;
-                await this.memory.put(memory_id, context);
+                return this.memory.put(memory_id, context).then(() => {
+                    return context;
+                })
             } else {
-                await this.memory.put(memory_id, { _in_progress: true });
+                return this.memory.put(memory_id, { _in_progress: true }).then(() => {
+                    return null;
+                })
             }
+        }).then((context) => {
 
             let flow;
             let event_type = this.messenger.identify_event_type(event);

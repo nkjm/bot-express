@@ -558,6 +558,10 @@ module.exports = class Flow {
             if (this.context.previous && this.context.previous.confirmed && this.context.previous.confirmed.length > 0){
                 if (this.bot.check_parameter_type(this.context.previous.confirmed[0]) != "not_applicable") {
                     this.bot.collect(this.context.previous.confirmed[0]);
+
+                    // We remove this parameter from history.
+                    debug(`Removing ${this.context.previous.confirmed[0]} from previous.confirmed.`);
+                    this.context.previous.confirmed.shift();
                 }
             }
             return resolve();

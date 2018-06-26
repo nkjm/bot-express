@@ -154,7 +154,7 @@ class Webhook {
         let done_flow = Promise.resolve().then((response) => {
             return this.memory.get(memory_id);
         }).then((context) => {
-            if (context && context._in_progress && options.parallel_event == "ignore"){
+            if (context && context._in_progress && this.options.parallel_event == "ignore"){
                 debug(`Bot is currenlty processing another event from this user so ignore this event.`);
                 return;
             }

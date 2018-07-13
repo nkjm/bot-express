@@ -59,6 +59,13 @@ module.exports = class NluDialogflow {
             throw new Error(`Required option "session_id" for NluDialogflow.indentify_intent() not set.`);
         }
 
+        if (this._bytes(sentence) > 256){
+            debug(`Sentence exceeds 256 bytes so we return input.unknown.`);
+            return Promise.resolve({
+                name: "input.unknown"
+            })
+        }
+
         const session_path = this._sessions_client.sessionPath(this._project_id, options.session_id);
 
         // The text query request.
@@ -73,9 +80,7 @@ module.exports = class NluDialogflow {
         };
 
         // Send request and log result
-        return Promise.resolve().then(() => {
-            return this._sessions_client.detectIntent(request);
-        }).then(responses => {
+        return this._sessions_client.detectIntent(request).then(responses => {
             let result = responses[0].queryResult;
 
             if (!result.intent){
@@ -110,5 +115,9 @@ module.exports = class NluDialogflow {
 
             return intent;
         });
+    }
+
+    _bytes(str) {
+        return(encodeURIComponent(str).replace(/%../g,"x").length);
     }
 }

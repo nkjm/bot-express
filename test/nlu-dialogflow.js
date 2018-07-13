@@ -77,5 +77,18 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+
+        describe("Too long sentence", function(){
+            it("should return input.unknown.", function(){
+                this.timeout(8000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_message_event(user_id, "ああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ");
+                    return emu.send(event);
+                }).then(function(context){
+                    context.intent.name.should.equal("input.unknown");
+                });
+            });
+        });
     });
 }

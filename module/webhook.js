@@ -137,7 +137,8 @@ class Webhook {
 
         // If this is for webhook validation, we skip processing this.
         if (this.messenger.type === "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
-            return Promise.reject(new BotExpressWebhookSkip(`This is webhook validation so skip processing.`));
+            debug(`This is webhook validation so skip processing.`);
+            return Promise.resolve();
         }
 
         // Identify memory id

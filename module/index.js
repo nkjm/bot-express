@@ -38,7 +38,7 @@ router.use(body_parser.json({
 * @param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
 * @param {String} options.nlu - Option object for NLU Service.
 * @param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
-* @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, client_access_token is required.
+* @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, key_filename or (project_id, client_email and private key) is required.
 * @param {Array.<Object>} [options.parser] - Array of option object for Parser Service.
 * @param {String} [options.parser[].type] - Name of the builtin parser. Supported value is "dialogflow".
 * @param {Object} [options.parser[].options] - Option object for the builtin parser.

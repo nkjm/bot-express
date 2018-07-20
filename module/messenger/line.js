@@ -244,7 +244,7 @@ module.exports = class MessengerLine {
 
     static identify_message_type(message){
         let message_type;
-        if (["text", "image", "audio", "video", "file", "location", "sticker", "imagemap"].indexOf(message.type) !== -1){
+        if (["text", "image", "audio", "video", "file", "location", "sticker", "imagemap", "flex"].includes(message.type)) {
             message_type = message.type;
         } else if (message.type == "template"){
             if (["buttons", "confirm", "carousel"].indexOf(message.template.type) !== -1){
@@ -654,6 +654,10 @@ module.exports = class MessengerLine {
                 );
                 break;
             }
+            /*
+            case "flex": {
+            }
+            */
             default: {
                 return Promise.resolve(message);
                 break;

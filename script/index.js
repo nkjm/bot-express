@@ -46,10 +46,7 @@ server.use("/webhook", bot_express({
     facebook_page_access_token: [
         {page_id: process.env.FACEBOOK_PAGE_ID, page_access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN}
     ],
-    default_skill: process.env.DEFAULT_SKILL,
-    google_project_id: process.env.GOOGLE_PROJECT_ID,
-    google_api_key: process.env.GOOGLE_API_KEY,
-    auto_translation: process.env.AUTO_TRANSLATION
+    default_skill: process.env.DEFAULT_SKILL
 }));
 
 module.exports = server;

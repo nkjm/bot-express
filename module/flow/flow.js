@@ -230,7 +230,8 @@ module.exports = class Flow {
 
         return this._parse_parameter(parameter_type, key, value).then(
             (parsed_value) => {
-                debug(`Parsed value is ${parsed_value}`);
+                debug(`Parsed value follows.`);
+                debug(parsed_value);
                 this._add_parameter(key, parsed_value, is_change);
                 debug(`apply_parameter succeeded. We have now ${this.context.to_confirm.length} parameters to confirm.`);
                 return {
@@ -252,7 +253,8 @@ module.exports = class Flow {
     */
     _parse_parameter(type, key, value, strict = false){
         return new Promise((resolve, reject) => {
-            debug(`Parsing parameter {${key}: "${value}"}`);
+            debug(`Parsing following value for parameter "${key}"`);
+            debug(value);
 
             // We define new reject just for parse.
             let parse_reject = (e) => {

@@ -14,7 +14,7 @@ module.exports = class BtwFlow extends Flow {
         super(messenger, event, context, options);
     }
 
-    run(){
+    async run(){
         /*
         ** ### Start Conversation Flow ###
         ** -> Run event based handling.
@@ -45,12 +45,16 @@ module.exports = class BtwFlow extends Flow {
                 result: "no_idea"
             });
         } else if (this.bot.identify_event_type(this.event) == "postback"){
-            let postback_payload = this.messenger.extract_postback_payload(this.event);
-
+            let postback_payload;
             try {
-                postback_payload = JSON.parse(postback_payload);
+                postback_payload = JSON.parse(this.messenger.extract_postback_payload(this.event));
                 debug(`Postback payload is JSON format.`);
+            } catch(e) {
+                postback_payload = this.messenger.extract_postback_payload(this.event);
+                debug(`Postback payload is not JSON format. We use as it is.`);
+            }
 
+            if (typeof postback_payload == "object"){
                 if (postback_payload._type == "intent"){
                     if (!postback_payload.intent || !postback_payload.intent.name){
                         return Promise.reject(new Error("Recieved postback event and the payload indicates that this should contain intent but not found."));
@@ -83,8 +87,6 @@ module.exports = class BtwFlow extends Flow {
                         result: "no_idea"
                     });
                 }
-            } catch(e) {
-                debug(`Postback payload is not JSON format. We use as it is.`);
             }
         }
 

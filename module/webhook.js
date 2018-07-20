@@ -153,8 +153,10 @@ class Webhook {
         // Run flow.
         let done_flow = Promise.resolve().then((response) => {
             return this.memory.get(memory_id);
-        }).then((context) => {
+        }).then(async (context) => {
             if (context && context._in_progress && this.options.parallel_event == "ignore"){
+                context._in_progress = false; // To avoid lock out, we ignore event only once.
+                await this.memory.put(memory_id, context);
                 return Promise.reject(new BotExpressWebhookSkip(`Bot is currenlty processing another event from this user so ignore this event.`));
             }
 
@@ -213,7 +215,7 @@ class Webhook {
                     return Promise.reject(err);
                 }
                 return flow.run();
-            } else if (!context){
+            } else if (!context || !context.intent){
                 // ### Start Conversation Flow ###
                 try {
                     flow = new flows["start_conversation"](this.messenger, event, this.options);

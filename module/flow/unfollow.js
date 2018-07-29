@@ -32,13 +32,10 @@ module.exports = class UnfollowFlow extends Flow {
         super(messenger, event, context, options);
     }
 
-    run(){
+    async run(){
         debug("### This is Unfollow Flow. ###");
 
-        return super.begin().then(
-            (response) => {
-                return super.finish();
-            }
-        );
+        await super.begin();
+        return await super.finish();
     }
 };

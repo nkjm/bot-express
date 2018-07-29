@@ -28,13 +28,10 @@ module.exports = class BeaconFlow extends Flow {
         super(messenger, event, context, options);
     }
 
-    run(){
+    async run(){
         debug("### This is Beacon Flow. ###");
 
-        return super.begin().then(
-            (response) => {
-                return super.finish();
-            }
-        );
+        await super.begin();
+        return await super.finish();
     }
 };

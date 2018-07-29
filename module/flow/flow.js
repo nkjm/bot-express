@@ -4,6 +4,7 @@ const debug = require("debug")("bot-express:flow");
 const BotExpressParseError = require("../error/parse");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");
+const Translator = require("../translator");
 const Parser = require("../parser");
 Promise = require('bluebird');
 
@@ -14,6 +15,10 @@ module.exports = class Flow {
         this.options = options;
         this.messenger = messenger;
         this.bot = new Bot(this.options, this.event, this.context, messenger);
+        if (this.options.translator){
+            this.translator = new Translator(this.options.translator);
+            this.bot.translator = this.translator;
+        }
         this.builtin_parser = new Parser(this.options.parser);
 
         if (this.context.intent && this.context.intent.name){
@@ -155,91 +160,105 @@ module.exports = class Flow {
         return false;
     }
 
-    _collect(){
+    async _collect(){
         if (this.context.to_confirm.length == 0){
             debug("While collect() is called, there is no parameter to confirm.");
-            return Promise.reject();
+            return;
         }
+
         let message;
         let param_key = this.context.to_confirm[0];
         let param_type = this.bot.check_parameter_type(param_key);
 
-        if (!!this.context.skill[param_type][param_key].message_to_confirm[this.bot.type]){
+        if (!this.context.skill[param_type]){
+            throw new Error(`${param_type} parameter not found in skill.`);
+        }
+
+        if (!this.context.skill[param_type][param_key]){
+            throw new Error(`Parameter: "${param_key}" not found in skill.`);
+        }
+
+        if (!this.context.skill[param_type][param_key].message_to_confirm){
+            throw new Error("While we need to send a message to confirm parameter, the message not found.");
+        }
+
+        if (this.context.skill[param_type][param_key].message_to_confirm[this.bot.type]){
             // Found message platform specific message object.
             debug("Found messenger specific message object.");
             message = this.context.skill[param_type][param_key].message_to_confirm[this.bot.type];
-        } else if (!!this.context.skill[param_type][param_key].message_to_confirm){
+        } else if (this.context.skill[param_type][param_key].message_to_confirm){
             // Found common message object. We compile this message object to get message platform specific message object.
             debug("Found common message object.");
             message = this.context.skill[param_type][param_key].message_to_confirm;
-        } else {
-            debug("While we need to send a message to confirm parameter, the message not found.");
-            return Promise.reject(new Error("While we need to send a message to confirm parameter, the message not found."));
         }
 
-        let done_generate_message;
+        let message_to_confirm;
         if (typeof message === "function"){
             debug("message_to_confirm is made of function. We generate message with it.");
-            done_generate_message = new Promise((resolve, reject) => {
+            message_to_confirm = await new Promise((resolve, reject) => {
                 return message(this.bot, this.event, this.context, resolve, reject);
             });
         } else if (typeof message === "object" || typeof message === "string"){
             debug("message_to_confirm is made of object|string. We use it as it is.");
-            done_generate_message = Promise.resolve(message);
+            message_to_confirm = message;
         } else {
-            return Promise.reject(new Error("Format of message_to_confirm is invalid."));
+            throw new Error("Format of message_to_confirm is invalid.");
         }
 
         // Set confirming.
         this.context.confirming = param_key;
 
         // Send question to the user.
-        return done_generate_message.then((message) => {
-            let messages;
-            if (typeof message === "object" && message.length){
-                // The message is array so we use as it is.
-                messages = message;
-            } else {
-                // The message is single object so we make it array.
-                messages = [message];
-            }
-            if (this.context._flow == "push"){
-                debug("We use send method to collect parameter since this is push flow.");
-                debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
-                return this.bot.send(this.event.to[`${this.event.to.type}Id`], messages, this.context.sender_language);
-            } else {
-                debug("We use reply method to collect parameter.");
-                return this.bot.reply_to_collect(messages);
-            }
-        });
+        if (!(typeof message_to_confirm === "object" && message_to_confirm.length)){
+            // The message is single object so we make it array.
+            message_to_confirm = [message_to_confirm];
+        }
+        if (this.context._flow == "push"){
+            debug("We use send method to collect parameter since this is push flow.");
+            debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
+            return this.bot.send(this.event.to[`${this.event.to.type}Id`], message_to_confirm, this.context.sender_language);
+        } else {
+            debug("We use reply method to collect parameter.");
+            return this.bot.reply_to_collect(message_to_confirm);
+        }
     }
 
     change_parameter(key, value){
         return this.apply_parameter(key, value, true);
     }
 
-    apply_parameter(key, value, is_change = false){
+    async apply_parameter(key, value, is_change = false){
         debug(`Applying parameter.`);
 
         let parameter_type = this.bot.check_parameter_type(key);
         if (parameter_type == "not_applicable"){
             debug("This is not the parameter we should care about. We just skip this.");
-            return Promise.resolve();
+            return;
         }
         debug(`Parameter type is ${parameter_type}`);
 
-        return this._parse_parameter(parameter_type, key, value).then(
-            (parsed_value) => {
-                debug(`Parsed value follows.`);
-                debug(parsed_value);
-                this._add_parameter(key, parsed_value, is_change);
-                debug(`apply_parameter succeeded. We have now ${this.context.to_confirm.length} parameters to confirm.`);
-                return {
-                    key: key,
-                    value: parsed_value
-                }
+        let parsed_value;
+        try {
+            parsed_value = await this._parse_parameter(parameter_type, key, value);
+        } catch (e) {
+            if (e && e.name === "BotExpressParseError"){
+                debug(`Parser rejected following value for parameter: "${key}".`);
+                debug(value);
             }
-        );
+            throw(e);
+        }
+
+        debug(`Parser accepted the value. Parsed value for parameter: "${key}" follows.`);
+        debug(parsed_value);
+
+        this._add_parameter(key, parsed_value, is_change);
+
+        debug(`We have now ${this.context.to_confirm.length} parameters to confirm.`);
+
+        return {
+            key: key,
+            value: parsed_value
+        };
     }
 
     /**
@@ -251,7 +270,7 @@ module.exports = class Flow {
     @param {Boolean} strict - Flag to specify if parser has to exist. If set to true, this function reject the value when parser not found.
     @returns {Promise.<String|Object>}
     */
-    _parse_parameter(type, key, value, strict = false){
+    async _parse_parameter(type, key, value, strict = false){
         return new Promise((resolve, reject) => {
             debug(`Parsing following value for parameter "${key}"`);
             debug(value);
@@ -320,7 +339,8 @@ module.exports = class Flow {
     }
 
     _add_parameter(key, value, is_change = false){
-        debug(`Adding parameter {${key}: "${value}"}`);
+        debug(`Adding following value to parameter "${key}".`);
+        debug(value);
 
         // Add the parameter to "confirmed".
         let param = {};
@@ -346,7 +366,9 @@ module.exports = class Flow {
         }
     }
 
-    react(error, key, value){
+    async react(error, key, value){
+        debug(`Going to perform reaction.`);
+
         return new Promise((resolve, reject) => {
             // If pause or exit flag found, we skip remaining process.
             if (this.context._pause || this.context._exit || this.context._init){
@@ -386,171 +408,171 @@ module.exports = class Flow {
     @returns {String} response.parameter.key - Parameter name.
     @returns {String|Object} response.parameter.value - Parameter value.
     */
-    identify_mind(payload){
-        let done_identify_intent;
+    async identify_mind(payload){
+        debug(`Going to identify mind.`);
+
+        let intent;
         if (typeof payload !== "string"){
             debug("The payload is not string so we skip identifying intent.");
-            let intent = {
+            intent = {
                 name: this.options.default_intent
             }
-            done_identify_intent = Promise.resolve(intent);
-        } else {
-            debug("Going to check if we can identify the intent.");
-            let nlu = new Nlu(this.options.nlu);
-            done_identify_intent = nlu.identify_intent(payload, {
-                session_id: this.bot.extract_session_id()
-            });
+            return intent;
         }
 
-        return done_identify_intent.then(
-            (intent) => {
-                if (this.options.modify_previous_parameter_intent && intent.name === this.options.modify_previous_parameter_intent){
-                    // This is modify previous parameter.
-                    debug(`We conclude this is modify previous parameter.`);
+        debug("Going to check if we can identify the intent.");
+        let nlu = new Nlu(this.options.nlu);
+        intent = await nlu.identify_intent(payload, {
+            session_id: this.bot.extract_session_id()
+        });
+
+        if (this.options.modify_previous_parameter_intent && intent.name === this.options.modify_previous_parameter_intent){
+            // This is modify previous parameter.
+            debug(`We conclude this is modify previous parameter.`);
+            return {
+                result: "modify_previous_parameter",
+                intent: intent,
+                payload: payload
+            }
+        } else if (intent.name != this.options.default_intent){
+            // This is dig or change intent or restart conversation.
+
+            // Check if this is dig.
+            if (this.context._flow == "reply" && this.context.confirming){
+                let param_type = this.bot.check_parameter_type(this.context.confirming);
+
+                // Check if sub skill is configured in the confirming parameter.
+                if (this.context.skill[param_type][this.context.confirming].sub_skill &&
+                    this.context.skill[param_type][this.context.confirming].sub_skill.indexOf(intent.name) !== -1){
+                    // This is dig.
+                    debug("We conclude this is dig.");
                     return {
-                        result: "modify_previous_parameter",
-                        intent: intent,
-                        payload: payload
-                    }
-                } else if (intent.name != this.options.default_intent){
-                    // This is dig or change intent or restart conversation.
-
-                    // Check if this is dig.
-                    if (this.context._flow == "reply" && this.context.confirming){
-                        let param_type = this.bot.check_parameter_type(this.context.confirming);
-
-                        // Check if sub skill is configured in the confirming parameter.
-                        if (this.context.skill[param_type][this.context.confirming].sub_skill &&
-                            this.context.skill[param_type][this.context.confirming].sub_skill.indexOf(intent.name) !== -1){
-                            // This is dig.
-                            debug("We conclude this is dig.");
-                            return {
-                                result: "dig",
-                                intent: intent,
-                                payload: payload
-                            }
-                        }
-                    }
-
-                    // Check if this is restart conversation.
-                    debug("This is dig, change intent or restart conversation.");
-                    if (intent.name == this.context.intent.name){
-                        // This is restart conversation.
-                        debug("We conclude this is restart conversation.");
-                        return {
-                            result: "restart_conversation",
-                            intent: intent,
-                            payload: payload
-                        }
-                    }
-
-                    // This is change intent.
-                    debug("We conclude this is change intent.");
-                    return {
-                        result: "change_intent",
+                        result: "dig",
                         intent: intent,
                         payload: payload
                     }
                 }
+            }
 
-                // This can be change parameter or no idea.
-                debug("We could not identify intent so this can be change parameter or no idea.");
+            // Check if this is restart conversation.
+            debug("This is dig, change intent or restart conversation.");
+            if (intent.name == this.context.intent.name){
+                // This is restart conversation.
+                debug("We conclude this is restart conversation.");
+                return {
+                    result: "restart_conversation",
+                    intent: intent,
+                    payload: payload
+                }
+            }
 
-                if (this.context._flow === "reply"){
-                    debug(`Since this is in reply flow, we will not check if it is change parameter. We conclude this is no idea.`);
+            // This is change intent.
+            debug("We conclude this is change intent.");
+            return {
+                result: "change_intent",
+                intent: intent,
+                payload: payload
+            }
+        }
+
+        // This can be change parameter or no idea.
+        debug("We could not identify intent so this can be change parameter or no idea.");
+
+        if (this.context._flow === "reply"){
+            debug(`Since this is in reply flow, we will not check if it is change parameter. We conclude this is no idea.`);
+            return {
+                result: "no_idea",
+                intent: intent
+            }
+        }
+
+        let is_fit = false;
+        let all_param_keys = [];
+        if (this.context.skill.required_parameter){
+            all_param_keys = all_param_keys.concat(Object.keys(this.context.skill.required_parameter));
+        }
+        if (this.context.skill.optional_parameter){
+            all_param_keys = all_param_keys.concat(Object.keys(this.context.skill.optional_parameter));
+        }
+
+        debug("all_param_keys are following.");
+        debug(all_param_keys);
+
+        let parameters_parsed = [];
+        for (let param_key of all_param_keys){
+            if (param_key === this.context.confirming){
+                continue;
+            }
+            debug(`Check if "${payload}" is suitable for ${param_key}.`);
+            parameters_parsed.push(
+                this._parse_parameter(this.bot.check_parameter_type(param_key), param_key, payload, true).then(
+                    (response) => {
+                        debug(`Value fits to ${param_key}.`);
+                        return {
+                            is_fit: true,
+                            key: param_key,
+                            value: response
+                        }
+                    }
+                ).catch(
+                    (error) => {
+                        if (error.name == "BotExpressParseError"){
+                            debug(`Value does not fit to ${param_key}`);
+                            return {
+                                is_fit: false,
+                                key: param_key,
+                                value: payload
+                            }
+                        } else {
+                            throw(error);
+                        }
+                    }
+                )
+            );
+        }
+
+        return Promise.all(parameters_parsed).then(
+            (responses) => {
+                let fit_parameters = [];
+                for (let response of responses){
+                    if (response.is_fit === true){
+                        fit_parameters.push(response);
+                    }
+                }
+                debug(`There are ${fit_parameters.length} applicable parameters.`);
+
+                if (fit_parameters.length === 0){
+                    // This is no idea
+                    debug("We conclude this is no idea.");
                     return {
                         result: "no_idea",
                         intent: intent
                     }
-                }
-
-                let is_fit = false;
-                let all_param_keys = [];
-                if (this.context.skill.required_parameter){
-                    all_param_keys = all_param_keys.concat(Object.keys(this.context.skill.required_parameter));
-                }
-                if (this.context.skill.optional_parameter){
-                    all_param_keys = all_param_keys.concat(Object.keys(this.context.skill.optional_parameter));
-                }
-                debug("all_param_keys are following.");
-                debug(all_param_keys);
-                let parameters_parsed = [];
-                for (let param_key of all_param_keys){
-                    if (param_key === this.context.confirming){
-                        continue;
-                    }
-                    debug(`Check if "${payload}" is suitable for ${param_key}.`);
-                    parameters_parsed.push(
-                        this._parse_parameter(this.bot.check_parameter_type(param_key), param_key, payload, true).then(
-                            (response) => {
-                                debug(`Value fits to ${param_key}.`);
-                                return {
-                                    is_fit: true,
-                                    key: param_key,
-                                    value: response
-                                }
-                            }
-                        ).catch(
-                            (error) => {
-                                if (error.name == "BotExpressParseError"){
-                                    debug(`Value does not fit to ${param_key}`);
-                                    return {
-                                        is_fit: false,
-                                        key: param_key,
-                                        value: payload
-                                    }
-                                } else {
-                                    return Promise.reject(error);
-                                }
-                            }
-                        )
-                    );
-                }
-
-                return Promise.all(parameters_parsed).then(
-                    (responses) => {
-                        let fit_parameters = [];
-                        for (let response of responses){
-                            if (response.is_fit === true){
-                                fit_parameters.push(response);
-                            }
-                        }
-                        debug(`There are ${fit_parameters.length} applicable parameters.`);
-
-                        if (fit_parameters.length === 0){
-                            // This is no idea
-                            debug("We conclude this is no idea.");
-                            return {
-                                result: "no_idea",
-                                intent: intent
-                            }
-                        } else if (fit_parameters.length === 1){
-                            // This is change parameter.
-                            debug("We conclude this is change parameter.");
-                            return {
-                                result: "change_parameter",
-                                payload: payload,
-                                parameter: {
-                                    key: fit_parameters[0].key,
-                                    value: fit_parameters[0].value
-                                }
-                            }
-                        } else {
-                            debug("Since we found multiple applicable parameters, we need to ask for user what parameter the user likes to change.");
-
-                            // TENTATIVE BEGIN //
-                            return {
-                                result: "change_parameter",
-                                payload: payload,
-                                parameter: {
-                                    key: fit_parameters[0].key,
-                                    value: fit_parameters[0].value
-                                }
-                            }
-                            // TENTATIVE END //
+                } else if (fit_parameters.length === 1){
+                    // This is change parameter.
+                    debug("We conclude this is change parameter.");
+                    return {
+                        result: "change_parameter",
+                        payload: payload,
+                        parameter: {
+                            key: fit_parameters[0].key,
+                            value: fit_parameters[0].value
                         }
                     }
-                );
+                } else {
+                    debug("Since we found multiple applicable parameters, we need to ask for user what parameter the user likes to change.");
+
+                    // TENTATIVE BEGIN //
+                    return {
+                        result: "change_parameter",
+                        payload: payload,
+                        parameter: {
+                            key: fit_parameters[0].key,
+                            value: fit_parameters[0].value
+                        }
+                    }
+                    // TENTATIVE END //
+                }
             }
         );
     }
@@ -584,7 +606,7 @@ module.exports = class Flow {
         return this.change_intent(intent);
     }
 
-    restart_conversation(intent){
+    async restart_conversation(intent){
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
@@ -607,51 +629,48 @@ module.exports = class Flow {
         }
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
-        return this.begin().then(
-            (response) => {
-                // If we found pause or exit flag, we skip remaining process.
-                if (this.context._pause || this.context._exit || this.context._init){
-                    debug(`Detected pause or exit or init flag so we skip processing parameters.`);
-                    return Promise.resolve();
-                }
+        await this.begin();
 
-                // If we find some parameters from initial message, add them to the conversation.
-                let parameters_processed = [];
-                if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
-                    for (let param_key of Object.keys(this.context.intent.parameters)){
-                        // Parse and Add parameters using skill specific logic.
-                        parameters_processed.push(
-                            this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
-                                (applied_parameter) => {
-                                    if (applied_parameter == null){
-                                        debug("Parameter was not applicable. We skip reaction and go to finish.");
-                                        return;
-                                    }
-                                    return this.react(null, applied_parameter.key, applied_parameter.value);
-                                }
-                            ).catch(
-                                (error) => {
-                                    if (error.name == "BotExpressParseError"){
-                                        debug("Parser rejected the value.");
-                                        return this.react(error, param_key, this.context.intent.parameters[param_key]);
-                                    } else {
-                                        return Promise.reject(error);
-                                    }
-                                }
-                            )
-                        );
-                    }
-                }
-                return Promise.all(parameters_processed);
+        // If we found pause, exit, or init flag, we skip remaining process.
+        if (this.context._pause || this.context._exit || this.context._init){
+            debug(`Detected pause or exit or init flag so we skip processing parameters.`);
+            return;
+        }
+
+        // If we find some parameters from initial message, add them to the conversation.
+        let parameters_processed = [];
+        if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
+            for (let param_key of Object.keys(this.context.intent.parameters)){
+                // Parse and Add parameters using skill specific logic.
+                parameters_processed.push(
+                    this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
+                        (applied_parameter) => {
+                            if (applied_parameter == null){
+                                debug("Parameter was not applicable. We skip reaction and go to finish.");
+                                return;
+                            }
+                            return this.react(null, applied_parameter.key, applied_parameter.value);
+                        }
+                    ).catch(
+                        (error) => {
+                            if (error.name == "BotExpressParseError"){
+                                debug("Parser rejected the value.");
+                                return this.react(error, param_key, this.context.intent.parameters[param_key]);
+                            } else {
+                                throw(error);
+                            }
+                        }
+                    )
+                );
             }
-        );
+        }
+        return Promise.all(parameters_processed);
     }
 
-    change_intent(intent){
+    async change_intent(intent){
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
-
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
@@ -665,50 +684,49 @@ module.exports = class Flow {
         }
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
-        return this.begin().then(
-            (response) => {
-                // If we found pause or exit flag, we skip remaining process.
-                if (this.context._pause || this.context._exit || this.context._init){
-                    debug(`Detected pause or exit or init flag so we skip processing parameters.`);
-                    return Promise.resolve();
-                }
+        await this.begin();
 
-                // If we find some parameters from initial message, add them to the conversation.
-                let all_parameters_processed = [];
-                if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
-                    for (let param_key of Object.keys(this.context.intent.parameters)){
-                        // Parse and Add parameters using skill specific logic.
-                        all_parameters_processed.push(
-                            this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
-                                (applied_parameter) => {
-                                    if (applied_parameter == null){
-                                        debug("Parameter was not applicable. We skip reaction and go to finish.");
-                                        return;
-                                    }
-                                    return this.react(null, applied_parameter.key, applied_parameter.value);
-                                }
-                            ).catch(
-                                (error) => {
-                                    if (error.name == "BotExpressParseError"){
-                                        debug("Parser rejected the value.");
-                                        return this.react(error, param_key, this.context.intent.parameters[param_key]);
-                                    } else {
-                                        return Promise.reject(error);
-                                    }
-                                }
-                            )
-                        );
-                    }
-                }
-                return Promise.all(all_parameters_processed);
+        // If we found pause or exit flag, we skip remaining process.
+        if (this.context._pause || this.context._exit || this.context._init){
+            debug(`Detected pause or exit or init flag so we skip processing parameters.`);
+            return;
+        }
+
+        // If we find some parameters from initial message, add them to the conversation.
+        let all_parameters_processed = [];
+        if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
+            for (let param_key of Object.keys(this.context.intent.parameters)){
+                // Parse and Add parameters using skill specific logic.
+                all_parameters_processed.push(
+                    this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
+                        (applied_parameter) => {
+                            if (applied_parameter == null){
+                                debug("Parameter was not applicable. We skip reaction and go to finish.");
+                                return;
+                            }
+                            return this.react(null, applied_parameter.key, applied_parameter.value);
+                        }
+                    ).catch(
+                        (error) => {
+                            if (error.name == "BotExpressParseError"){
+                                debug("Parser rejected the value.");
+                                return this.react(error, param_key, this.context.intent.parameters[param_key]);
+                            } else {
+                                throw(error);
+                            }
+                        }
+                    )
+                );
             }
-        );
+        }
+
+        return Promise.all(all_parameters_processed);
     }
 
-    begin(){
+    async begin(){
         if (!this.context.skill.begin){
             debug(`Beginning action not found. Skipping.`)
-            return Promise.resolve();
+            return;
         }
 
         debug("Going to perform beginning action.");
@@ -719,7 +737,7 @@ module.exports = class Flow {
         return done_begin;
     }
 
-    finish(){
+    async finish(){
         this.context.previous.message.unshift({
             from: "user",
             message: this.bot.extract_message()
@@ -729,7 +747,7 @@ module.exports = class Flow {
         if (this.context._pause){
             debug("Detected pause flag. We stop processing finish().");
             this.context._pause = false;
-            return Promise.resolve(this.context);
+            return this.context;
         }
 
         // If exit flag has been set, we stop processing remaining actions while keeping context except for confirming.
@@ -737,14 +755,14 @@ module.exports = class Flow {
             debug("Detected exit flag. We stop processing finish().");
             this.context.confirming = null;
             this.context._exit = false;
-            return Promise.resolve(this.context);
+            return this.context;
         }
 
         // If exit flag has been set, we stop processing remaining actions and clear context completely.
         if (this.context._init){
             debug("Detected init flag. We stop processing finish().");
             this.context = null;
-            return Promise.resolve(this.context);
+            return this.context;
         }
 
         // If we still have parameters to confirm, we collect them.

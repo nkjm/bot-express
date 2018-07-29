@@ -27,11 +27,10 @@ module.exports = class FollowFlow extends Flow {
         super(messenger, event, context, options);
     }
 
-    run(){
+    async run(){
         debug("### This is Follow Flow. ###");
 
-        return super.begin().then((response) => {
-            return super.finish();
-        });
+        await super.begin();
+        return await super.finish();
     }
 };

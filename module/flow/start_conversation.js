@@ -28,7 +28,7 @@ module.exports = class StartConversationFlow extends Flow {
         super(messenger, event, context, options);
     }
 
-    run(){
+    async run(){
         /*
         ** ### Start Conversation Flow ###
         ** -> Run event based handling.
@@ -40,7 +40,6 @@ module.exports = class StartConversationFlow extends Flow {
         ** -> Run finish().
         */
 
-        let done_translate, done_identify_intent, done_instantiate_skill, done_begin, done_process_params, done_finish;
         let skip_translate, skip_identify_intent, skip_instantiate_skill, skip_begin, skip_process_params;
 
         debug("### This is Start Conversation Flow. ###");
@@ -48,7 +47,7 @@ module.exports = class StartConversationFlow extends Flow {
         // Check if this event type is supported in this flow.
         if (!this.messenger.check_supported_event_type(this.event, "start_conversation")){
             debug(`This is unsupported event type in this flow so skip processing.`);
-            return Promise.resolve(this.context);
+            return this.context;
         }
 
         // Run event based handling.
@@ -57,9 +56,9 @@ module.exports = class StartConversationFlow extends Flow {
 
             skip_translate = true;
             skip_identify_intent = true;
-            done_identify_intent = Promise.resolve({
+            this.context.intent = {
                 name: this.options.default_intent
-            });
+            };
         } else if (this.bot.identify_event_type() == "postback"){
             // There can be 3 cases.
             // - payload is JSON and contains intent.
@@ -72,101 +71,79 @@ module.exports = class StartConversationFlow extends Flow {
 
                 if (postback_payload._type == "intent"){
                     if (!postback_payload.intent || !postback_payload.intent.name){
-                        return Promise.reject(new Error("Recieved postback event and the payload indicates that this should contain intent but not found."));
+                        throw new Error("Recieved postback event and the payload indicates that this should contain intent but not found.");
                     }
                     debug("This is a postback event and we found intent inside payload.");
                     skip_translate = true;
                     skip_identify_intent = true;
                     this.context.sender_language = postback_payload.language;
-                    done_identify_intent = Promise.resolve(postback_payload.intent);
+                    this.context.intent = postback_payload.intent;
                 } else {
                     debug("This is a postback event and payload is JSON. It's impossible to identify intent so we use default skill.");
                     skip_translate = true;
                     skip_identify_intent = true;
-                    done_identify_intent = Promise.resolve({
+                    this.context.intent = {
                         name: this.options.default_intent
-                    });
+                    };
                 }
             } catch(e) {
                 debug(`Postback payload is not JSON format. We use as it is.`);
             }
         }
 
-        // Translate.
+        // Language detection and translation
         if (!skip_translate){
             let message_text = this.bot.extract_message_text();
 
-            if (!this.messenger.translater){
-                done_translate = Promise.resolve(message_text);
+            // Detect sender language.
+            if (super.translator && super.translator.enable_lang_detection){
+                this.context.sender_language = await super.translator.detect(message_text);
+                debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
             } else {
-                done_translate = Promise.resolve().then((response) => {
-                    return this.messenger.translater.detect(message_text)
-                }).then((response) => {
-                    this.context.sender_language = response[0].language;
-                    debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
+                this.context.sender_language = undefined;
+                debug(`We did not detect sender language.`);
+            }
 
-                    // If sender language is different from bot language, we translate message into bot language.
-                    if (this.options.language === this.context.sender_language){
-                        debug("Won't translate message text.");
-                        return message_text;
-                    } else {
-                        debug("Translating message text...");
-                        return this.messenger.translater.translate(message_text, this.options.language).then((response) => {
-                            debug("Translater response follows.");
-                            debug(response);
-                            this.context.translation = response[0];
-                            return response[0];
-                        });
-                    }
-                });
+            // Language translation.
+            if (super.translator && super.translator.enable_translation){
+                debug(`Automatic translation has not been introduced.`);
             }
         }
 
         // Identify intent.
         if (!skip_identify_intent){
-            done_identify_intent = done_translate.then((message_text) => {
-                let nlu = new Nlu(this.options.nlu);
-                debug("NLU Abstraction instantiated.");
-                debug(`Going to identify intent of ${message_text}...`);
-                return nlu.identify_intent(message_text, {
-                    session_id: this.bot.extract_session_id()
-                });
+            let message_text = this.bot.extract_message_text();
+
+            let nlu = new Nlu(this.options.nlu);
+            debug(`Going to identify intent of ${message_text}...`);
+            this.context.intent = await nlu.identify_intent(message_text, {
+                session_id: this.bot.extract_session_id()
             });
         }
 
         // Instantiate skill.
         if (!skip_instantiate_skill){
-            done_instantiate_skill = done_identify_intent.then((intent) => {
-                this.context.intent = intent;
-                this.context.skill = super.instantiate_skill(intent.name);
+            this.context.skill = super.instantiate_skill(this.context.intent.name);
 
-                // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
-                // After that, we depend on context.to_confirm to identify to_confirm parameters.
-                if (this.context.to_confirm.length == 0){
-                    this.context.to_confirm = super.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
-                }
-                debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
-                return this.context.skill;
-            });
+            // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
+            // After that, we depend on context.to_confirm to identify to_confirm parameters.
+            if (this.context.to_confirm.length == 0){
+                this.context.to_confirm = super.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
+            }
+            debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
         }
 
         // Run begin().
         if (!skip_begin){
-            done_begin = done_instantiate_skill.then((skill) => {
-                return super.begin();
-            });
+            await super.begin();
         }
-
 
         // Process parameters.
         if (!skip_process_params){
-            done_process_params = done_begin.then((response) => {
-                // If pause or exit flag found, we skip remaining process.
-                if (this.context._pause || this.context._exit || this.context._init){
-                    debug(`Detected pause or exit or init flag so we skip processing parameters.`);
-                    return Promise.resolve();
-                }
-
+            // If pause or exit flag found, we skip remaining process.
+            if (this.context._pause || this.context._exit || this.context._init){
+                debug(`Detected pause or exit or init flag so we skip processing parameters.`);
+            } else {
                 // If we find some parameters from initial message, add them to the conversation.
                 let parameters_processed = [];
                 if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
@@ -184,7 +161,6 @@ module.exports = class StartConversationFlow extends Flow {
                             ).catch(
                                 (error) => {
                                     if (error.name == "BotExpressParseError"){
-                                        debug("Parser rejected the value.");
                                         return super.react(error, param_key, this.context.intent.parameters[param_key]);
                                     } else {
                                         return Promise.reject(error);
@@ -195,15 +171,10 @@ module.exports = class StartConversationFlow extends Flow {
                     }
                 }
 
-                return Promise.all(parameters_processed);
-            });
+                await Promise.all(parameters_processed);
+            }
         }
 
-        // Finish.
-        done_finish = done_process_params.then((response) => {
-            return super.finish();
-        });
-
-        return done_finish;
+        return await super.finish();
     } // End of run()
 };

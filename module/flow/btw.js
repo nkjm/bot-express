@@ -24,15 +24,15 @@ module.exports = class BtwFlow extends Flow {
         ** -> Run finish().
         */
 
-        let done_translate, done_identify_mind, done_run_mind_based_flow, done_finish;
         let skip_translate, skip_identify_mind, skip_run_mind_based_flow;
+        let mind;
 
         debug("### This is BTW Flow. ###");
 
         // Check if this event type is supported in this flow.
         if (!this.messenger.check_supported_event_type(this.event, "btw")){
             debug(`This is unsupported event type in this flow so skip processing.`);
-            return Promise.resolve(this.context);
+            return this.context;
         }
 
         // Run event based handling.
@@ -41,9 +41,9 @@ module.exports = class BtwFlow extends Flow {
 
             skip_translate = true;
             skip_identify_mind = true;
-            done_identify_mind = Promise.resolve({
+            mind = {
                 result: "no_idea"
-            });
+            };
         } else if (this.bot.identify_event_type(this.event) == "postback"){
             let postback_payload;
             try {
@@ -57,7 +57,7 @@ module.exports = class BtwFlow extends Flow {
             if (typeof postback_payload == "object"){
                 if (postback_payload._type == "intent"){
                     if (!postback_payload.intent || !postback_payload.intent.name){
-                        return Promise.reject(new Error("Recieved postback event and the payload indicates that this should contain intent but not found."));
+                        throw new Error("Recieved postback event and the payload indicates that this should contain intent but not found.");
                     }
 
                     this.context.sender_language = postback_payload.language;
@@ -66,91 +66,72 @@ module.exports = class BtwFlow extends Flow {
                         debug(`We conluded that user has in mind to restart conversation.`);
                         skip_translate = true;
                         skip_identify_mind = true;
-                        done_identify_mind = Promise.resolve({
+                        mind = {
                             result: "restart_conversation",
                             intent: postback_payload.intent
-                        });
+                        };
                     } else if (postback_payload.intent && postback_payload.intent.name != this.context.intent.name){
                         debug(`We conluded that user has in mind to change intent.`);
                         skip_translate = true;
                         skip_identify_mind = true;
-                        done_identify_mind = Promise.resolve({
+                        mind = {
                             result: "change_intent",
                             intent: postback_payload.intent
-                        });
+                        };
                     }
                 } else {
                     debug("This is a postback event and payload is JSON. It's impossible to identify intent so we use default skill.");
                     skip_translate = true;
                     skip_identify_mind = true;
-                    done_identify_mind = Promise.resolve({
+                    mind = {
                         result: "no_idea"
-                    });
+                    };
                 }
             }
         }
 
-        // Translate.
+        // Language detection and translation
         if (!skip_translate){
             let message_text = this.bot.extract_message_text();
 
-            if (!this.messenger.translater){
-                done_translate = Promise.resolve(message_text);
+            // Detect sender language.
+            if (super.translator && super.translator.enable_lang_detection){
+                this.context.sender_language = await super.translator.detect(message_text);
+                debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
             } else {
-                done_translate = Promise.resolve().then((response) => {
-                    return this.messenger.translater.detect(message_text)
-                }).then((response) => {
-                    debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
+                this.context.sender_language = undefined;
+                debug(`We did not detect sender language.`);
+            }
 
-                    // If sender language is different from bot language, we translate message into bot language.
-                    if (this.options.language === this.context.sender_language){
-                        debug("Won't translate message text.");
-                        return message_text;
-                    } else {
-                        debug("Translating message text...");
-                        return this.messenger.translater.translate(message_text, this.options.language).then((response) => {
-                            debug("Translater response follows.");
-                            debug(response);
-                            this.context.translation = response[0];
-                            return response[0];
-                        })
-                    }
-                });
+            // Language translation.
+            if (super.translator && super.translator.enable_translation){
+                debug(`Automatic translation has not been introduced.`);
             }
         }
 
         // Identify mind.
         if (!skip_identify_mind){
-            done_identify_mind = done_translate.then((message_text) => {
-                debug(`Going to identify mind of ${message_text}...`);
-                return super.identify_mind(message_text);
-            });
+            let message_text = bot.extract_message_text();
+            mind = await super.identify_mind(message_text);
         }
 
         // Run mind based flow.
         if (!skip_run_mind_based_flow){
-            done_run_mind_based_flow = done_identify_mind.then((mind) => {
-                if (mind.result == "modify_previous_parameter"){
-                    return super.modify_previous_parameter();
-                } else if (mind.result == "restart_conversation"){
-                    return super.restart_conversation(mind.intent);
-                } else if (mind.result == "change_intent"){
-                    return super.change_intent(mind.intent);
-                } else if (mind.result == "change_parameter"){
-                    return super.change_parameter(mind.parameter.key, mind.payload).then((applied_parameter) => {
-                        return super.react(null, applied_parameter.key, applied_parameter.value);
-                    });
-                } else if (mind.result == "no_idea"){
-                    return super.change_intent(mind.intent);
-                }
-            })
+            if (mind.result == "modify_previous_parameter"){
+                await super.modify_previous_parameter();
+            } else if (mind.result == "restart_conversation"){
+                await super.restart_conversation(mind.intent);
+            } else if (mind.result == "change_intent"){
+                await super.change_intent(mind.intent);
+            } else if (mind.result == "change_parameter"){
+                let applied_parameter = await super.change_parameter(mind.parameter.key, mind.payload);
+                await super.react(null, applied_parameter.key, applied_parameter.value);
+            } else if (mind.result == "no_idea"){
+                await super.change_intent(mind.intent);
+            }
         }
 
         // Finish.
-        done_finish = done_run_mind_based_flow.then((response) => {
-            return super.finish();
-        });
-
-        return done_finish;
+        return await super.finish();
     }
 }

@@ -25,42 +25,47 @@ router.use(body_parser.json({
 }));
 
 /**
-* bot-express module. This module should be mounted on webhook URI and requires configuration as options parameter.
-* @module bot-express
-* @param {Object} options - Configuration of bot-express.
-* @param {Object} [options.language="ja"] - ISO-639-1 based code of the language which NLU and bot-express expect to receive. If the language of the received message differs from this value, bot-express can transparently translate it.
-* @param {String} [options.line_channel_secret] - LINE Channel Secret. Required when you use LINE.
-* @param {String} [options.line_access_token] - LINE Access Token. Required when you use LINE.
-* @param {String} [options.facebook_app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
-* @param {Array.<Object>} [options.facebook_page_access_token] - Array of a pair of Facebook Page Id and Page Access Token. Required when you use Facebook Messenger.
-* @param {String} [options.facebook_page_access_token.page_id] - Facebook Page Id.
-* @param {String} [options.facebook_page_access_token.page_access_token] - Facebook Page Access Token.
-* @param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
-* @param {String} options.nlu - Option object for NLU Service.
-* @param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
-* @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, key_filename or (project_id, client_email and private key) is required.
-* @param {Array.<Object>} [options.parser] - Array of option object for Parser Service.
-* @param {String} [options.parser[].type] - Name of the builtin parser. Supported value is "dialogflow".
-* @param {Object} [options.parser[].options] - Option object for the builtin parser.
-* @param {Object} [options.memory] - Option object for memory to store context.
-* @param {String} [options.memory.type="memory-cache"] - Store type of context. Supported store type is memory-cache and redis.
-* @param {Number} [options.memory.retention="600"] - Lifetime of the context in seconds.
-* @param {Object} [options.memory.options] - Options depending on the specific store type.
-* @param {String} [options.default_skill] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
-* @param {Object} [options.beacon_skill] - Skill to be used when bot receives beacon event.
-* @param {String} [options.beacon_skill.enter] - Skill to be used when bot receives beacon enter event.
-* @param {String} [options.beacon_skill.leave] - Skill to be used when bot receives beacon leave event.
-* @param {String} [options.follow_skill] - Skill to be used when bot receives follow event.
-* @param {String} [options.unfollow_skill] - Skill to be used when bot receives unfollow event.
-* @param {String} [options.join_skill] - Skill to be used when bot receives join event.
-* @param {String} [options.leave_skill] - Skill to be used when bot receives leave event.
-* @param {String} [options.default_intent="input.unknown"] - Intent name to be returned by NLP when it cannot identify the intent.
-* @param {String} [options.modify_previous_parameter_intent] - Intent name to modify the previously collected parameter.
-* @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
-* @param {String} [options.auto_translation] - Flag to enable auto translation. Set this value to "enable" to enable auto translation. When set to "enable", you need to set options.google_project_id and GOOGLE_APPLICATION_CREDENTIALS environment variables.
-* @param {String} [options.parallel_event="ignore"] - Flag to decide the behavior in receiving parallel event. If set to "ignore", bot ignores the event during processing the event from same user. Supported value are "ignore" and "allow".
-* @param {String} [options.google_project_id] - Google Project Id to be used when you want to enable auto translation.
-* @param {String} [options.google_api_key] - Google API Key for translattion.
+bot-express module. This module should be mounted on webhook URI and requires configuration as options parameter.
+@module bot-express
+@param {Object} options - Configuration of bot-express.
+@param {Object} [options.language="ja"] - ISO-639-1 based code of the language which NLU and bot-express expect to receive. If the language of the received message differs from this value, bot-express can transparently translate it.
+@param {String} [options.line_channel_secret] - LINE Channel Secret. Required when you use LINE.
+@param {String} [options.line_access_token] - LINE Access Token. Required when you use LINE.
+@param {String} [options.facebook_app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
+@param {Array.<Object>} [options.facebook_page_access_token] - Array of a pair of Facebook Page Id and Page Access Token. Required when you use Facebook Messenger.
+@param {String} [options.facebook_page_access_token.page_id] - Facebook Page Id.
+@param {String} [options.facebook_page_access_token.page_access_token] - Facebook Page Access Token.
+@param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
+@param {String} options.nlu - Option object for NLU Service.
+@param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
+@param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, key_filename or (project_id, client_email and private key) is required.
+@param {Array.<Object>} [options.parser] - Array of option object for Parser Service.
+@param {String} [options.parser[].type] - Name of the builtin parser. Supported value is "dialogflow".
+@param {Object} [options.parser[].options] - Option object for the builtin parser.
+@param {Object} [options.memory] - Option object for memory to store context.
+@param {String} [options.memory.type="memory-cache"] - Store type of context. Supported store type is memory-cache and redis.
+@param {Number} [options.memory.retention="600"] - Lifetime of the context in seconds.
+@param {Object} [options.memory.options] - Options depending on the specific store type.
+@param {String} [options.default_skill] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
+@param {Object} [options.beacon_skill] - Skill to be used when bot receives beacon event.
+@param {String} [options.beacon_skill.enter] - Skill to be used when bot receives beacon enter event.
+@param {String} [options.beacon_skill.leave] - Skill to be used when bot receives beacon leave event.
+@param {String} [options.follow_skill] - Skill to be used when bot receives follow event.
+@param {String} [options.unfollow_skill] - Skill to be used when bot receives unfollow event.
+@param {String} [options.join_skill] - Skill to be used when bot receives join event.
+@param {String} [options.leave_skill] - Skill to be used when bot receives leave event.
+@param {String} [options.default_intent="input.unknown"] - Intent name to be returned by NLP when it cannot identify the intent.
+@param {String} [options.modify_previous_parameter_intent] - Intent name to modify the previously collected parameter.
+@param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
+@param {String} [options.auto_translation] - Flag to enable auto translation. Set this value to "enable" to enable auto translation. When set to "enable", you need to set options.google_project_id and GOOGLE_APPLICATION_CREDENTIALS environment variables.
+@param {String} [options.parallel_event="ignore"] - Flag to decide the behavior in receiving parallel event. If set to "ignore", bot ignores the event during processing the event from same user. Supported value are "ignore" and "allow".
+@param {String} [options.google_project_id] - Google Project Id to be used when you want to enable auto translation.
+@param {String} [options.google_api_key] - Google API Key for translattion.
+@param {Object} [options.translator] - Option object for translator.
+@param {String} [options.translator.type="google"] - Translator type.
+@param {Boolean} [options.translator.enable_lang_detection=true] - Flag to enable language detection.
+@param {Boolean} [options.translator.enable_translation=false] - Flag to enable translation.
+@param {Object} [options.translator.options] - Option for the specified translator.
 */
 module.exports = (options) => {
     debug("\nBot Express\n");

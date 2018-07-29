@@ -27,13 +27,10 @@ module.exports = class JoinFlow extends Flow {
         super(messenger, event, context, options);
     }
 
-    run(){
+    async run(){
         debug("### This is Join Flow. ###");
 
-        return super.begin().then(
-            (response) => {
-                return super.finish();
-            }
-        );
+        await super.begin();
+        return await super.finish();
     }
 };

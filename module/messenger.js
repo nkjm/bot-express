@@ -1,7 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:messenger");
-const google_translate = require('@google-cloud/translate');
+//const google_translate = require('@google-cloud/translate');
 const fs = require("fs");
 Promise = require("bluebird");
 
@@ -26,12 +26,14 @@ module.exports = class Messenger {
         this.service = new this.Messenger_classes[this.type](options);
 
         // Instantiates a translater
+        /*
         if (this.options.google_project_id && this.options.auto_translation == "enable"){
             this.translater = google_translate({
                 projectId: this.options.google_project_id,
                 key: this.options.google_api_key
             });
         }
+        */
     }
 
     validate_signature(req){

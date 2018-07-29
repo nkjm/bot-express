@@ -111,7 +111,7 @@ module.exports = class BtwFlow extends Flow {
 
         // Identify mind.
         if (!skip_identify_mind){
-            let message_text = bot.extract_message_text();
+            let message_text = this.bot.extract_message_text();
             mind = await super.identify_mind(message_text);
         }
 

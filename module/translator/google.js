@@ -25,7 +25,7 @@ class TranslatorGoogle {
             }
         }
 
-        let google_option = {};
+        let google_options = {};
 
         if (options.api_key){
             google_options = {

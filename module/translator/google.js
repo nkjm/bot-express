@@ -35,7 +35,7 @@ class TranslatorGoogle {
         } else if (options.key_filename){
             google_options = {
                 project_id: options.project_id,
-                keyFilename: options.key_filename;
+                keyFilename: options.key_filename
             }
         } else if (options.client_email && options.private_key){
             google_options = {

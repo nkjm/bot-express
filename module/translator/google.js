@@ -21,20 +21,25 @@ class TranslatorGoogle {
     constructor(options){
         for (let required_option of required_options){
             if (!options[required_option]){
-                throw new Error(`Required option "${required_option}" of NluDialogflow not set.`);
+                throw new Error(`Required option "${required_option}" of TranslatorGoogle not set.`);
             }
         }
-        this._project_id = options.project_id;
-        this._language = options.language || default_language;
 
-        let sessions_client_option = {
-            project_id: options.project_id
-        }
+        let google_option = {};
 
-        if (options.key_filename){
-            sessions_client_option.keyFilename = options.key_filename;
+        if (options.api_key){
+            google_options = {
+                projectId: options.project_id,
+                key: options.api_key
+            }
+        } else if (options.key_filename){
+            google_options = {
+                project_id: options.project_id,
+                keyFilename: options.key_filename;
+            }
         } else if (options.client_email && options.private_key){
-            sessions_client_option.credentials = {
+            google_options = {
+                project_id: options.project_id,
                 client_email: options.client_email,
                 private_key: options.private_key.replace(/\\n/g, '\n')
             }
@@ -43,14 +48,7 @@ class TranslatorGoogle {
         }
 
         // Instantiates a translater
-        this.translater = google_translate(sessions_client_option);
-
-        /* Old syntax to instantiate translator
-        this.translater = google_translate({
-            projectId: this.options.project_id,
-            key: this.options.api_key
-        });
-        */
+        this.translater = google_translate(google_options);
     }
 
     async detect(text){

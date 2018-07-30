@@ -18,7 +18,7 @@ const should = chai.should();
 for (let messenger_option of messenger_options){
     let emu = new Emulator(messenger_option.name, messenger_option.options);
 
-    describe("Test parser from " + emu.messenger_type, function(){
+    describe("Test error-handling-in-reaction from " + emu.messenger_type, function(){
         let user_id = "error-handling-in-reaction";
 
         describe("Valid name", function(){

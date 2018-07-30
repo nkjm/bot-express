@@ -36,6 +36,15 @@ server.use('/webhook', bot_express({
             language: "ja"
         }
     }],
+    translator: {
+        type: "google",
+        enable_lang_detection: true,
+        options: {
+            project_id: process.env.GOOGLE_PROJECT_ID,
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY
+        }
+    },
     line_channel_secret: process.env.LINE_CHANNEL_SECRET,
     line_access_token: process.env.LINE_ACCESS_TOKEN,
     facebook_app_secret: process.env.FACEBOOK_APP_SECRET,
@@ -66,10 +75,7 @@ server.use('/webhook', bot_express({
     unfollow_skill: "clear-context",
     join_skill: "say-welcome",
     leave_skill: "clear-context",
-    modify_previous_parameter_intent: "modify-previous-parameter",
-    google_project_id: process.env.GOOGLE_PROJECT_ID,
-    google_api_key: process.env.GOOGLE_API_KEY,
-    auto_translation: process.env.AUTO_TRANSLATION
+    modify_previous_parameter_intent: "modify-previous-parameter"
 }));
 
 module.exports = server;

@@ -20,8 +20,8 @@ class Translator {
     */
     constructor(options = {}){
         this.type = options.type || default_service;
-        this.enable_lang_detection = options.enable_lang_detection;
-        this.enable_translation = options.enable_translation;
+        this.enable_lang_detection = (options.enable_lang_detection === false) ? false : true;
+        this.enable_translation = (options.enable_translation === true) ? true : false;
 
         let scripts = fs.readdirSync(__dirname + "/translator");
         for (let script of scripts){

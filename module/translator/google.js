@@ -48,7 +48,7 @@ class TranslatorGoogle {
         }
 
         // Instantiates a translater
-        this.translater = google_translate(google_options);
+        this.translator = google_translate(google_options);
     }
 
     async detect(text){
@@ -61,7 +61,7 @@ class TranslatorGoogle {
     }
 
     async translate(text, lang){
-        let translated_text = await this.translate(text, lang);
+        let translated_text = await this.translator.translate(text, lang);
         if (typeof text == "string" && translated_text[0]){
             return translated_text[0];
         } else {

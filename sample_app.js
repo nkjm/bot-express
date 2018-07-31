@@ -40,6 +40,7 @@ server.use('/webhook', bot_express({
         type: "google",
         enable_lang_detection: true,
         options: {
+            api_key: process.env.GOOGLE_API_KEY,
             project_id: process.env.GOOGLE_PROJECT_ID,
             client_email: process.env.GOOGLE_CLIENT_EMAIL,
             private_key: process.env.GOOGLE_PRIVATE_KEY

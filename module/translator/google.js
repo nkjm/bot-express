@@ -34,18 +34,22 @@ class TranslatorGoogle {
             }
         } else if (options.key_filename){
             google_options = {
-                project_id: options.project_id,
+                projectId: options.project_id,
                 keyFilename: options.key_filename
             }
         } else if (options.client_email && options.private_key){
             google_options = {
-                project_id: options.project_id,
-                client_email: options.client_email,
-                private_key: options.private_key.replace(/\\n/g, '\n')
+                projectId: options.project_id,
+                credentials: {
+                    client_email: options.client_email,
+                    private_key: options.private_key.replace(/\\n/g, '\n')
+                }
             }
         } else {
             throw new Error(`key_filename or (client_email and private_key) option is required for TranslatorGoogle.`);
         }
+
+        debug(google_options);
 
         // Instantiates a translater
         this.translator = google_translate(google_options);

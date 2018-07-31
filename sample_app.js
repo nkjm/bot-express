@@ -21,9 +21,8 @@ server.use('/webhook', bot_express({
         type: "dialogflow",
         options: {
             project_id: process.env.GOOGLE_PROJECT_ID,
-            key_filename: process.env.GOOGLE_KEY_FILENAME,
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
-            private_key: process.env.GOOGLE_PRIVATE_KEY,
+            client_email: process.env.DIALOGFLOW_CLIENT_EMAIL,
+            private_key: process.env.DIALOGFLOW_PRIVATE_KEY,
             language: "ja"
         }
     },
@@ -31,8 +30,8 @@ server.use('/webhook', bot_express({
         type: "dialogflow",
         options: {
             project_id: process.env.GOOGLE_PROJECT_ID,
-            client_email: process.env.GOOGLE_CLIENT_EMAIL,
-            private_key: process.env.GOOGLE_PRIVATE_KEY,
+            client_email: process.env.DIALOGFLOW_CLIENT_EMAIL,
+            private_key: process.env.DIALOGFLOW_PRIVATE_KEY,
             language: "ja"
         }
     }],
@@ -40,7 +39,6 @@ server.use('/webhook', bot_express({
         type: "google",
         enable_lang_detection: true,
         options: {
-            api_key: process.env.GOOGLE_API_KEY,
             project_id: process.env.GOOGLE_PROJECT_ID,
             client_email: process.env.GOOGLE_CLIENT_EMAIL,
             private_key: process.env.GOOGLE_PRIVATE_KEY

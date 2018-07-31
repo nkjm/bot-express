@@ -23,7 +23,7 @@ for (let messenger_option of messenger_options){
 
         describe("Japanese", function(){
             it("will be detected as Japanese.", function(){
-                this.timeout(3000);
+                this.timeout(8000);
 
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "ピザを注文したいのですが")

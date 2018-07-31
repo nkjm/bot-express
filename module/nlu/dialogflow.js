@@ -36,7 +36,7 @@ module.exports = class NluDialogflow {
         }
 
         let sessions_client_option = {
-            project_id: options.project_id
+            projectId: options.project_id
         }
 
         if (options.key_filename){

@@ -52,7 +52,7 @@ class TranslatorGoogle {
     }
 
     async detect(text){
-        let detect_response = await this.translator.detect(message_text);
+        let detect_response = await this.translator.detect(text);
         if (detect_response && detect_response[0] && detect_response[0].language){
             return detect_response[0].language;
         } else {

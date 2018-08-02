@@ -47,7 +47,7 @@ class Translator {
     @param {String} text - Text to detect language.
     @returns {String} ISO-639-1 based language code.
     */
-    detect(text){
+    async detect(text){
         return this.service.detect(text);
     }
 
@@ -57,8 +57,8 @@ class Translator {
     @param {String} lang  ISO-639-1 based language code in which translate to.
     @returns {String|Array.<String>}
     */
-    translate(text){
-        return this.service.translate(text);
+    async translate(text, lang){
+        return this.service.translate(text, lang);
     }
 
 }

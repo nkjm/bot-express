@@ -117,7 +117,8 @@ module.exports = class StartConversationFlow extends Flow {
             let nlu = new Nlu(this.options.nlu);
             debug(`Going to identify intent of ${message_text}...`);
             this.context.intent = await nlu.identify_intent(message_text, {
-                session_id: this.bot.extract_session_id()
+                session_id: this.bot.extract_session_id(),
+                language: this.context.sender_language
             });
         }
 

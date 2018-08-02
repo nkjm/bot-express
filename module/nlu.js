@@ -44,6 +44,7 @@ class Nlu {
     @param {String} sentence - Sentence to identify intent.
     @param {Object} options - Option.
     @param {String} options.session_id - Session id of this conversation.
+    @param {String} [options.language] - Language of the sentence.
     @returns {intent} intent - Intent Object.
     */
     identify_intent(sentence, options){

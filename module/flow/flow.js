@@ -423,7 +423,8 @@ module.exports = class Flow {
         debug("Going to check if we can identify the intent.");
         let nlu = new Nlu(this.options.nlu);
         intent = await nlu.identify_intent(payload, {
-            session_id: this.bot.extract_session_id()
+            session_id: this.bot.extract_session_id(),
+            language: this.context.sender_language
         });
 
         if (this.options.modify_previous_parameter_intent && intent.name === this.options.modify_previous_parameter_intent){

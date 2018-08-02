@@ -54,6 +54,14 @@ module.exports = class NluDialogflow {
         cache.put("dialogflow_sessions_client", this._sessions_client);
     }
 
+    /**
+    @method
+    @param {String} sentence
+    @param {Object} options
+    @param {String} options.session_id
+    @param {String} [options.language]
+    @param {intent}
+    */
     identify_intent(sentence, options){
         if (!options.session_id){
             throw new Error(`Required option "session_id" for NluDialogflow.indentify_intent() not set.`);
@@ -74,7 +82,7 @@ module.exports = class NluDialogflow {
             queryInput: {
                 text: {
                     text: sentence,
-                    languageCode: this._language
+                    languageCode: options.language || this._language
                 }
             }
         };

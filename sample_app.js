@@ -38,6 +38,7 @@ server.use('/webhook', bot_express({
     translator: {
         type: "google",
         enable_lang_detection: true,
+        enable_translation: false,
         options: {
             project_id: process.env.GOOGLE_PROJECT_ID,
             client_email: process.env.GOOGLE_CLIENT_EMAIL,

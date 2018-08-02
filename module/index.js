@@ -64,7 +64,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {Object} [options.translator] - Option object for translator.
 @param {String} [options.translator.type="google"] - Translator type.
 @param {Boolean} [options.translator.enable_lang_detection=true] - Flag to enable language detection.
-@param {Boolean} [options.translator.enable_translation=false] - Flag to enable translation.
+@param {Boolean} [options.translator.enable_translation=false] - Flag to enable translation. The translation is used to detect intent.
 @param {Object} [options.translator.options] - Option for the specified translator.
 */
 module.exports = (options) => {

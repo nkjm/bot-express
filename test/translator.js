@@ -34,5 +34,66 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+
+        /*
+        describe("Order pizza in Thai", function(){
+            it("will trigger handle-pizza-order", function(){
+                this.timeout(8000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_message_event(user_id, "ฉันต้องการสั่งพิซซ่า")
+                    return emu.send(event);
+                }).then(function(context){
+                    context.sender_language.should.equal("th");
+                    context.intent.name.should.equal("handle-pizza-order");
+                });
+            });
+        });
+
+        describe("Order pizza in Thai - in reply flow", function(){
+            it("will trigger handle-pizza-order", function(){
+                this.timeout(8000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_message_event(user_id, "ฉันต้องการสั่งพิซซ่า")
+                    return emu.send(event);
+                }).then(function(context){
+                    context.sender_language.should.equal("th");
+                    context.intent.name.should.equal("handle-pizza-order");
+                    let event = emu.create_message_event(user_id, "ฉันต้องการสั่งพิซซ่า")
+                    return emu.send(event);
+                }).then(function(context){
+                    context._flow.should.equal("reply");
+                    context.sender_language.should.equal("th");
+                    context.intent.name.should.equal("handle-pizza-order");
+                });
+            });
+        });
+
+        describe("Order pizza in Thai - in btw flow", function(){
+            it("will trigger handle-pizza-order", function(){
+                this.timeout(8000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_postback_event(user_id, {data: JSON.stringify({
+                        _type: "intent",
+                        intent: {
+                            name: "simple-response"
+                        },
+                        language: "th"
+                    })})
+                    return emu.send(event);
+                }).then(function(context){
+                    context.sender_language.should.equal("th");
+                    let event = emu.create_message_event(user_id, "ฉันต้องการสั่งพิซซ่า")
+                    return emu.send(event);
+                }).then(function(context){
+                    context._flow.should.equal("btw");
+                    context.sender_language.should.equal("th");
+                    context.intent.name.should.equal("handle-pizza-order");
+                });
+            });
+        });
+        */
     });
 }

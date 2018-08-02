@@ -92,6 +92,7 @@ module.exports = class StartConversationFlow extends Flow {
         }
 
         // Language detection and translation
+        let translated_message_text;
         if (!skip_translate){
             let message_text = this.bot.extract_message_text();
 
@@ -105,18 +106,19 @@ module.exports = class StartConversationFlow extends Flow {
             }
 
             // Language translation.
-            if (this.translator && this.translator.enable_translation){
-                debug(`Automatic translation has not been introduced.`);
+            if (this.translator && this.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
+                translated_message_text = await this.translator.translate(message_text, this.options.language);
             }
+        }
+        if (!translated_message_text){
+            translated_message_text = this.bot.extract_message_text();
         }
 
         // Identify intent.
         if (!skip_identify_intent){
-            let message_text = this.bot.extract_message_text();
-
             let nlu = new Nlu(this.options.nlu);
-            debug(`Going to identify intent of ${message_text}...`);
-            this.context.intent = await nlu.identify_intent(message_text, {
+            debug(`Going to identify intent of ${translated_message_text}...`);
+            this.context.intent = await nlu.identify_intent(translated_message_text, {
                 session_id: this.bot.extract_session_id(),
                 language: this.context.sender_language
             });

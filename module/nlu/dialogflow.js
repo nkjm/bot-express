@@ -29,11 +29,13 @@ module.exports = class NluDialogflow {
         this._language = options.language || default_language;
 
         // We reuse the sessions client from cache if possible.
+        /*
         this._sessions_client = cache.get("dialogflow_sessions_client");
         if (this._sessions_client){
             debug("Dialogflow sessions client found in cache.");
             return;
         }
+        */
 
         let sessions_client_option = {
             projectId: options.project_id
@@ -51,7 +53,7 @@ module.exports = class NluDialogflow {
         }
 
         this._sessions_client = new dialogflow.SessionsClient(sessions_client_option);
-        cache.put("dialogflow_sessions_client", this._sessions_client);
+        //cache.put("dialogflow_sessions_client", this._sessions_client);
     }
 
     /**

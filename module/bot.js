@@ -10,9 +10,11 @@ class Bot {
     constructor(options, event, context, messenger){
         /**
         @prop {String} type - Type of messenger. The value can be "line","facebook" and "google".
+        @prop {String} language - ISO-639-1 based language code which is the mother language of this chatbot.
         @prop {Object} plugin - Object which has direct access to each messenger libraries.
         */
         this.type = messenger.type;
+        this.language = options.language;
         this.plugin = messenger.plugin;
         this._options = options;
         this._event = event;

@@ -28,7 +28,7 @@ router.use(body_parser.json({
 bot-express module. This module should be mounted on webhook URI and requires configuration as options parameter.
 @module bot-express
 @param {Object} options - Configuration of bot-express.
-@param {Object} [options.language="ja"] - ISO-639-1 based code of the language which NLU and bot-express expect to receive. If the language of the received message differs from this value, bot-express can transparently translate it.
+@param {Object} [options.language="ja"] - ISO-639-1 based language code which is the mother language of this chatbot.
 @param {String} [options.line_channel_secret] - LINE Channel Secret. Required when you use LINE.
 @param {String} [options.line_access_token] - LINE Access Token. Required when you use LINE.
 @param {String} [options.facebook_app_secret] - Facebook App Secret. Required when you use Facebook Messenger.

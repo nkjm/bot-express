@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const debug = require("debug")("bot-express:messenger");
 const line_bot_sdk = require("@line/bot-sdk");
 const secure_compare = require('secure-compare');
+const api_version = "v2";
 Promise.promisifyAll(request);
 
 module.exports = class MessengerLine {
@@ -16,6 +17,7 @@ module.exports = class MessengerLine {
 
         this._channel_secret = options.line_channel_secret;
         this._access_token = options.line_access_token;
+        this._endpoint = options.line_endpoint || "api.line.me";
 
         const sdk_config = {
             channelAccessToken: this._access_token,
@@ -33,7 +35,7 @@ module.exports = class MessengerLine {
 
         // return this.sdk.multicast(to, messages);
 
-        let url = "https://api.line.me/v2/bot/message/multicast";
+        let url = `https://${this._endpoint}/${api_version}/bot/message/multicast`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`
         }
@@ -63,7 +65,7 @@ module.exports = class MessengerLine {
 
         //return this.sdk.pushMessage(to, messages);
 
-        let url = "https://api.line.me/v2/bot/message/push";
+        let url = `https://${this._endpoint}/${api_version}/bot/message/push`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`
         }
@@ -97,7 +99,7 @@ module.exports = class MessengerLine {
 
         //return this.sdk.replyMessage(event.replyToken, messages);
 
-        let url = "https://api.line.me/v2/bot/message/reply";
+        let url = `https://${this._endpoint}/${api_version}/bot/message/reply`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`
         }

@@ -31,6 +31,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {Object} [options.language="ja"] - ISO-639-1 based language code which is the mother language of this chatbot.
 @param {String} [options.line_channel_secret] - LINE Channel Secret. Required when you use LINE.
 @param {String} [options.line_access_token] - LINE Access Token. Required when you use LINE.
+@param {String} [options.line_endpoint="api.line.me"] - Test purpose only. Change Messaging API endpoint hostname.
 @param {String} [options.facebook_app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
 @param {Array.<Object>} [options.facebook_page_access_token] - Array of a pair of Facebook Page Id and Page Access Token. Required when you use Facebook Messenger.
 @param {String} [options.facebook_page_access_token.page_id] - Facebook Page Id.

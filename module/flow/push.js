@@ -59,6 +59,12 @@ module.exports = class PushFlow extends Flow {
             debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
         }
 
+        // Add user's message to history
+        this.context.previous.message.unshift({
+            from: "user",
+            message: this.bot.extract_message()
+        });
+
         // Run begin().
         if (!skip_begin){
             await super.begin();

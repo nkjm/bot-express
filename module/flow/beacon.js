@@ -31,6 +31,12 @@ module.exports = class BeaconFlow extends Flow {
     async run(){
         debug("### This is Beacon Flow. ###");
 
+        // Add user's message to history
+        this.context.previous.message.unshift({
+            from: "user",
+            message: this.bot.extract_message()
+        });
+
         await super.begin();
         return await super.finish();
     }

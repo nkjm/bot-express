@@ -32,6 +32,12 @@ module.exports = class ReplyFlow extends Flow {
             if (this.event.postback) is_postback = true;
         }
 
+        // Add user's message to history
+        this.context.previous.message.unshift({
+            from: "user",
+            message: this.bot.extract_message()
+        });
+
         debug("Going to perform super.apply_parameter().");
         try {
             let applied_parameter = await super.apply_parameter(this.context.confirming, param_value);

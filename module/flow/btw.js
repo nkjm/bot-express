@@ -118,6 +118,12 @@ module.exports = class BtwFlow extends Flow {
             mind = await super.identify_mind(translated_message_text);
         }
 
+        // Add user's message to history
+        this.context.previous.message.unshift({
+            from: "user",
+            message: this.bot.extract_message()
+        });
+
         // Run mind based flow.
         if (!skip_run_mind_based_flow){
             if (mind.result == "modify_previous_parameter"){

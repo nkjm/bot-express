@@ -739,11 +739,6 @@ module.exports = class Flow {
     }
 
     async finish(){
-        this.context.previous.message.unshift({
-            from: "user",
-            message: this.bot.extract_message()
-        });
-
         // If pause flag has been set, we stop processing remaining actions while keeping context.
         if (this.context._pause){
             debug("Detected pause flag. We stop processing finish().");

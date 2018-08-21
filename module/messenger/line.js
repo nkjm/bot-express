@@ -135,19 +135,18 @@ module.exports = class MessengerLine {
         });
     }
 
-    validate_signature(req){
-        return new Promise((resolve, reject) => {
-            let signature = req.get('X-Line-Signature');
-            let raw_body = req.raw_body;
+    async validate_signature(req){
+        let signature = req.get('X-Line-Signature');
+        let raw_body = req.raw_body;
 
-            // Signature Validation
-            let hash = crypto.createHmac('sha256', this._channel_secret).update(raw_body).digest('base64');
+        // Signature Validation
+        let hash = crypto.createHmac('sha256', this._channel_secret).update(raw_body).digest('base64');
 
-            if (secure_compare(hash, signature)){
-                return resolve();
-            }
-            return reject();
-        })
+        if (secure_compare(hash, signature)){
+            return;
+        }
+
+        throw new Error(`Signature validation failed.`);
     }
 
     static extract_events(body){

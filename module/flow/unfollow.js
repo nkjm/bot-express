@@ -21,6 +21,7 @@ module.exports = class UnfollowFlow extends Flow {
             confirmed: {},
             to_confirm: [],
             confirming: null,
+            event: event,
             previous: {
                 confirmed: [],
                 message: []

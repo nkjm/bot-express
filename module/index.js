@@ -95,7 +95,7 @@ module.exports = (options) => {
     debug("Common required options all set.");
 
     // Webhook Process
-    router.post('/', (req, res, next) => {
+    router.post('/', async (req, res, next) => {
         if (!["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             if (!req.get("google-actions-api-version")){
                 res.sendStatus(200);
@@ -106,19 +106,28 @@ module.exports = (options) => {
         options.res = res;
 
         let webhook = new Webhook(options);
-        webhook.run().then((context) => {
-            debug("Successful End of Webhook. Current context follows.");
-            debug(context);
-            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                res.json(context);
-            }
-        }, (error) => {
+
+        let context;
+        try {
+            context = await webhook.run();
+        } catch(e){
             debug("Abnormal End of Webhook. Error follows.");
-            debug(error);
+            debug(e);
             if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                res.status(400).send(error.message);
+                if (e && e.message){
+                    return res.status(400).send(e.message);
+                } else {
+                    return res.sendStatus(400);
+                }
             }
-        });
+        }
+
+        debug("Successful End of Webhook. Current context follows.");
+        debug(JSON.stringify(context));
+
+        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
+            return res.json(context);
+        }
     });
 
     // Verify Facebook Webhook

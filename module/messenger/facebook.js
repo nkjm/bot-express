@@ -86,19 +86,18 @@ module.exports = class MessengerFacebook {
         return this.send(event, event.sender.id, messages);
     }
 
-    validate_signature(req){
-        return new Promise((resolve, reject) => {
-            let signature = req.get('X-Hub-Signature');
-            let raw_body = req.raw_body;
+    async validate_signature(req){
+        let signature = req.get('X-Hub-Signature');
+        let raw_body = req.raw_body;
 
-            // Signature Validation
-            let hash = "sha1=" + crypto.createHmac("sha1", this._app_secret).update(raw_body).digest("hex");
+        // Signature Validation
+        let hash = "sha1=" + crypto.createHmac("sha1", this._app_secret).update(raw_body).digest("hex");
 
-            if (secure_compare(hash, signature)){
-                return resolve();
-            }
-            return reject();
-        })
+        if (secure_compare(hash, signature)){
+            return;
+        }
+        
+        throw new Error(`Signature validation failed.`)
     }
 
     static extract_events(body){

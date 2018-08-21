@@ -57,18 +57,14 @@ class Webhook {
             this.options.messenger_type = "google";
         } else {
             debug(`This event comes from unsupported message platform. Skip processing.`);
-            return Promise.resolve(null);
+            return;
         }
         debug(`Messenger is ${this.options.messenger_type}`);
 
         // Check if required options for this message platform are set.
         for (let req_opt of REQUIRED_OPTIONS[this.options.messenger_type]){
             if (typeof this.options[req_opt] == "undefined"){
-                debug(`Required option: ${req_opt} is missing.`);
-                return Promise.reject({
-                    reason: "required option missing",
-                    missing_option: req_opt
-                });
+                throw new Error(`Required option: ${req_opt} is missing.`);
             }
         }
         debug("Messenger specific required options all set.");
@@ -89,6 +85,7 @@ class Webhook {
 
         // Process events
         let events = this.messenger.extract_events(this.options.req.body);
+
         let done_process_events = [];
         for (let e of events){
             done_process_events.push(this.process_event(e));

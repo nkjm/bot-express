@@ -16,6 +16,7 @@ module.exports = class FollowFlow extends Flow {
             confirmed: {},
             to_confirm: [],
             confirming: null,
+            event: event,
             previous: {
                 confirmed: [],
                 message: []

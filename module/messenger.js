@@ -24,19 +24,9 @@ module.exports = class Messenger {
             this.plugin[messenger_script] = new this.Messenger_classes[messenger_script](options);
         }
         this.service = new this.Messenger_classes[this.type](options);
-
-        // Instantiates a translater
-        /*
-        if (this.options.google_project_id && this.options.auto_translation == "enable"){
-            this.translater = google_translate({
-                projectId: this.options.google_project_id,
-                key: this.options.google_api_key
-            });
-        }
-        */
     }
 
-    validate_signature(req){
+    async validate_signature(req){
         return this.service.validate_signature(req);
     }
 

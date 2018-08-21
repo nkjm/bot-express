@@ -17,6 +17,7 @@ module.exports = class StartConversationFlow extends Flow {
             confirmed: {},
             to_confirm: [],
             confirming: null,
+            event: event,
             previous: {
                 confirmed: [],
                 message: []
@@ -29,17 +30,6 @@ module.exports = class StartConversationFlow extends Flow {
     }
 
     async run(){
-        /*
-        ** ### Start Conversation Flow ###
-        ** -> Run event based handling.
-        ** -> Translate the message text.
-        ** -> Identify intent.
-        ** -> Instantiate skill.
-        ** -> Run begin().
-        ** -> Process parameters.
-        ** -> Run finish().
-        */
-
         let skip_translate, skip_identify_intent, skip_instantiate_skill, skip_begin, skip_process_params;
 
         debug("### This is Start Conversation Flow. ###");

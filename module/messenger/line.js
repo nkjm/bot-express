@@ -52,7 +52,11 @@ module.exports = class MessengerLine {
             if (response.statusCode == 200){
                 return response.body;
             }
-            debug(`Failed to send message. Status code: ${response.statusCode}`);
+            debug(`Failed to multicast message. Status code: ${response.statusCode}`);
+            debug(`Failed request body follows.`);
+            debug(JSON.stringify(body));
+            debug(`Failed response body follows.`);
+            debug(JSON.stringify(response.body));
             return Promise.reject(response.body);
         });
     }
@@ -84,6 +88,10 @@ module.exports = class MessengerLine {
                 return response.body;
             }
             debug(`Failed to send message. Status code: ${response.statusCode}`);
+            debug(`Failed request body follows.`);
+            debug(JSON.stringify(body));
+            debug(`Failed response body follows.`);
+            debug(JSON.stringify(response.body));
             return Promise.reject(response.body);
         });
     }
@@ -118,7 +126,11 @@ module.exports = class MessengerLine {
             if (response.statusCode == 200){
                 return response.body;
             }
-            debug(`Failed to send message. Status code: ${response.statusCode}`);
+            debug(`Failed to reply message. Status code: ${response.statusCode}`);
+            debug(`Failed request body follows.`);
+            debug(JSON.stringify(body));
+            debug(`Failed response body follows.`);
+            debug(JSON.stringify(response.body));
             return Promise.reject(response.body);
         });
     }

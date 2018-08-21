@@ -1,7 +1,5 @@
 "use strict";
 
-require("dotenv").config();
-
 const REQUIRED_OPTIONS = {
     line: ["line_channel_secret", "line_access_token"],
     facebook: ["facebook_app_secret", "facebook_page_access_token"],
@@ -47,7 +45,7 @@ class Webhook {
     Main function.
     @returns {Promise.<context>}
     */
-    run(){
+    async run(){
         debug("Webhook runs.\n\n");
 
         // Identify messenger.
@@ -79,51 +77,32 @@ class Webhook {
         this.messenger = new Messenger(this.options);
         debug("Messenger abstraction instantiated.");
 
-        /**
-        * Overview of Webhook Promise Chain
-        1. Validate signature
-        2. Process events
-          2-1. Recall memory
-          2-2. Run flow
-          2-3. Update memory
-        3. Return contexts
-        **/
+        // Validate Signature
+        try {
+            await this.messenger.validate_signature(this.options.req);
+        } catch(e){
+            debug(`Signature validation failed.`);
+            throw e;
+        }
 
-        return Promise.resolve().then(() => {
-            // Validate Signature
-            return this.messenger.validate_signature(this.options.req);
-        }).then(() => {
-            debug("Signature validation succeeded.");
-            // Process events
-            let events = this.messenger.extract_events(this.options.req.body);
-            return this.process_events(events);
-        }).then((responses) => {
-            if (responses && responses.length === 1){
-                return responses[0];
-            } else {
-                return responses;
-            }
-        }).catch((error) => {
-            return Promise.reject(error);
-        }).finally((response) => {
-            return this.memory.close().then(() => {
-                return response;
-            })
-        })
-    }
+        debug("Signature validation succeeded.");
 
-
-    /**
-    Process events.
-    @param {Array.<Object>} - Array of event object.
-    @returns {Promise}
-    */
-    process_events(events){
+        // Process events
+        let events = this.messenger.extract_events(this.options.req.body);
         let done_process_events = [];
-        events.forEach((event) => {
-            done_process_events.push(this.process_event(event));
-        })
-        return Promise.all(done_process_events);
+        for (let e of events){
+            done_process_events.push(this.process_event(e));
+        }
+        let responses = await Promise.all(done_process_events);
+
+        // Close memory connection.
+        await this.memory.close();
+
+        if (responses && responses.length === 1){
+            return responses[0];
+        } else {
+            return responses;
+        }
     }
 
     /**
@@ -133,12 +112,12 @@ class Webhook {
     */
     async process_event(event){
         debug(`Processing following event.`);
-        debug(event);
+        debug(JSON.stringify(event));
 
         // If this is for webhook validation, we skip processing this.
         if (this.messenger.type === "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
             debug(`This is webhook validation so skip processing.`);
-            return Promise.resolve();
+            return;
         }
 
         // Identify memory id
@@ -150,133 +129,94 @@ class Webhook {
         }
         debug(`memory id is ${memory_id}.`);
 
-        // Run flow.
-        let done_flow = Promise.resolve().then((response) => {
-            return this.memory.get(memory_id);
-        }).then(async (context) => {
-            if (context && context._in_progress && this.options.parallel_event == "ignore"){
-                context._in_progress = false; // To avoid lock out, we ignore event only once.
-                await this.memory.put(memory_id, context);
-                return Promise.reject(new BotExpressWebhookSkip(`Bot is currenlty processing another event from this user so ignore this event.`));
-            }
 
-            // Make in progress flag
-            if (context){
-                context._in_progress = true;
-                return this.memory.put(memory_id, context).then(() => {
-                    return context;
-                })
-            } else {
-                return this.memory.put(memory_id, { _in_progress: true }).then(() => {
-                    return null;
-                })
-            }
-        }).then((context) => {
+        let context = await this.memory.get(memory_id);
 
-            let flow;
-            let event_type = this.messenger.identify_event_type(event);
-            debug(`event type is ${event_type}.`);
+        if (context && context._in_progress && this.options.parallel_event == "ignore"){
+            context._in_progress = false; // To avoid lock out, we ignore event only once.
+            await this.memory.put(memory_id, context);
+            debug(`Bot is currenlty processing another event from this user so ignore this event.`);
+            //throw new BotExpressWebhookSkip(`Bot is currenlty processing another event from this user so ignore this event.`);
+            return;
+        }
 
-            if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
-                // ### Follow | Unfollow | Join | Leave Flow ###
-                if (!this.options[event_type + "_skill"]){
-                    return Promise.reject(new BotExpressWebhookSkip(`This is ${event_type} flow but ${event_type}_skill not found so skip.`));
-                }
+        // Make in progress flag
+        if (context){
+            context._in_progress = true;
+            await this.memory.put(memory_id, context);
+        } else {
+            await this.memory.put(memory_id, { _in_progress: true });
+        }
 
-                try {
-                    flow = new flows[event_type](this.messenger, event, this.options);
-                } catch(err) {
-                    return Promise.reject(err);
-                }
-                return flow.run();
-            } else if (event_type == "beacon"){
-                // ### Beacon Flow ###
-                let beacon_event_type = this.messenger.extract_beacon_event_type(event);
+        let flow;
+        let event_type = this.messenger.identify_event_type(event);
+        debug(`event type is ${event_type}.`);
 
-                if (!beacon_event_type){
-                    return Promise.reject(new BotExpressWebhookSkip(`Unsupported beacon event so we skip this event.`));
-                }
-                if (!this.options.beacon_skill || !this.options.beacon_skill[beacon_event_type]){
-                    return Promise.reject(new BotExpressWebhookSkip(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`));
-                }
-                debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
-
-                try {
-                    flow = new flows[event_type](this.messenger, event, this.options, beacon_event_type);
-                } catch(err) {
-                    return Promise.reject(err);
-                }
-                return flow.run();
-            } else if (event_type == "bot-express:push"){
-                // ### Push Flow ###
-                try {
-                    flow = new flows["push"](this.messenger, event, this.options);
-                } catch(err) {
-                    return Promise.reject(err);
-                }
-                return flow.run();
-            } else if (!context || !context.intent){
-                // ### Start Conversation Flow ###
-                try {
-                    flow = new flows["start_conversation"](this.messenger, event, this.options);
-                } catch(err) {
-                    return Promise.reject(err);
-                }
-                return flow.run();
-            } else {
-                if (context.confirming){
-                    // ### Reply Flow ###
-                    try {
-                        flow = new flows["reply"](this.messenger, event, context, this.options);
-                    } catch(err){
-                        return Promise.reject(err);
-                    }
-                    return flow.run();
-                } else {
-                    // ### BTW Flow ###
-                    try {
-                        flow = new flows["btw"](this.messenger, event, context, this.options);
-                    } catch(err){
-                        return Promise.reject(err);
-                    }
-                    return flow.run();
-                }
-            }
-        });
-
-        // Update memory.
-        let done_update_memory = done_flow.then((context) => {
-            debug("Successful End of Flow.");
-
-            // Update memory.
-            if (!context){
-                return this.memory.del(memory_id).then((response) => {
-                    debug("Clearing context");
-                    return null;
-                })
-            } else {
-                delete context.skill;
-                context._in_progress = false;
-                return this.memory.put(memory_id, context).then((response) => {
-                    debug("Updating context");
-                    return context;
-                })
-            }
-        }).catch((error) => {
-            if (error.name == "BotExpressWebhookSkip"){
-                debug(error.message);
+        if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
+            // ### Follow | Unfollow | Join | Leave Flow ###
+            if (!this.options[event_type + "_skill"]){
+                debug(`This is ${event_type} flow but ${event_type}_skill not found so skip.`);
                 return;
+                //return Promise.reject(new BotExpressWebhookSkip(`This is ${event_type} flow but ${event_type}_skill not found so skip.`));
             }
 
+            flow = new flows[event_type](this.messenger, event, this.options);
+        } else if (event_type == "beacon"){
+            // ### Beacon Flow ###
+            let beacon_event_type = this.messenger.extract_beacon_event_type(event);
+
+            if (!beacon_event_type){
+                debug(`Unsupported beacon event so we skip this event.`);
+                return;
+                //return Promise.reject(new BotExpressWebhookSkip(`Unsupported beacon event so we skip this event.`));
+            }
+            if (!this.options.beacon_skill || !this.options.beacon_skill[beacon_event_type]){
+                debug(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`);
+                return;
+                //return Promise.reject(new BotExpressWebhookSkip(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`));
+            }
+            debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
+
+            flow = new flows[event_type](this.messenger, event, this.options, beacon_event_type);
+        } else if (event_type == "bot-express:push"){
+            // ### Push Flow ###
+            flow = new flows["push"](this.messenger, event, this.options);
+        } else if (!context || !context.intent){
+            // ### Start Conversation Flow ###
+            flow = new flows["start_conversation"](this.messenger, event, this.options);
+        } else {
+            if (context.confirming){
+                // ### Reply flow ###
+                flow = new flows["reply"](this.messenger, event, context, this.options);
+            } else {
+                // ### BTW Flow ###
+                flow = new flows["btw"](this.messenger, event, context, this.options);
+            }
+        }
+
+        let updated_context;
+        try {
+            updated_context = await flow.run();
+        } catch (e){
             debug("Abnormal End of Flow.");
             // Clear memory.
-            return this.memory.del(memory_id).then((response) => {
-                debug("Context cleared.");
-                return Promise.reject(error);
-            });
-        })
+            debug("Clearing context");
+            return await this.memory.del(memory_id);
+            throw e;
+        }
 
-        return done_update_memory;
+        // Update memory.
+        if (!updated_context){
+            debug("Clearing context");
+            await this.memory.del(memory_id);
+        } else {
+            delete updated_context.skill;
+            updated_context._in_progress = false;
+            debug("Updating context");
+            await this.memory.put(memory_id, updated_context);
+        }
+
+        return updated_context;
     }
 }
 

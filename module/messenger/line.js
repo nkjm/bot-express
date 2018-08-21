@@ -52,6 +52,7 @@ module.exports = class MessengerLine {
             if (response.statusCode == 200){
                 return response.body;
             }
+            debug(`Failed to send message. Status code: ${response.statusCode}`);
             return Promise.reject(response.body);
         });
     }
@@ -82,6 +83,7 @@ module.exports = class MessengerLine {
             if (response.statusCode == 200){
                 return response.body;
             }
+            debug(`Failed to send message. Status code: ${response.statusCode}`);
             return Promise.reject(response.body);
         });
     }
@@ -116,6 +118,7 @@ module.exports = class MessengerLine {
             if (response.statusCode == 200){
                 return response.body;
             }
+            debug(`Failed to send message. Status code: ${response.statusCode}`);
             return Promise.reject(response.body);
         });
     }

@@ -69,6 +69,15 @@ https://nkjm.github.io/bot-express
 
 - [Dialogflow](https://dialogflow.com)
 
+# Debug
+
+Set environment variable DEBUG to "bot-express:\*" to activate full debugging.
+In production environment, setting "bot-express:skill-status" is recommended. To make this debugging work properly when you use redis as memory store, you need to enable Redis Keyspace Notification like following to subscribe expired event.
+
+```
+$ redis-cli config set notify-keyspace-events Ex
+```
+
 # Limitation
 
 Webhook supports following event at present.

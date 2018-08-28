@@ -10,6 +10,7 @@ const REQUIRED_OPTIONS = {
 Promise = require("bluebird");
 
 const debug = require("debug")("bot-express:webhook");
+const skill_status = require("debug")("bot-express:skill-status");
 
 // Import Flows
 const flows = {
@@ -26,8 +27,6 @@ const flows = {
 
 // Import Messenger Abstraction.
 const Messenger = require("./messenger");
-
-const BotExpressWebhookSkip = require("./error/webhook");
 
 /**
 Webhook to receive all request from messenger.
@@ -132,7 +131,6 @@ class Webhook {
             context._in_progress = false; // To avoid lock out, we ignore event only once.
             await this.memory.put(memory_id, context);
             debug(`Bot is currenlty processing another event from this user so ignore this event.`);
-            //throw new BotExpressWebhookSkip(`Bot is currenlty processing another event from this user so ignore this event.`);
             return;
         }
 
@@ -153,7 +151,6 @@ class Webhook {
             if (!this.options[event_type + "_skill"]){
                 debug(`This is ${event_type} flow but ${event_type}_skill not found so skip.`);
                 return;
-                //return Promise.reject(new BotExpressWebhookSkip(`This is ${event_type} flow but ${event_type}_skill not found so skip.`));
             }
 
             flow = new flows[event_type](this.messenger, event, this.options);
@@ -164,12 +161,10 @@ class Webhook {
             if (!beacon_event_type){
                 debug(`Unsupported beacon event so we skip this event.`);
                 return;
-                //return Promise.reject(new BotExpressWebhookSkip(`Unsupported beacon event so we skip this event.`));
             }
             if (!this.options.beacon_skill || !this.options.beacon_skill[beacon_event_type]){
                 debug(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`);
                 return;
-                //return Promise.reject(new BotExpressWebhookSkip(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`));
             }
             debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
 
@@ -194,7 +189,14 @@ class Webhook {
         try {
             updated_context = await flow.run();
         } catch (e){
-            debug("Abnormal End of Flow.");
+            if (context && context.skill){
+                if (context.confirming){
+                    skill_status(`${memory_id} ${context.skill.type} abend in confirming ${context.confirming}`);
+                } else {
+                    skill_status(`${memory_id} ${context.skill.type} abend`);
+                }
+            }
+
             // Clear memory.
             debug("Clearing context");
             return await this.memory.del(memory_id);

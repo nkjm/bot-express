@@ -2,6 +2,8 @@
 
 const debug = require("debug")("bot-express:memory");
 const redis = require("redis");
+const skill_status = require("debug")("bot-express:skill-status");
+const prefix = "botex_context_";
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 
@@ -15,10 +17,22 @@ class MemoryRedis {
     @param {String} [options.password] - If set, client will run Redis auth command on connect.
     */
     constructor(options){
-        this.client = new redis.createClient(options);
+        this.client = redis.createClient(options);
+        this.sub = redis.createClient(options);
+
+        this.sub.on("pmessage", async (pattern, channel, key) => {
+            const value = await this.get(`${key}_cloned`);
+            if (value.confirming && value.skill){
+                skill_status(`${key.replace(prefix, "")} ${value.skill.type} aborted in confirming ${value.confirming}`);
+            }
+
+            await this.del(`${key}_cloned`);
+        })
+
+        this.sub.psubscribe("__key*__:expired");
     }
 
-    get(key){
+    async get(key){
         return this.client.getAsync(key).then((response) => {
             if (response){
                 return JSON.parse(response);
@@ -28,18 +42,25 @@ class MemoryRedis {
         })
     }
 
-    put(key, value, retention){
+    async put(key, value, retention){
         if (value){
             value = JSON.stringify(value);
         }
+
+        // We clone this record for skill-status log.
+        await this.client.setAsync(`${key}_cloned`, value);
+        
         return this.client.setAsync(key, value, 'EX', retention);
     }
 
-    del(key){
+    async del(key){
         return this.client.delAsync(key);
     }
 
-    close(){
+    /**
+    @deprecated
+    */
+    async close(){
         return this.client.quitAsync();
     }
 }

@@ -17,6 +17,7 @@ const router = express.Router();
 const body_parser = require("body-parser");
 const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
+const Memory = require("./memory");
 
 router.use(body_parser.json({
     verify: (req, res, buf, encoding) => {
@@ -94,6 +95,8 @@ module.exports = (options) => {
     }
     debug("Common required options all set.");
 
+    const memory = new Memory(options.memory);
+
     // Webhook Process
     router.post('/', async (req, res, next) => {
         if (!["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
@@ -104,6 +107,7 @@ module.exports = (options) => {
 
         options.req = req;
         options.res = res;
+        options.memory = memory;
 
         let webhook = new Webhook(options);
 

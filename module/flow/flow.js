@@ -1,6 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:flow");
+const skill_status = require("debug")("bot-express:skill-status");
 const BotExpressParseError = require("../error/parse");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");
@@ -66,6 +67,8 @@ module.exports = class Flow {
             }
             skill_instance = new skill_class();
         }
+
+        skill_instance.type = skill;
 
         return skill_instance;
     }
@@ -596,6 +599,9 @@ module.exports = class Flow {
     dig(intent){
         this.context.parent = {
             intent: this.context.intent,
+            skill: {
+                name: this.context.skill.name
+            },
             to_confirm: this.context.to_confirm,
             confirming: this.context.confirming,
             confirmed: this.context.confirmed,
@@ -629,6 +635,9 @@ module.exports = class Flow {
             this.context.to_confirm = this.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
         }
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
+
+        // Log skill status.
+        skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} launched`);
 
         await this.begin();
 
@@ -684,6 +693,9 @@ module.exports = class Flow {
             this.context.to_confirm = this.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
         }
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
+
+        // Log skill status.
+        skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} launched`);
 
         await this.begin();
 
@@ -784,6 +796,9 @@ module.exports = class Flow {
                     return this.context;
                 });
             }
+
+            // Log skill status.
+            skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} completed`);
 
             if (this.context.parent){
                 // This is sub skill so we get parent context back.

@@ -96,7 +96,7 @@ module.exports = class MessengerFacebook {
         if (secure_compare(hash, signature)){
             return;
         }
-        
+
         throw new Error(`Signature validation failed.`)
     }
 
@@ -142,7 +142,14 @@ module.exports = class MessengerFacebook {
     }
 
     static extract_sender_id(event){
+        if (event.type === "bot-express:push"){
+            return MessengerFacebook.extract_to_id(event);
+        }
         return event.sender.id;
+    }
+
+    static extract_to_id(event){
+        return event.to[`${event.to.type}Id`];
     }
 
     static extract_session_id(event){

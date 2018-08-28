@@ -7,6 +7,7 @@ Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
 const Flow = require("./flow");
 const Nlu = require("../nlu");
+const skill_status = require("debug")("bot-express:skill-status");
 
 module.exports = class StartConversationFlow extends Flow {
 
@@ -37,7 +38,7 @@ module.exports = class StartConversationFlow extends Flow {
         // Check if this event type is supported in this flow.
         if (!this.messenger.check_supported_event_type(this.event, "start_conversation")){
             debug(`This is unsupported event type in this flow so skip processing.`);
-            return this.context;
+            return;
         }
 
         // Run event based handling.
@@ -125,6 +126,9 @@ module.exports = class StartConversationFlow extends Flow {
             }
             debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
         }
+
+        // Log skill status.
+        skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} launched`);
 
         // Add user's message to history
         this.context.previous.message.unshift({

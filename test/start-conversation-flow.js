@@ -34,11 +34,11 @@ for (let messenger_option of messenger_options){
                     let event = emu.create_unsupported_event(user_id);
                     return emu.send(event);
                 }).then(function(context){
-                    context._flow.should.equal("start_conversation");
-                    context.should.have.property("intent").and.equal(null);
+                    should.not.exist(context);
                 });
             });
         });
+
 
         describe("Identifiable message", function(){
             it("should trigger start conversation flow and pick up suitable skill.", function(){

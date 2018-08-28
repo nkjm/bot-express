@@ -11,28 +11,23 @@ class MemoryMongodb {
         });
     }
 
-    get(key){
+    async get(key){
         return this.connected.then((response) => {
             return this.db.collection('bot-express').findOne({_id: key});
         });
     }
 
-    put(key, value, retention){
+    async put(key, value, retention){
         return this.connected.then((response) => {
             value._id = key;
             return this.db.collection('bot-express').updateOne({_id:key}, value, {upsert:true});
         });
     }
 
-    del(key){
+    async del(key){
         return this.connected.then((response) => {
             return this.db.collection('bot-express').deleteOne({_id: key});
         });
-    }
-
-    close(){
-        // TBD
-        return Promise.resolve();
     }
 }
 

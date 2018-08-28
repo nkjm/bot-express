@@ -2,45 +2,36 @@
 
 const memory_cache = require("memory-cache");
 const debug = require("debug")("bot-express:memory");
+const skill_status = require("debug")("bot-express:skill-status");
+const prefix = "botex_context_";
 
 class MemoryMemoryCache {
     constructor(options){
         this.client = memory_cache;
     }
 
-    get(key){
-        return new Promise((resolve, reject) => {
-            try {
-                return resolve(this.client.get(key));
-            } catch(e) {
-                return reject(e);
+    async get(key){
+        return this.client.get(key);
+    }
+
+    async put(key, value, retention){
+        return this.client.put(key, value, retention * 1000, (key, value) => {
+            if (value.confirming && value.skill){
+                skill_status(`${key.replace(prefix, "")} ${value.skill.type} aborted in confirming ${value.confirming}`);
             }
         });
     }
 
-    put(key, value, retention){
-        return new Promise((resolve, reject) => {
-            try {
-                return resolve(this.client.put(key, value, retention * 1000));
-            } catch(e) {
-                return reject(e);
-            }
-        });
+    async del(key){
+        return this.client.del(key);
     }
 
-    del(key){
-        return new Promise((resolve, reject) => {
-            try {
-                return resolve(this.client.del(key));
-            } catch(e) {
-                return reject(e);
-            }
-        });
-    }
-
-    close(){
+    /**
+    @deprecated
+    */
+    async close(){
         // memory-cache does not have to close connection so this is dummy.
-        return Promise.resolve();
+        return;
     }
 }
 

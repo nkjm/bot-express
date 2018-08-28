@@ -7,6 +7,7 @@ Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
 const Flow = require("./flow");
 const Nlu = require("../nlu");
+const skill_status = require("debug")("bot-express:skill-status");
 
 module.exports = class PushFlow extends Flow {
 
@@ -65,6 +66,9 @@ module.exports = class PushFlow extends Flow {
             from: "user",
             message: this.bot.extract_message()
         });
+
+        // Log skill status.
+        skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} launched`);
 
         // Run begin().
         if (!skip_begin){

@@ -3,7 +3,7 @@
 const debug = require("debug")("bot-express:memory");
 const default_store = "memory-cache";
 const fs = require("fs");
-Promise = require("bluebird");
+const prefix = "botex_context_";
 
 /**
 * Memory to store context.
@@ -43,8 +43,8 @@ class Memory {
     @param {String} key - Key of the context.
     @returns {Promise.<context>} context - Context object.
     */
-    get(key){
-        return this.store.get(key);
+    async get(key){
+        return this.store.get(`${prefix}${key}`);
     }
 
     /**
@@ -55,8 +55,8 @@ class Memory {
     @param {Number} retention - Lifetime of the context in seconds.
     @returns {Promise.<null>}
     */
-    put(key, context, retention = this.retention){
-        return this.store.put(key, context, retention);
+    async put(key, context, retention = this.retention){
+        return this.store.put(`${prefix}${key}`, context, retention);
     }
 
     /**
@@ -65,8 +65,8 @@ class Memory {
     @param {String} key - Key of the context.
     @returns {Promise.<null>}
     */
-    del(key){
-        return this.store.del(key);
+    async del(key){
+        return this.store.del(`${prefix}${key}`);
     }
 
     /**
@@ -74,7 +74,7 @@ class Memory {
     @function
     @returns {Promise.null}
     */
-    close(){
+    async close(){
         return this.store.close();
     }
 }

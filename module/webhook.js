@@ -9,7 +9,6 @@ const REQUIRED_OPTIONS = {
 // Import NPM Packages
 Promise = require("bluebird");
 
-const Memory = require("./memory");
 const debug = require("debug")("bot-express:webhook");
 
 // Import Flows
@@ -37,7 +36,7 @@ Webhook to receive all request from messenger.
 class Webhook {
     constructor(options){
         this.options = options;
-        this.memory = new Memory(options.memory);
+        this.memory = options.memory;
         this.messenger;
     }
 
@@ -93,7 +92,7 @@ class Webhook {
         let responses = await Promise.all(done_process_events);
 
         // Close memory connection.
-        await this.memory.close();
+        //await this.memory.close();
 
         if (responses && responses.length === 1){
             return responses[0];
@@ -207,8 +206,15 @@ class Webhook {
             debug("Clearing context");
             await this.memory.del(memory_id);
         } else {
+            // Delete skill from context except for skill name since we need this in skill-status logging.
+            const skill_type = updated_context.skill.type;
             delete updated_context.skill;
+            updated_context.skill = {
+                type: skill_type
+            }
+
             updated_context._in_progress = false;
+
             debug("Updating context");
             await this.memory.put(memory_id, updated_context);
         }

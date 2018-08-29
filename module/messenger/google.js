@@ -4,17 +4,28 @@ const request = require("request");
 const crypto = require("crypto");
 const debug = require("debug")("bot-express:messenger");
 const { ActionsSdkApp } = require('actions-on-google');
+const REQUIRED_PARAMETERS = ["project_id"];
 
 Promise.promisifyAll(request);
 
 module.exports = class MessengerGoogle {
 
     constructor(options){
-        this.project_id = options.google_project_id;
+        for (let p of REQUIRED_PARAMETERS){
+            if (!options.messenger.google[p]){
+                throw new Error(`Required parameter: "${p}" for Google Assistant configuration not set.`);
+            }
+        }
+
+        this.project_id = options.messenger.google.project_id;
         this.sdk = new ActionsSdkApp({
             request: options.req,
             response: options.res
         });
+    }
+
+    async refresh_token(){
+        return;
     }
 
     multicast(event, to, messages){

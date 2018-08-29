@@ -3,27 +3,73 @@
 const request = require("request");
 const crypto = require("crypto");
 const debug = require("debug")("bot-express:messenger");
-const line_bot_sdk = require("@line/bot-sdk");
+const bot_sdk = require("@line/bot-sdk");
+const cache = require("memory-cache");
 const secure_compare = require('secure-compare');
 const api_version = "v2";
+const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"];
+const CACHE_PREFIX = "botex_messenger_line_";
 Promise.promisifyAll(request);
 
 module.exports = class MessengerLine {
 
     constructor(options){
-        if (!options.line_channel_secret || !options.line_access_token){
-            return
+        for (let p of REQUIRED_PARAMETERS){
+            if (!options.messenger.line[p]){
+                throw new Error(`Required parameter: "${p}" for LINE configuration not set.`);
+            }
         }
 
-        this._channel_secret = options.line_channel_secret;
-        this._access_token = options.line_access_token;
-        this._endpoint = options.line_endpoint || "api.line.me";
+        this._channel_id = options.messenger.line.channel_id;
+        this._channel_secret = options.messenger.line.channel_secret;
+        this._endpoint = options.messenger.line_endpoint || "api.line.me";
+        // this._access_token; // Will be set when this.refresh_token is called.
+        // this.sdk; // Will be set when this.refresh_token is called.
+    }
 
-        const sdk_config = {
+    async refresh_token(){
+        let access_token = cache.get(`${CACHE_PREFIX}access_token`);
+
+        if (access_token){
+            debug(`Found access_token for LINE Messaging API.`);
+        } else {
+            debug(`access_token for LINE Messaging API not found or expired. We get new one.`);
+            const url = `https://${this._endpoint}/${api_version}/oauth/accessToken`;
+            const form = {
+                grant_type: "client_credentials",
+                client_id: this._channel_id,
+                client_secret: this._channel_secret
+            }
+
+            const response = await request.postAsync({
+                url: url,
+                form: form
+            })
+
+            if (response.statusCode != 200){
+                throw new Error(`Failed to refresh token for LINE Messaging API. Status code: ${response.statusCode}.`);
+            }
+
+            const body = JSON.parse(response.body);
+
+            if (!body.access_token || !body.expires_in){
+                throw new Error(`access_token or expires_in not found in response.`);
+            }
+
+            // We save access token in cache and set expiration to expires_in - 60sec.
+            const cache_expiration = body.expires_in * 1000 - 60000;
+            debug(`access_token is ${body.access_token}`);
+            debug(`Expiration is ${cache_expiration}`);
+            cache.put(`${CACHE_PREFIX}access_token`, body.access_token, cache_expiration);
+
+            access_token = body.access_token;
+        }
+
+        this._access_token = access_token;
+        this.sdk = new bot_sdk.Client({
             channelAccessToken: this._access_token,
             channelSecret: this._channel_secret
-        };
-        this.sdk = new line_bot_sdk.Client(sdk_config);
+        })
     }
 
     multicast(event, to, messages){

@@ -1,14 +1,15 @@
 "use strict";
 
 const REQUIRED_OPTIONS = {
-    line: ["line_channel_secret", "line_access_token"],
+    line: ["channel_id", "channel_secret"],
     facebook: ["facebook_app_secret", "facebook_page_access_token"],
-    google: ["google_project_id"]
+    google: ["project_id"]
 }
 
 // Import NPM Packages
 Promise = require("bluebird");
 
+// Debuggers
 const debug = require("debug")("bot-express:webhook");
 const skill_status = require("debug")("bot-express:skill-status");
 
@@ -44,7 +45,7 @@ class Webhook {
     @returns {Promise.<context>}
     */
     async run(){
-        debug("Webhook runs.\n\n");
+        debug("Webhook runs.");
 
         // Identify messenger.
         if (this.options.req.get("X-Line-Signature") && this.options.req.body.events){
@@ -59,17 +60,16 @@ class Webhook {
         }
         debug(`Messenger is ${this.options.messenger_type}`);
 
-        // Check if required options for this message platform are set.
-        for (let req_opt of REQUIRED_OPTIONS[this.options.messenger_type]){
-            if (typeof this.options[req_opt] == "undefined"){
-                throw new Error(`Required option: ${req_opt} is missing.`);
-            }
+        // Check if required configuration has been set for this messenger.
+        if (!this.options.messenger[this.options.messenger_type]){
+            debug(`bot-express has not been configured to handle message from ${this.options.messenger_type} so we skip this event.`);
+            return;
         }
-        debug("Messenger specific required options all set.");
 
         // Instantiate messenger instance.
         this.messenger = new Messenger(this.options);
-        debug("Messenger abstraction instantiated.");
+        await this.messenger.refresh_token();
+        debug("Messenger instantiated.");
 
         // Validate Signature
         try {
@@ -78,7 +78,6 @@ class Webhook {
             debug(`Signature validation failed.`);
             throw e;
         }
-
         debug("Signature validation succeeded.");
 
         // Process events

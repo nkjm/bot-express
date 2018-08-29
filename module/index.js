@@ -30,14 +30,19 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @module bot-express
 @param {Object} options - Configuration of bot-express.
 @param {Object} [options.language="ja"] - ISO-639-1 based language code which is the mother language of this chatbot.
-@param {String} [options.line_channel_secret] - LINE Channel Secret. Required when you use LINE.
-@param {String} [options.line_access_token] - LINE Access Token. Required when you use LINE.
-@param {String} [options.line_endpoint="api.line.me"] - Test purpose only. Change Messaging API endpoint hostname.
-@param {String} [options.facebook_app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
-@param {Array.<Object>} [options.facebook_page_access_token] - Array of a pair of Facebook Page Id and Page Access Token. Required when you use Facebook Messenger.
-@param {String} [options.facebook_page_access_token.page_id] - Facebook Page Id.
-@param {String} [options.facebook_page_access_token.page_access_token] - Facebook Page Access Token.
-@param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
+@param {Object} options.messenger - Messenger configuration. line, facebook and google are supported.
+@param {Object} [options.messenger.line] - Messenger configuration for LINE.
+@param {String} [options.messenger.line.channel_id] - Channel ID of Messaging API. Required when you use LINE as messenger.
+@param {String} [options.messenger.line.channel_secret] - Channel Secret of Messaging API. Required when you use LINE as messenger.
+@param {String} [options.messenger.line.endpoint="api.line.me"] - Test purpose onlyl. Change Messaging API endpoint hostname.
+@param {Object} [options.messenger.facebook] - Messenger configuration of facebook.
+@param {String} [options.messenger.facebook.app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
+@param {Array.<Object>} [options.messenger.facebook.page_access_token] - Array of a pair of Facebook Page Id and Page Access Token. Required when you use Facebook Messenger.
+@param {String} [options.messenger.facebook.page_access_token.page_id] - Facebook Page Id.
+@param {String} [options.messenger.facebook.page_access_token.page_access_token] - Facebook Page Access Token.
+@param {String} [options.messenger.facebook.verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
+@param {Object} [options.messenger.google] - Messenger configuration for Google Assistant.
+@param {String} [options.messenger.google.project_id] - Project ID of Google Platform. Required when you use Google Assistant as messenger.
 @param {String} options.nlu - Option object for NLU Service.
 @param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
 @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, key_filename or (project_id, client_email and private key) is required.

@@ -26,6 +26,10 @@ module.exports = class Messenger {
         this.service = new this.Messenger_classes[this.type](options);
     }
 
+    async refresh_token(){
+        return this.service.refresh_token();
+    }
+
     async validate_signature(req){
         return this.service.validate_signature(req);
     }

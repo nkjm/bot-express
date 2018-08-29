@@ -4,15 +4,26 @@ const request = require('request');
 const crypto = require('crypto');
 const debug = require("debug")("bot-express:messenger");
 const secure_compare = require('secure-compare');
+const REQUIRED_PARAMETERS = ["app_secret", "page_access_token"];
 
 Promise.promisifyAll(request);
 
 module.exports = class MessengerFacebook {
 
     constructor(options){
-        this._app_secret = options.facebook_app_secret;
-        this._page_access_token = options.facebook_page_access_token;
+        for (let p of REQUIRED_PARAMETERS){
+            if (!options.messenger.facebook[p]){
+                throw new Error(`Required parameter: "${p}" for Facebook configuration not set.`);
+            }
+        }
+
+        this._app_secret = options.messenger.facebook.app_secret;
+        this._page_access_token = options.messenger.facebook.page_access_token;
         this.sdk = null; // TBC
+    }
+
+    async refresh_token(){
+        return;
     }
 
     multicast(event, to_list, messages){

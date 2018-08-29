@@ -45,6 +45,7 @@ const router = express.Router();
 const body_parser = require("body-parser");
 const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
+const Memory = require("./memory");
 
 router.use(body_parser.json({
     verify: (req, res, buf, encoding) => {
@@ -57,13 +58,19 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @module bot-express
 @param {Object} options - Configuration of bot-express.
 @param {Object} [options.language="ja"] - ISO-639-1 based language code which is the mother language of this chatbot.
-@param {String} [options.line_channel_secret] - LINE Channel Secret. Required when you use LINE.
-@param {String} [options.line_access_token] - LINE Access Token. Required when you use LINE.
-@param {String} [options.facebook_app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
-@param {Array.&lt;Object>} [options.facebook_page_access_token] - Array of a pair of Facebook Page Id and Page Access Token. Required when you use Facebook Messenger.
-@param {String} [options.facebook_page_access_token.page_id] - Facebook Page Id.
-@param {String} [options.facebook_page_access_token.page_access_token] - Facebook Page Access Token.
-@param {String} [options.facebook_verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
+@param {Object} options.messenger - Messenger configuration. line, facebook and google are supported.
+@param {Object} [options.messenger.line] - Messenger configuration for LINE.
+@param {String} [options.messenger.line.channel_id] - Channel ID of Messaging API. Required when you use LINE as messenger.
+@param {String} [options.messenger.line.channel_secret] - Channel Secret of Messaging API. Required when you use LINE as messenger.
+@param {String} [options.messenger.line.endpoint="api.line.me"] - Test purpose onlyl. Change Messaging API endpoint hostname.
+@param {Object} [options.messenger.facebook] - Messenger configuration of facebook.
+@param {String} [options.messenger.facebook.app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
+@param {Array.&lt;Object>} [options.messenger.facebook.page_access_token] - Array of a pair of Facebook Page Id and Page Access Token. Required when you use Facebook Messenger.
+@param {String} [options.messenger.facebook.page_access_token.page_id] - Facebook Page Id.
+@param {String} [options.messenger.facebook.page_access_token.page_access_token] - Facebook Page Access Token.
+@param {String} [options.messenger.facebook.verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
+@param {Object} [options.messenger.google] - Messenger configuration for Google Assistant.
+@param {String} [options.messenger.google.project_id] - Project ID of Google Platform. Required when you use Google Assistant as messenger.
 @param {String} options.nlu - Option object for NLU Service.
 @param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
 @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, key_filename or (project_id, client_email and private key) is required.
@@ -74,14 +81,15 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.memory.type="memory-cache"] - Store type of context. Supported store type is memory-cache and redis.
 @param {Number} [options.memory.retention="600"] - Lifetime of the context in seconds.
 @param {Object} [options.memory.options] - Options depending on the specific store type.
-@param {String} [options.default_skill] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
-@param {Object} [options.beacon_skill] - Skill to be used when bot receives beacon event.
-@param {String} [options.beacon_skill.enter] - Skill to be used when bot receives beacon enter event.
-@param {String} [options.beacon_skill.leave] - Skill to be used when bot receives beacon leave event.
-@param {String} [options.follow_skill] - Skill to be used when bot receives follow event.
-@param {String} [options.unfollow_skill] - Skill to be used when bot receives unfollow event.
-@param {String} [options.join_skill] - Skill to be used when bot receives join event.
-@param {String} [options.leave_skill] - Skill to be used when bot receives leave event.
+@param {Object} [options.skill] - Options to set skill corresponding to certain event.
+@param {String} [options.skill.default] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
+@param {Object} [options.skill.beacon] - Skill to be used when bot receives beacon event.
+@param {String} [options.skill.beacon.enter] - Skill to be used when bot receives beacon enter event.
+@param {String} [options.skill.beacon.leave] - Skill to be used when bot receives beacon leave event.
+@param {String} [options.skill.follow] - Skill to be used when bot receives follow event.
+@param {String} [options.skill.unfollow] - Skill to be used when bot receives unfollow event.
+@param {String} [options.skill.join] - Skill to be used when bot receives join event.
+@param {String} [options.skill.leave] - Skill to be used when bot receives leave event.
 @param {String} [options.default_intent="input.unknown"] - Intent name to be returned by NLP when it cannot identify the intent.
 @param {String} [options.modify_previous_parameter_intent] - Intent name to modify the previously collected parameter.
 @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
@@ -101,7 +109,8 @@ module.exports = (options) => {
     // Set optional options.
     options.language = options.language || DEFAULT_LANGUAGE;
     options.default_intent = options.default_intent || DEFAULT_INTENT;
-    options.default_skill = options.default_skill || DEFAULT_SKILL;
+    options.skill = options.skill || {};
+    options.skill.default = options.skill.default || DEFAULT_SKILL;
     options.parallel_event = options.parallel_event || DEFAULT_PARALLEL_EVENT;
     if (!!options.skill_path){
         options.skill_path = "../../../../" + options.skill_path;
@@ -121,8 +130,10 @@ module.exports = (options) => {
     }
     debug("Common required options all set.");
 
+    const memory = new Memory(options.memory);
+
     // Webhook Process
-    router.post('/', (req, res, next) => {
+    router.post('/', async (req, res, next) => {
         if (!["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             if (!req.get("google-actions-api-version")){
                 res.sendStatus(200);
@@ -131,21 +142,31 @@ module.exports = (options) => {
 
         options.req = req;
         options.res = res;
+        options.memory = memory;
 
         let webhook = new Webhook(options);
-        webhook.run().then((context) => {
-            debug("Successful End of Webhook. Current context follows.");
-            debug(context);
-            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                res.json(context);
-            }
-        }, (error) => {
+
+        let context;
+        try {
+            context = await webhook.run();
+        } catch(e){
             debug("Abnormal End of Webhook. Error follows.");
-            debug(error);
+            debug(e);
             if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                res.status(400).send(error.message);
+                if (e &amp;&amp; e.message){
+                    return res.status(400).send(e.message);
+                } else {
+                    return res.sendStatus(400);
+                }
             }
-        });
+        }
+
+        debug("Successful End of Webhook. Current context follows.");
+        debug(JSON.stringify(context));
+
+        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
+            return res.json(context);
+        }
     });
 
     // Verify Facebook Webhook
@@ -181,7 +202,7 @@ module.exports = (options) => {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 03 2018 17:05:40 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 29 2018 12:22:03 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

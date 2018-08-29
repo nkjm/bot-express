@@ -164,7 +164,119 @@
 
         <tr>
             
-                <td class="name"><code>line_channel_secret</code></td>
+                <td class="name"><code>messenger</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Messenger configuration. line, facebook and google are supported.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>line</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Messenger configuration for LINE.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>channel_id</code></td>
             
 
             <td class="type">
@@ -194,14 +306,14 @@
                 </td>
             
 
-            <td class="description last">LINE Channel Secret. Required when you use LINE.</td>
+            <td class="description last">Channel ID of Messaging API. Required when you use LINE as messenger.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>line_access_token</code></td>
+                <td class="name"><code>channel_secret</code></td>
             
 
             <td class="type">
@@ -231,14 +343,116 @@
                 </td>
             
 
-            <td class="description last">LINE Access Token. Required when you use LINE.</td>
+            <td class="description last">Channel Secret of Messaging API. Required when you use LINE as messenger.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>facebook_app_secret</code></td>
+                <td class="name"><code>endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    "api.line.me"
+                
+                </td>
+            
+
+            <td class="description last">Test purpose onlyl. Change Messaging API endpoint hostname.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>facebook</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Messenger configuration of facebook.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>app_secret</code></td>
             
 
             <td class="type">
@@ -275,7 +489,7 @@
 
         <tr>
             
-                <td class="name"><code>facebook_page_access_token</code></td>
+                <td class="name"><code>page_access_token</code></td>
             
 
             <td class="type">
@@ -406,7 +620,7 @@
 
         <tr>
             
-                <td class="name"><code>facebook_verify_token</code></td>
+                <td class="name"><code>verify_token</code></td>
             
 
             <td class="type">
@@ -439,6 +653,114 @@
             
 
             <td class="description last">Facebook token to verify webook url. This is only used in initial webhook registration.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>google</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Messenger configuration for Google Assistant.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>project_id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Project ID of Google Platform. Required when you use Google Assistant as messenger.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -897,44 +1219,7 @@
 
         <tr>
             
-                <td class="name"><code>default_skill</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>beacon_skill</code></td>
+                <td class="name"><code>skill</code></td>
             
 
             <td class="type">
@@ -962,6 +1247,93 @@
                 <td class="default">
                 
                 </td>
+            
+
+            <td class="description last">Options to set skill corresponding to certain event.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>default</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>beacon</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
             
 
             <td class="description last">Skill to be used when bot receives beacon event.
@@ -1065,7 +1437,7 @@
 
         <tr>
             
-                <td class="name"><code>follow_skill</code></td>
+                <td class="name"><code>follow</code></td>
             
 
             <td class="type">
@@ -1089,10 +1461,6 @@
                 </td>
             
 
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last">Skill to be used when bot receives follow event.</td>
@@ -1102,7 +1470,7 @@
 
         <tr>
             
-                <td class="name"><code>unfollow_skill</code></td>
+                <td class="name"><code>unfollow</code></td>
             
 
             <td class="type">
@@ -1126,10 +1494,6 @@
                 </td>
             
 
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last">Skill to be used when bot receives unfollow event.</td>
@@ -1139,7 +1503,7 @@
 
         <tr>
             
-                <td class="name"><code>join_skill</code></td>
+                <td class="name"><code>join</code></td>
             
 
             <td class="type">
@@ -1163,10 +1527,6 @@
                 </td>
             
 
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last">Skill to be used when bot receives join event.</td>
@@ -1176,7 +1536,7 @@
 
         <tr>
             
-                <td class="name"><code>leave_skill</code></td>
+                <td class="name"><code>leave</code></td>
             
 
             <td class="type">
@@ -1201,12 +1561,15 @@
             
 
             
-                <td class="default">
-                
-                </td>
-            
 
             <td class="description last">Skill to be used when bot receives leave event.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -1740,7 +2103,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_index.js.html">module/index.js</a>, <a href="module_index.js.html#line27">line 27</a>
+        <a href="module_index.js.html">module/index.js</a>, <a href="module_index.js.html#line28">line 28</a>
     </li></ul></dd>
     
 
@@ -1807,7 +2170,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 03 2018 17:05:40 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 29 2018 12:22:03 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

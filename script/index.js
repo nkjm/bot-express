@@ -65,7 +65,9 @@ server.use("/bot/webhook", bot_express({
             private_key: process.env.GOOGLE_PRIVATE_KEY
         }
     },
-    default_skill: process.env.DEFAULT_SKILL
+    skill: {
+        defualt: process.env.DEFAULT_SKILL
+    }
 }));
 
 module.exports = server;

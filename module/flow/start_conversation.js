@@ -137,7 +137,7 @@ module.exports = class StartConversationFlow extends Flow {
         });
 
         // Log chat.
-        log.chat(this.bot.extract_sender_id, this.context.skill.type, "user", this.bot.extract_message());
+        log.chat(this.bot.extract_sender_id(), this.context.skill.type, "user", this.bot.extract_message());
 
         // Run begin().
         if (!skip_begin){

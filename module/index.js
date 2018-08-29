@@ -53,14 +53,15 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.memory.type="memory-cache"] - Store type of context. Supported store type is memory-cache and redis.
 @param {Number} [options.memory.retention="600"] - Lifetime of the context in seconds.
 @param {Object} [options.memory.options] - Options depending on the specific store type.
-@param {String} [options.default_skill] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
-@param {Object} [options.beacon_skill] - Skill to be used when bot receives beacon event.
-@param {String} [options.beacon_skill.enter] - Skill to be used when bot receives beacon enter event.
-@param {String} [options.beacon_skill.leave] - Skill to be used when bot receives beacon leave event.
-@param {String} [options.follow_skill] - Skill to be used when bot receives follow event.
-@param {String} [options.unfollow_skill] - Skill to be used when bot receives unfollow event.
-@param {String} [options.join_skill] - Skill to be used when bot receives join event.
-@param {String} [options.leave_skill] - Skill to be used when bot receives leave event.
+@param {Object} [options.skill] - Options to set skill corresponding to certain event.
+@param {String} [options.skill.default] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
+@param {Object} [options.skill.beacon] - Skill to be used when bot receives beacon event.
+@param {String} [options.skill.beacon.enter] - Skill to be used when bot receives beacon enter event.
+@param {String} [options.skill.beacon.leave] - Skill to be used when bot receives beacon leave event.
+@param {String} [options.skill.follow] - Skill to be used when bot receives follow event.
+@param {String} [options.skill.unfollow] - Skill to be used when bot receives unfollow event.
+@param {String} [options.skill.join] - Skill to be used when bot receives join event.
+@param {String} [options.skill.leave] - Skill to be used when bot receives leave event.
 @param {String} [options.default_intent="input.unknown"] - Intent name to be returned by NLP when it cannot identify the intent.
 @param {String} [options.modify_previous_parameter_intent] - Intent name to modify the previously collected parameter.
 @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
@@ -80,7 +81,8 @@ module.exports = (options) => {
     // Set optional options.
     options.language = options.language || DEFAULT_LANGUAGE;
     options.default_intent = options.default_intent || DEFAULT_INTENT;
-    options.default_skill = options.default_skill || DEFAULT_SKILL;
+    options.skill = options.skill || {};
+    options.skill.default = options.skill.default || DEFAULT_SKILL;
     options.parallel_event = options.parallel_event || DEFAULT_PARALLEL_EVENT;
     if (!!options.skill_path){
         options.skill_path = "../../../../" + options.skill_path;

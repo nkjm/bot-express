@@ -13,7 +13,7 @@ module.exports = class JoinFlow extends Flow {
     constructor(messenger, event, options) {
         let context = {
             _flow: "join",
-            intent: {name: options.join_skill},
+            intent: {name: options.skill.join},
             confirmed: {},
             to_confirm: [],
             confirming: null,

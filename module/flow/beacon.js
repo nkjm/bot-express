@@ -14,7 +14,7 @@ module.exports = class BeaconFlow extends Flow {
         // Instantiate the conversation object. This will be saved as Bot Memory.
         let context = {
             _flow: "beacon",
-            intent: {name: options.beacon_skill[beacon_event_type]},
+            intent: {name: options.skill.beacon[beacon_event_type]},
             confirmed: {},
             to_confirm: [],
             confirming: null,

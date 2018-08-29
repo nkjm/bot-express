@@ -42,9 +42,9 @@ module.exports = class Flow {
         }
 
         let skill;
-        // If the intent is not identified, we use default_skill.
+        // If the intent is not identified, we use skill.default.
         if (intent == this.options.default_intent){
-            skill = this.options.default_skill;
+            skill = this.options.skill.default;
         } else {
             skill = intent;
         }

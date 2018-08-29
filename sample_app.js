@@ -74,14 +74,16 @@ server.use('/bot/webhook', bot_express({
             private_key: process.env.GOOGLE_PRIVATE_KEY
         }
     },
-    beacon_skill: {
-        enter: "survey",
-        leave: "bye"
+    skill: {
+        beacon: {
+            enter: "survey",
+            leave: "bye"
+        },
+        follow: "say-welcome",
+        unfollow: "clear-context",
+        join: "say-welcome",
+        leave: "clear-context"
     },
-    follow_skill: "say-welcome",
-    unfollow_skill: "clear-context",
-    join_skill: "say-welcome",
-    leave_skill: "clear-context",
     modify_previous_parameter_intent: "modify-previous-parameter"
 }));
 

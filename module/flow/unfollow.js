@@ -18,7 +18,7 @@ module.exports = class UnfollowFlow extends Flow {
     constructor(messenger, event, options) {
         let context = {
             _flow: "unfollow",
-            intent: {name: options.unfollow_skill},
+            intent: {name: options.skill.unfollow},
             confirmed: {},
             to_confirm: [],
             confirming: null,

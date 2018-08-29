@@ -147,7 +147,7 @@ class Webhook {
 
         if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
             // ### Follow | Unfollow | Join | Leave Flow ###
-            if (!this.options[event_type + "_skill"]){
+            if (!this.options.skill[event_type]){
                 debug(`This is ${event_type} flow but ${event_type}_skill not found so skip.`);
                 return;
             }
@@ -161,11 +161,11 @@ class Webhook {
                 debug(`Unsupported beacon event so we skip this event.`);
                 return;
             }
-            if (!this.options.beacon_skill || !this.options.beacon_skill[beacon_event_type]){
+            if (!this.options.skill.beacon || !this.options.skill.beacon[beacon_event_type]){
                 debug(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`);
                 return;
             }
-            debug(`This is beacon flow and we use ${this.options.beacon_skill[beacon_event_type]} as skill`);
+            debug(`This is beacon flow and we use ${this.options.skill.beacon[beacon_event_type]} as skill`);
 
             flow = new flows[event_type](this.messenger, event, this.options, beacon_event_type);
         } else if (event_type == "bot-express:push"){

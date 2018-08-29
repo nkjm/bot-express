@@ -13,7 +13,7 @@ module.exports = class FollowFlow extends Flow {
     constructor(messenger, event, options) {
         let context = {
             _flow: "follow",
-            intent: {name: options.follow_skill},
+            intent: {name: options.skill.follow},
             confirmed: {},
             to_confirm: [],
             confirming: null,

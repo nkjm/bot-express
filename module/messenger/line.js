@@ -52,15 +52,12 @@ module.exports = class MessengerLine {
 
             const body = JSON.parse(response.body);
 
-            if (!body.access_token || !body.expires_in){
-                throw new Error(`access_token or expires_in not found in response.`);
+            if (!body.access_token){
+                throw new Error(`access_token not found in response.`);
             }
 
-            // We save access token in cache and set expiration to expires_in - 60sec.
-            const cache_expiration = body.expires_in * 1000 - 60000;
-            debug(`access_token is ${body.access_token}`);
-            debug(`Expiration is ${cache_expiration}`);
-            cache.put(`${CACHE_PREFIX}access_token`, body.access_token, cache_expiration);
+            // We save access token in cache for 24 hours.
+            cache.put(`${CACHE_PREFIX}access_token`, body.access_token, 86400000);
 
             access_token = body.access_token;
         }

@@ -6,6 +6,7 @@
 const Promise = require('bluebird');
 const debug = require("debug")("bot-express:flow");
 const Flow = require("./flow");
+const log = require("../logger");
 
 module.exports = class ReplyFlow extends Flow {
 
@@ -37,6 +38,9 @@ module.exports = class ReplyFlow extends Flow {
             from: "user",
             message: this.bot.extract_message()
         });
+
+        // Log chat.
+        log.chat(this.bot.extract_sender_id(), this.context.skill.type, "user", this.bot.extract_message());
 
         debug("Going to perform super.apply_parameter().");
         try {

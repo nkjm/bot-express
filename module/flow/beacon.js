@@ -6,7 +6,7 @@
 Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
 const Flow = require("./flow");
-const skill_status = require("debug")("bot-express:skill-status");
+const log = require("../logger");
 
 module.exports = class BeaconFlow extends Flow {
 
@@ -40,7 +40,7 @@ module.exports = class BeaconFlow extends Flow {
         });
 
         // Log skill status.
-        skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} launched`);
+        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "launched");
 
         await super.begin();
         return await super.finish();

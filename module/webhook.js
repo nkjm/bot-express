@@ -11,7 +11,7 @@ Promise = require("bluebird");
 
 // Debuggers
 const debug = require("debug")("bot-express:webhook");
-const skill_status = require("debug")("bot-express:skill-status");
+const log = require("./logger");
 
 // Import Flows
 const flows = {
@@ -189,11 +189,7 @@ class Webhook {
             updated_context = await flow.run();
         } catch (e){
             if (context && context.skill){
-                if (context.confirming){
-                    skill_status(`${memory_id} ${context.skill.type} abend in confirming ${context.confirming}`);
-                } else {
-                    skill_status(`${memory_id} ${context.skill.type} abend`);
-                }
+                log.skill_status(memory_id, context.skill.type, "abend", context.confirming);
             }
 
             // Clear memory.

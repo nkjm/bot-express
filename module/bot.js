@@ -1,6 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:bot");
+const log = require("./logger");
 
 /**
 * Toolkit to be used by skill.
@@ -87,6 +88,8 @@ class Bot {
                     from: "bot",
                     message: compiled_message
                 });
+
+                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
             }
             this._context._message_queue = [];
             return response;
@@ -144,6 +147,8 @@ class Bot {
                     from: "bot",
                     message: compiled_message
                 });
+
+                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
             }
             return response;
         });
@@ -200,6 +205,8 @@ class Bot {
                     from: "bot",
                     message: compiled_message
                 });
+
+                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
             }
             return response;
         });

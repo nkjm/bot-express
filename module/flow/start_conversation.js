@@ -7,7 +7,7 @@ Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
 const Flow = require("./flow");
 const Nlu = require("../nlu");
-const skill_status = require("debug")("bot-express:skill-status");
+const log = require("../logger");
 
 module.exports = class StartConversationFlow extends Flow {
 
@@ -128,13 +128,16 @@ module.exports = class StartConversationFlow extends Flow {
         }
 
         // Log skill status.
-        skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} launched`);
+        log.skill_status(this.bot.extract_sender_id, this.context.skill.type, "launched");
 
         // Add user's message to history
         this.context.previous.message.unshift({
             from: "user",
             message: this.bot.extract_message()
         });
+
+        // Log chat.
+        log.chat(this.bot.extract_sender_id, this.context.skill.type, "user", this.bot.extract_message());
 
         // Run begin().
         if (!skip_begin){

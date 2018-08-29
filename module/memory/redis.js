@@ -2,7 +2,7 @@
 
 const debug = require("debug")("bot-express:memory");
 const redis = require("redis");
-const skill_status = require("debug")("bot-express:skill-status");
+const log = require("../logger");
 const prefix = "botex_context_";
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
@@ -23,7 +23,7 @@ class MemoryRedis {
         this.sub.on("pmessage", async (pattern, channel, key) => {
             const value = await this.get(`${key}_cloned`);
             if (value.confirming && value.skill){
-                skill_status(`${key.replace(prefix, "")} ${value.skill.type} aborted in confirming ${value.confirming}`);
+                log.skill_status(key.replace(prefix, ""), value.skill.type, "aborted", value.confirming);
             }
 
             await this.del(`${key}_cloned`);
@@ -49,7 +49,7 @@ class MemoryRedis {
 
         // We clone this record for skill-status log.
         await this.client.setAsync(`${key}_cloned`, value);
-        
+
         return this.client.setAsync(key, value, 'EX', retention);
     }
 

@@ -6,6 +6,7 @@
 Promise = require('bluebird');
 const debug = require("debug")("bot-express:flow");
 const Flow = require("./flow");
+const log = require("../logger");
 
 module.exports = class BtwFlow extends Flow {
 
@@ -123,6 +124,9 @@ module.exports = class BtwFlow extends Flow {
             from: "user",
             message: this.bot.extract_message()
         });
+
+        // Log chat.
+        log.chat(this.bot.extract_sender_id(), this.context.skill.type, "user", this.bot.extract_message());
 
         // Run mind based flow.
         if (!skip_run_mind_based_flow){

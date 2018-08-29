@@ -2,7 +2,7 @@
 
 const memory_cache = require("memory-cache");
 const debug = require("debug")("bot-express:memory");
-const skill_status = require("debug")("bot-express:skill-status");
+const log = require("../logger");
 const prefix = "botex_context_";
 
 class MemoryMemoryCache {
@@ -17,7 +17,8 @@ class MemoryMemoryCache {
     async put(key, value, retention){
         return this.client.put(key, value, retention * 1000, (key, value) => {
             if (value.confirming && value.skill){
-                skill_status(`${key.replace(prefix, "")} ${value.skill.type} aborted in confirming ${value.confirming}`);
+                // Log skill status.
+                log.skill_status(key.replace(prefix, ""), value.skill.type, "aborted", value.confirming);
             }
         });
     }

@@ -1,7 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:flow");
-const skill_status = require("debug")("bot-express:skill-status");
+const log = require("../logger");
 const BotExpressParseError = require("../error/parse");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");
@@ -637,7 +637,7 @@ module.exports = class Flow {
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
         // Log skill status.
-        skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} launched`);
+        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "launched");
 
         await this.begin();
 
@@ -695,7 +695,7 @@ module.exports = class Flow {
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
         // Log skill status.
-        skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} launched`);
+        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "launched");
 
         await this.begin();
 
@@ -798,7 +798,7 @@ module.exports = class Flow {
             }
 
             // Log skill status.
-            skill_status(`${this.bot.extract_sender_id()} ${this.context.skill.type} completed`);
+            log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "completed");
 
             if (this.context.parent){
                 // This is sub skill so we get parent context back.

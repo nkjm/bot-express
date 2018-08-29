@@ -661,6 +661,9 @@ module.exports = class MessengerFacebook {
         return compiled_message
     }
 
+    /**
+    @deprecated
+    */
     static translate_message(translater, message_type, message, sender_language){
         switch(message_type){
             case "text": {

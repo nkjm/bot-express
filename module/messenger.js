@@ -1,7 +1,6 @@
 "use strict";
 
 const debug = require("debug")("bot-express:messenger");
-//const google_translate = require('@google-cloud/translate');
 const fs = require("fs");
 Promise = require("bluebird");
 
@@ -18,11 +17,19 @@ module.exports = class Messenger {
         // Load messenger libraries located under messenger directory.
         let messenger_scripts = fs.readdirSync(__dirname + "/messenger");
         for (let messenger_script of messenger_scripts){
+            let messenger_type = messenger_script.replace(".js", "");
+
+            // Even if there is messenger implementation, we won't load it if corresponding messenger option is not configured.
+            if (!options.messenger[messenger_type]){
+                continue;
+            }
+
             debug("Loading " + messenger_script + "...");
-            messenger_script = messenger_script.replace(".js", "");
-            this.Messenger_classes[messenger_script] = require("./messenger/" + messenger_script);
-            this.plugin[messenger_script] = new this.Messenger_classes[messenger_script](options);
+
+            this.Messenger_classes[messenger_type] = require("./messenger/" + messenger_script);
+            this.plugin[messenger_type] = new this.Messenger_classes[messenger_type](options);
         }
+
         this.service = new this.Messenger_classes[this.type](options);
     }
 

@@ -45,6 +45,9 @@ class Bot {
         for (let message of this._context._message_queue){
             done_compile_messages.push(
                 // Compiling message.
+                this._messenger.compile_message(message)
+                /**
+                @deprecated
                 this._messenger.compile_message(message).then((compiled_message) => {
                     if (!this._messenger.translater){
                         // Auto translation is disabled so we won't translate.
@@ -64,6 +67,7 @@ class Bot {
                     let message_type = this._messenger.Messenger_classes[this.type].identify_message_type(compiled_message);
                     return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, this._context.sender_language);
                 })
+                */
             );
         }
 
@@ -105,6 +109,9 @@ class Bot {
         let done_compile_messages = [];
         for (let message of messages){
             done_compile_messages.push(
+                this.compile_message(message)
+                /**
+                @deprecated
                 this.compile_message(message).then((compiled_message) => {
                     if (!this._messenger.translater){
                         // Auto translation is disabled so we won't translate.
@@ -124,6 +131,7 @@ class Bot {
                     let message_type = this._messenger.Messenger_classes[this.type].identify_message_type(compiled_message);
                     return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, language);
                 })
+                */
             );
         }
         let compiled_messages;
@@ -157,6 +165,9 @@ class Bot {
         let done_compile_messages = [];
         for (let message of messages){
             done_compile_messages.push(
+                this.compile_message(message)
+                /**
+                @deprecated
                 this.compile_message(message).then((compiled_message) => {
                     if (!this._messenger.translater){
                         // Auto translation is disabled so we won't translate.
@@ -176,6 +187,7 @@ class Bot {
                     let message_type = this._messegner.Messenger_classes[this.type].identify_message_type(compiled_message);
                     return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, language);
                 })
+                */
             );
         }
         let compiled_messages;

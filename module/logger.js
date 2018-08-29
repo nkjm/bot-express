@@ -27,7 +27,17 @@ class Logger {
     @param {Object} message
     */
     static chat(user_id, skill, who, message){
-        _chat(`${user_id} ${skill} - ${who} says ${JSON.stringify(message)}`);
+        let message_text
+
+        if (message.text){
+            message_text = message.text;
+        } else if (message.altText){
+            message_text = message.altText;
+        } else {
+            message_text = JSON.stringify(message);
+        }
+        
+        _chat(`${user_id} ${skill} - ${who} says ${message_text}`);
     }
 }
 

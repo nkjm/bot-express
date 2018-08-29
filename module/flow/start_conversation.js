@@ -128,7 +128,7 @@ module.exports = class StartConversationFlow extends Flow {
         }
 
         // Log skill status.
-        log.skill_status(this.bot.extract_sender_id, this.context.skill.type, "launched");
+        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "launched");
 
         // Add user's message to history
         this.context.previous.message.unshift({

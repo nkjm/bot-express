@@ -66,7 +66,7 @@ server.use("/bot/webhook", bot_express({
         }
     },
     skill: {
-        defualt: process.env.DEFAULT_SKILL
+        default: process.env.DEFAULT_SKILL
     }
 }));
 

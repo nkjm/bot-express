@@ -23,8 +23,8 @@ module.exports = class MessengerLine {
         this._channel_id = options.messenger.line.channel_id;
         this._channel_secret = options.messenger.line.channel_secret;
         this._endpoint = options.messenger.line_endpoint || "api.line.me";
-        // this._access_token; // Will be set when this.refresh_token is called.
-        // this.sdk; // Will be set when this.refresh_token is called.
+        this._access_token = null; // Will be set when this.refresh_token is called.
+        this.sdk = null; // Will be set when this.refresh_token is called.
     }
 
     async refresh_token(){

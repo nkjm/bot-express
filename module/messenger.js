@@ -4,15 +4,16 @@ const debug = require("debug")("bot-express:messenger");
 const fs = require("fs");
 Promise = require("bluebird");
 
-module.exports = class Messenger {
-    /**
-    * @constructs
-    */
+/**
+Messenger abstraction.
+@class
+*/
+class Messenger {
     constructor(options){
         this.type = options.messenger_type;
         this.options = options;
-        this.plugin = {};
         this.Messenger_classes = {};
+        this.plugin = {};
 
         // Load messenger libraries located under messenger directory.
         let messenger_scripts = fs.readdirSync(__dirname + "/messenger");
@@ -28,13 +29,14 @@ module.exports = class Messenger {
 
             this.Messenger_classes[messenger_type] = require("./messenger/" + messenger_script);
             this.plugin[messenger_type] = new this.Messenger_classes[messenger_type](options);
+            if (messenger_type === this.type){
+                this.service = this.plugin[messenger_type];
+            }
         }
-
-        this.service = new this.Messenger_classes[this.type](options);
     }
 
     async refresh_token(){
-        return this.service.refresh_token();
+        await this.service.refresh_token();
     }
 
     async validate_signature(req){
@@ -230,5 +232,6 @@ module.exports = class Messenger {
         }
         return message_format;
     }
-
 }
+
+module.exports = Messenger;

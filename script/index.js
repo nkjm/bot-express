@@ -22,15 +22,6 @@ server.use("/bot/webhook", bot_express({
         line: {
             channel_id: process.env.LINE_CHANNEL_ID,
             channel_secret: process.env.LINE_CHANNEL_SECRET
-        },
-        facebook: {
-            app_secret: process.env.FACEBOOK_APP_SECRET,
-            page_access_token: [
-                {page_id: process.env.FACEBOOK_PAGE_ID, page_access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN}
-            ],
-        },
-        google: {
-            project_id: process.env.GOOGLE_PROJECT_ID
         }
     },
     nlu: {

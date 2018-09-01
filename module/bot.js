@@ -4,8 +4,8 @@ const debug = require("debug")("bot-express:bot");
 const log = require("./logger");
 
 /**
-* Toolkit to be used by skill.
-* @class
+Toolkit to be used by skill.
+@class
 */
 class Bot {
     constructor(options, event, context, messenger){
@@ -16,7 +16,9 @@ class Bot {
         */
         this.type = messenger.type;
         this.language = options.language;
-        this.plugin = messenger.plugin;
+        for (let messenger_type of Object.keys(messenger.plugin)){
+            this[messenger_type] = messenger.plugin[messenger_type];
+        }
         this._options = options;
         this._event = event;
         this._context = context;

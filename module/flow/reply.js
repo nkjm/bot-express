@@ -81,6 +81,8 @@ module.exports = class ReplyFlow extends Flow {
                     await super.react(null, applied_parameter.key, applied_parameter.value);
                 } else if (mind.result == "no_idea"){
                     await super.react(e, this.context.confirming, param_value);
+                } else {
+                    throw new Error(`Mind is unknown.`);
                 }
             } else {
                 throw e;

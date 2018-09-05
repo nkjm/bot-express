@@ -417,10 +417,12 @@ module.exports = class Flow {
         let intent;
         if (typeof payload !== "string"){
             debug("The payload is not string so we skip identifying intent.");
-            intent = {
-                name: this.options.default_intent
+            return {
+                result: "no_idea",
+                intent: {
+                    name: this.options.default_intent
+                }
             }
-            return intent;
         }
 
         debug("Going to check if we can identify the intent.");

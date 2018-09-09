@@ -126,7 +126,7 @@ class Webhook {
 
         let context = await this.memory.get(memory_id);
 
-        if (context && context._in_progress && this.options.parallel_event == "ignore"){
+        if (context && context._in_progress && this.options.parallel_event == "ignore" && this.messenger.identify_event_type(event) != "bot-express:push"){
             context._in_progress = false; // To avoid lock out, we ignore event only once.
             await this.memory.put(memory_id, context);
             debug(`Bot is currenlty processing another event from this user so ignore this event.`);

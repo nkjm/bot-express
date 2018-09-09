@@ -73,6 +73,48 @@ for (let messenger_option of messenger_options){
             });
         });
 
+        describe("2 parallel events and 1 is bot-express:push", function(){
+            it("should ignore second event.", function(){
+                this.timeout(8000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_postback_event(user_id, {data: JSON.stringify({
+                        _type: "intent",
+                        intent: {
+                            name: "test-parallel-event"
+                        },
+                        language: "ja"
+                    })});
+                    return Promise.all([
+                        emu.send(event),
+                        Promise.resolve().delay(1000).then(() => {
+                            let event = {
+                                type: "bot-express:push",
+                                to: {
+                                    type: "user",
+                                    userId: user_id
+                                },
+                                intent: {
+                                    name: "test-parallel-event"
+                                },
+                                language: "ja"
+                            }
+                            return emu.send(event)
+                        })
+                    ]);
+                }).then(function(context_list){
+                    let num_of_ignored = 0;
+
+                    for (let context of context_list){
+                        if (!context){
+                            num_of_ignored++;
+                        }
+                    }
+                    num_of_ignored.should.equal(0);
+                });
+            });
+        });
+
         describe("3 parallel events", function(){
             it("should ignored second event but process third event.", function(){
                 this.timeout(8000);

@@ -11,9 +11,8 @@ module.exports = class SkillTestMessageToConfirm {
                     type: "text",
                     text: "param to test"
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     bot.collect(value);
-                    return resolve();
                 }
             }
         }
@@ -26,20 +25,20 @@ module.exports = class SkillTestMessageToConfirm {
                 }
             },
             made_of_function: { // Contains message made of function.
-                message_to_confirm: (bot, event, context, resolve, reject) => {
-                    return resolve({
+                message_to_confirm: async (bot, event, context) => {
+                    return {
                         type: "text",
                         text: `testing ${context.confirmed.param_to_test}`
-                    })
+                    }
                 }
             },
             made_of_function_reject: { // Contains message made of function and calls reject().
-                message_to_confirm: (bot, event, context, resolve, reject) => {
-                    return reject(new Error("rejected"));
+                message_to_confirm: async (bot, event, context) => {
+                    throw new Error("rejected");
                 }
             },
             made_of_function_exception: { // Contains message made of function and calls reject().
-                message_to_confirm: (bot, event, context, resolve, reject) => {
+                message_to_confirm: async (bot, event, context) => {
                     throw new Error("excepted");
                 }
             },
@@ -53,26 +52,24 @@ module.exports = class SkillTestMessageToConfirm {
                 }]
             },
             multiple_messages_made_of_function: {
-                message_to_confirm: (bot, event, context, resolve, reject) => {
-                    return resolve([{
+                message_to_confirm: async (bot, event, context) => {
+                    return [{
                         type: "text",
                         text: `testing ${context.confirmed.param_to_test} message1`
                     },{
                         type: "text",
                         text: `testing ${context.confirmed.param_to_test} message2`
-                    }])
+                    }]
                 }
             }
         }
     }
 
-    finish(bot, event, context, resolve, reject){
+    async finish(bot, event, context){
         let message = {
             type: "text",
             text: `finished`
         }
-        return bot.reply(message).then((response) => {
-            return resolve(response);
-        });
+        await bot.reply(message);
     }
 };

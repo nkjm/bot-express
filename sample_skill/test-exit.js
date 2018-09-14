@@ -8,17 +8,16 @@ module.exports = class SkillTestExit {
                     type: "text",
                     text: "book title pls"
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
+                parser: async (value, bot, event, context) => {
                     if (value === "x"){
                         throw new Error("x");
                     }
-                    return resolve(value);
+                    return value;
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     if (value === "e"){
                         bot.exit();
                     }
-                    return resolve();
                 }
             },
             book_author: {
@@ -30,25 +29,20 @@ module.exports = class SkillTestExit {
         }
     }
 
-    begin(bot, event, context, resolve, reject){
+    async begin(bot, event, context){
         if (!context.intent.parameters.book_id){
-            return bot.reply({
+            await bot.reply({
                 type: "text",
                 text: `exit in begin`
-            }).then(() => {
-                bot.exit();
-                return resolve();
-            })
+            });
+            bot.exit();
         }
-        return resolve();
     }
 
-    finish(bot, event, context, resolve, reject){
-        return bot.reply({
+    async finish(bot, event, context){
+        await bot.reply({
             type: "text",
             text: `finished`
-        }).then(() => {
-            return resolve();
-        })
+        });
     }
 }

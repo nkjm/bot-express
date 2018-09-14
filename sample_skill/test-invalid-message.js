@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = class SkillTestInvalidMessage {
-    finish(bot, event, context, resolve, reject){
+    async finish(bot, event, context){
         let message = {
             type: "template",
             altText: "test",
@@ -12,8 +12,6 @@ module.exports = class SkillTestInvalidMessage {
                 actions: [{type: "message", label: "test", text: "test"}]
             }
         }
-        return bot.reply(message).then((response) => {
-            return resolve();
-        })
+        await bot.reply(message);
     }
 }

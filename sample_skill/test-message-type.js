@@ -10,9 +10,8 @@ module.exports = class SkillCompileMessage {
                 message_to_confirm: {
                     text: "Message Type?"
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     bot.collect(value.toLowerCase());
-                    resolve();
                 }
             }
         }
@@ -238,14 +237,10 @@ module.exports = class SkillCompileMessage {
     }
 
     // パラメーターが全部揃ったら実行する処理を記述します。
-    finish(bot, event, context, resolve, reject){
-        let messages = [{
+    async finish(bot, event, context){
+        let messages = {
             text: "完了"
-        }];
-        return bot.reply(messages).then(
-            (response) => {
-                return resolve(response);
-            }
-        );
+        };
+        await bot.reply(messages);
     }
 };

@@ -53,6 +53,11 @@ module.exports = class PushFlow extends Flow {
             this.context.sender_language = this.event.language;
             this.context.skill = super.instantiate_skill(this.event.intent.name);
 
+            if (!this.context.skill){
+                // Since skill not found, we end this conversation.
+                return;
+            }
+
             // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
             // After that, we depend on context.to_confirm to identify to_confirm parameters.
             if (this.context.to_confirm.length == 0){

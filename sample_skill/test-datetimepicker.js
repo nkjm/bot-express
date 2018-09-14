@@ -21,11 +21,10 @@ module.exports = class SkillTestDatetimepicker {
                         ]
                     }
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     if (!error){
                         bot.collect(value);
                     }
-                    return resolve();
                 }
             }
         }
@@ -96,26 +95,22 @@ module.exports = class SkillTestDatetimepicker {
         }
     }
 
-    postback_parser(postback, bot, event, context, resolve, reject){
+    async postback_parser(postback, bot, event, context){
         if (typeof postback == "string"){
-            return resolve(postback);
+            return postback
         }
         if (bot.type == "line"){
-            return resolve(postback.params.date);
+            return postback.params.date;
         } else if (bot.type == "facebook"){
-            return resolve(postback.payload);
+            return postback.payload;
         }
-        return reject();
+        throw new Error();
     }
 
-    finish(bot, event, context, resolve, reject){
-        return bot.reply({
+    async finish(bot, event, context){
+        await bot.reply({
             type: "text",
             text: "完了"
-        }).then(
-            (response) => {
-                return resolve(response);
-            }
-        );
+        });
     }
 };

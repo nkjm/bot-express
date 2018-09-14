@@ -21,10 +21,8 @@ const required_options = ["project_id"];
 @param {Object} bot
 @param {Object} event
 @param {Object} context
-@param {Function} resolve
-@param {Function} reject
 */
-module.exports = (options, param, bot, event, context, resolve, reject) => {
+module.exports = async (options, param, bot, event, context) => {
     for (let required_option of required_options){
         if (!options[required_option]){
             throw new Error(`Required option "${required_option}" of ParserDialogflow not set.`);
@@ -59,10 +57,15 @@ module.exports = (options, param, bot, event, context, resolve, reject) => {
 
     const session_path = sessions_client.sessionPath(options.project_id, options.project_id);
 
-    if (typeof param.value != "string") return reject();
-    if (!param.value) return reject();
+    if (typeof param.value != "string"){
+        throw new Error("Value is not string.");
+    }
 
-    return sessions_client.detectIntent({
+    if (!param.value){
+        throw new Error("Value is not set.");
+    }
+
+    const responses = await sessions_client.detectIntent({
         session: session_path,
         queryInput: {
             text: {
@@ -70,18 +73,20 @@ module.exports = (options, param, bot, event, context, resolve, reject) => {
                 languageCode: options.language
             }
         }
-    }).then(responses => {
-        if (responses[0].queryResult.action){
-            debug("Builtin parser found an intent but it seems for another purpose so reject it.");
-            return reject();
-        }
-        const parameters = structjson.structProtoToJson(responses[0].queryResult.parameters);
-        debug("Detected parameters are following.");
-        debug(parameters);
+    });
 
-        if (parameters[param.key]){
-            return resolve(parameters[param.key]);
-        }
-        return reject();
-    })
+    if (responses[0].queryResult.action){
+        debug("Builtin parser found an intent but it seems for another purpose so reject it.");
+        throw new Error("It seems the intent is configured for skill.");
+    }
+
+    const parameters = structjson.structProtoToJson(responses[0].queryResult.parameters);
+    debug("Detected parameters are following.");
+    debug(parameters);
+
+    if (!parameters[param.key]){
+        throw new Error("Value not found.");
+    }
+
+    return parameters[param.key];
 }

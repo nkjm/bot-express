@@ -31,7 +31,7 @@ module.exports = class SkillChangeLightColor {
                         ]
                     }
                 },
-                parser: (payload, bot, event, context, resolve, reject) => {
+                parser: async (payload, bot, event, context) => {
                     let requested_color;
                     if (bot.type == "line"){
                         if (typeof payload == "string"){
@@ -47,7 +47,7 @@ module.exports = class SkillChangeLightColor {
                         }
                     }
                     if (requested_color == null || requested_color == ""){
-                        return reject();
+                        throw new Error();
                     }
                     let found_color = false;
                     let parsed_value;
@@ -58,11 +58,11 @@ module.exports = class SkillChangeLightColor {
                         }
                     }
                     if (!found_color){
-                        return reject();
+                        throw new Error();
                     }
-                    return resolve(parsed_value);
+                    return parsed_value;
                 },
-                reaction: (error, parsed_value, bot, event, context, resolve, reject) => {
+                reaction: async (error, parsed_value, bot, event, context) => {
                     if (!error){
                         if (parsed_value == "赤"){
                             bot.queue([{
@@ -70,7 +70,6 @@ module.exports = class SkillChangeLightColor {
                             }]);
                         }
                     }
-                    return resolve();
                 },
                 sub_skill: ["answer-available-light-color"]
             }
@@ -78,18 +77,12 @@ module.exports = class SkillChangeLightColor {
     }
 
     // IFTTT経由でHueのカラーを変更する
-    finish(bot, event, context, resolve, reject){
-        return hue.change_color(context.confirmed.color).then(
-            (response) => {
-                let messages = [{
-                    text: "了解しましたー。"
-                }];
-                return bot.reply(messages);
-            }
-        ).then(
-            (response) => {
-                return resolve(response);
-            }
-        );
+    async finish(bot, event, context){
+        await hue.change_color(context.confirmed.color);
+
+        let message = {
+            text: "了解しましたー。"
+        };
+        await bot.reply(message);
     }
 };

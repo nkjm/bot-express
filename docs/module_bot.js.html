@@ -29,10 +29,11 @@
             <pre class="prettyprint source linenums"><code>"use strict";
 
 const debug = require("debug")("bot-express:bot");
+const log = require("./logger");
 
 /**
-* Toolkit to be used by skill.
-* @class
+Toolkit to be used by skill.
+@class
 */
 class Bot {
     constructor(options, event, context, messenger){
@@ -43,7 +44,9 @@ class Bot {
         */
         this.type = messenger.type;
         this.language = options.language;
-        this.plugin = messenger.plugin;
+        for (let messenger_type of Object.keys(messenger.plugin)){
+            this[messenger_type] = messenger.plugin[messenger_type];
+        }
         this._options = options;
         this._event = event;
         this._context = context;
@@ -73,6 +76,9 @@ class Bot {
         for (let message of this._context._message_queue){
             done_compile_messages.push(
                 // Compiling message.
+                this._messenger.compile_message(message)
+                /**
+                @deprecated
                 this._messenger.compile_message(message).then((compiled_message) => {
                     if (!this._messenger.translater){
                         // Auto translation is disabled so we won't translate.
@@ -92,6 +98,7 @@ class Bot {
                     let message_type = this._messenger.Messenger_classes[this.type].identify_message_type(compiled_message);
                     return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, this._context.sender_language);
                 })
+                */
             );
         }
 
@@ -111,6 +118,8 @@ class Bot {
                     from: "bot",
                     message: compiled_message
                 });
+
+                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
             }
             this._context._message_queue = [];
             return response;
@@ -133,6 +142,9 @@ class Bot {
         let done_compile_messages = [];
         for (let message of messages){
             done_compile_messages.push(
+                this.compile_message(message)
+                /**
+                @deprecated
                 this.compile_message(message).then((compiled_message) => {
                     if (!this._messenger.translater){
                         // Auto translation is disabled so we won't translate.
@@ -152,6 +164,7 @@ class Bot {
                     let message_type = this._messenger.Messenger_classes[this.type].identify_message_type(compiled_message);
                     return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, language);
                 })
+                */
             );
         }
         let compiled_messages;
@@ -164,6 +177,8 @@ class Bot {
                     from: "bot",
                     message: compiled_message
                 });
+
+                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
             }
             return response;
         });
@@ -185,6 +200,9 @@ class Bot {
         let done_compile_messages = [];
         for (let message of messages){
             done_compile_messages.push(
+                this.compile_message(message)
+                /**
+                @deprecated
                 this.compile_message(message).then((compiled_message) => {
                     if (!this._messenger.translater){
                         // Auto translation is disabled so we won't translate.
@@ -204,6 +222,7 @@ class Bot {
                     let message_type = this._messegner.Messenger_classes[this.type].identify_message_type(compiled_message);
                     return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, language);
                 })
+                */
             );
         }
         let compiled_messages;
@@ -216,6 +235,8 @@ class Bot {
                     from: "bot",
                     message: compiled_message
                 });
+
+                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
             }
             return response;
         });
@@ -299,46 +320,45 @@ class Bot {
     Manually apply value to the parameter. This will skip parser but still trigger reaction.
     @param {String} param_key - Name of the parameter to apply.
     @param {Any} value - Value to apply.
+    @return {Promise}
     */
-    apply_parameter(param_key, value){
-        return new Promise((resolve, reject) => {
-            this._context.confirmed[param_key] = value;
+    async apply_parameter(param_key, value){
+        this._context.confirmed[param_key] = value;
 
-            // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
-            this._context.previous.confirmed.unshift(param_key);
+        // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
+        this._context.previous.confirmed.unshift(param_key);
 
-            // Remove item from to_confirm if it exits.
-            let index_to_remove = this._context.to_confirm.indexOf(param_key);
-            if (index_to_remove !== -1){
-                debug(`Removing ${param_key} from to_confirm.`);
-                this._context.to_confirm.splice(index_to_remove, 1);
-            }
+        // Remove item from to_confirm if it exits.
+        let index_to_remove = this._context.to_confirm.indexOf(param_key);
+        if (index_to_remove !== -1){
+            debug(`Removing ${param_key} from to_confirm.`);
+            this._context.to_confirm.splice(index_to_remove, 1);
+        }
 
-            // Clear confirming.
-            if (this._context.confirming === param_key){
-                debug(`Clearing confirming.`);
-                this._context.confirming = null;
-            }
+        // Clear confirming.
+        if (this._context.confirming === param_key){
+            debug(`Clearing confirming.`);
+            this._context.confirming = null;
+        }
 
-            let param_type = this.check_parameter_type(param_key);
+        let param_type = this.check_parameter_type(param_key);
 
-            if (this._context.skill[param_type] &amp;&amp; this._context.skill[param_type][param_key]){
-                if (this._context.skill[param_type][param_key].reaction){
-                    debug(`Reaction for ${param_key} found. Performing reaction...`);
-                    return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context, resolve, reject);
-                } else if (this._context.skill["reaction_" + param_key]){
-                    debug(`Reaction for ${param_key} found. Performing reaction...`);
-                    return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context, resolve, reject);
-                } else {
-                    // This parameter does not have reaction so do nothing.
-                    debug(`Reaction for ${param_key} not found.`);
-                    return resolve();
-                }
+        if (this._context.skill[param_type] &amp;&amp; this._context.skill[param_type][param_key]){
+            if (this._context.skill[param_type][param_key].reaction){
+                debug(`Reaction for ${param_key} found. Performing reaction...`);
+                return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context);
+            } else if (this._context.skill["reaction_" + param_key]){
+                debug(`Reaction for ${param_key} found. Performing reaction...`);
+                return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context);
             } else {
-                debug(`There is no parameter we should care about. So skip reaction.`);
-                return resolve(`There is no parameter we should care about. So skip reaction.`);
+                // This parameter does not have reaction so do nothing.
+                debug(`Reaction for ${param_key} not found.`);
+                return;
             }
-        })
+        } else {
+            debug(`There is no parameter we should care about. So skip reaction.`);
+            return;
+        }
     }
 
     /**
@@ -550,7 +570,7 @@ module.exports = Bot;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 29 2018 12:22:03 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Sep 11 2018 09:54:59 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

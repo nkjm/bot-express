@@ -19,8 +19,6 @@ Function which is triggerd at first.
 @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
 @param {Object} event - Event object which triggers this flow.
 @param {context} context - Context information.
-@param {Function} resolve - Method to call when this action succeeds.
-@param {Function} reject - Method to call when this aciton fails.
 @return {Promise} You have to return the response either from resolve or reject function.
 */
 
@@ -31,8 +29,6 @@ Function which is triggerd when all the required parameters are collected.
 @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
 @param {Object} event - Event object which triggers this flow.
 @param {context} context - Context information.
-@param {Function} resolve - Method to call when this action succeeds.
-@param {Function} reject - Method to call when this aciton fails.
 @return {Promise} You have to return the response either from resolve or reject function.
 */
 
@@ -57,9 +53,7 @@ Function to generate message to confirm the value of teh parameter.
 @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
 @param {Object} event - Event object which triggers this flow.
 @param {context} context - Context information.
-@param {Function} resolve - Method to call when reaction succeeeds.
-@param {Function} reject - Method to call when reaction fails.
-@return {Promise} On successful generation, you need to return the message object using resolve(). On failure, you need to return error using reject().
+@return {Promise} You have to return promise including message object.
 */
 
 /**
@@ -71,7 +65,7 @@ Function which is applied to the message from user to validate the value. You ca
 @param {context} context - Context information.
 @param {Function} resolve - Method to call when parser judges the value fits the parameter. Return the parsed value as its argument.
 @param {Function} reject - Method to call when parse judges the value does not fit the parameter. Optionally return the reason as its argument.
-@return {Promise} You have to return the response either from resolve or reject function.
+@return {Promise} You have to return promise including parsed value or error object.
 */
 
 /**
@@ -89,7 +83,5 @@ Function which is triggered when parser finshed parsing. You can implement custo
 @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
 @param {Object} event - Event object which triggers this flow.
 @param {context} context - Context information.
-@param {Function} resolve - Method to call when reaction succeeeds.
-@param {Function} reject - Method to call when reaction fails.
-@return {Promise} You have to return the response either from resolve or reject function.
+@return {Promise} You have to return promise.
 */

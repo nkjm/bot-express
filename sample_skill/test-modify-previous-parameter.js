@@ -8,11 +8,11 @@ module.exports = class SkillModifyPreviousParameter {
                     type: "text",
                     text: "a pls"
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
+                parser: async (value, bot, event, context) => {
                     if (value === "a"){
-                        return resolve(value);
+                        return value;
                     }
-                    return reject();
+                    throw new Error();
                 }
             },
             b: {
@@ -20,17 +20,16 @@ module.exports = class SkillModifyPreviousParameter {
                     type: "text",
                     text: "b pls"
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
+                parser: async (value, bot, event, context) => {
                     if (value === "b"){
-                        return resolve(value);
+                        return value;
                     }
-                    return reject();
+                    throw new Error();
                 }
             }
         }
     }
 
-    finish(bot, event, context, resolve, reject){
-        return resolve();
+    async finish(bot, event, context){
     }
 }

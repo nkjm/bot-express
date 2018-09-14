@@ -43,6 +43,7 @@ module.exports = class ReplyFlow extends Flow {
         log.chat(this.bot.extract_sender_id(), this.context.skill.type, "user", this.bot.extract_message());
 
         debug("Going to perform super.apply_parameter().");
+
         try {
             let applied_parameter = await super.apply_parameter(this.context.confirming, param_value);
             if (applied_parameter == null){
@@ -51,41 +52,37 @@ module.exports = class ReplyFlow extends Flow {
                 await super.react(null, applied_parameter.key, applied_parameter.value);
             }
         } catch (e) {
-            if (e && e.name === "BotExpressParseError"){
-                // Language translation.
-                let translated_param_value;
-                if (typeof param_value == "string"){
-                    if (this.translator && this.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
-                        translated_param_value = await this.translator.translate(param_value, this.options.language);
-                    }
+            // Language translation.
+            let translated_param_value;
+            if (typeof param_value == "string"){
+                if (this.translator && this.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
+                    translated_param_value = await this.translator.translate(param_value, this.options.language);
                 }
-                if (!translated_param_value){
-                    translated_param_value = param_value;
-                }
+            }
+            if (!translated_param_value){
+                translated_param_value = param_value;
+            }
 
-                let mind = await super.identify_mind(translated_param_value);
+            let mind = await super.identify_mind(translated_param_value);
 
-                if (mind.result == "modify_previous_parameter"){
-                    await super.modify_previous_parameter();
-                } else if (mind.result == "dig"){
-                    await super.dig(mind.intent);
-                } else if (mind.result == "restart_conversation"){
-                    await super.restart_conversation(mind.intent);
-                } else if (mind.result == "change_intent"){
-                    await super.change_intent(mind.intent);
-                } else if (mind.result == "change_parameter"){
-                    /**
-                    Now there is no chance to run this case since detecting change parameter in reply flow is very likely to be false positive.
-                    */
-                    let applied_parameter = await super.change_parameter(response.parameter.key, translated_param_value)
-                    await super.react(null, applied_parameter.key, applied_parameter.value);
-                } else if (mind.result == "no_idea"){
-                    await super.react(e, this.context.confirming, param_value);
-                } else {
-                    throw new Error(`Mind is unknown.`);
-                }
+            if (mind.result == "modify_previous_parameter"){
+                await super.modify_previous_parameter();
+            } else if (mind.result == "dig"){
+                await super.dig(mind.intent);
+            } else if (mind.result == "restart_conversation"){
+                await super.restart_conversation(mind.intent);
+            } else if (mind.result == "change_intent"){
+                await super.change_intent(mind.intent);
+            } else if (mind.result == "change_parameter"){
+                /**
+                Now there is no chance to run this case since detecting change parameter in reply flow is very likely to be false positive.
+                */
+                let applied_parameter = await super.change_parameter(response.parameter.key, translated_param_value)
+                await super.react(null, applied_parameter.key, applied_parameter.value);
+            } else if (mind.result == "no_idea"){
+                await super.react(e, this.context.confirming, param_value);
             } else {
-                throw e;
+                throw new Error(`Mind is unknown.`);
             }
         }
 

@@ -194,7 +194,8 @@ class Webhook {
 
             // Clear memory.
             debug("Clearing context");
-            return await this.memory.del(memory_id);
+            await this.memory.del(memory_id);
+            
             throw e;
         }
 
@@ -211,6 +212,7 @@ class Webhook {
             }
 
             updated_context._in_progress = false;
+            updated_context.previous.event = event;
 
             debug("Updating context");
             await this.memory.put(memory_id, updated_context);

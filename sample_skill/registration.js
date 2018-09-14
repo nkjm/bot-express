@@ -1,7 +1,5 @@
 "use strict";
 
-require("dotenv").config();
-
 const debug = require("debug")("bot-express:skill");
 const bot_user = require("../sample_service/bot-user");
 const request = require("request");
@@ -19,11 +17,11 @@ module.exports = class SkillRegistration {
         this.clear_context_on_finish = true;
     }
 
-    finish(bot, event, context, resolve, reject){
+    async finish(bot, event, context){
         if (SUPPORTED_MESSENGERS.indexOf(bot.type) === -1){
             // We do nothing in case of facebook since in Facebook, Admin can see and reply the messege by Facebook Page.
             debug(`${bot.type} messenger is not supported in registration skill. Supported messenger is LINE only. We just skip processing this event.`);
-            return resolve();
+            return;
         }
 
         let url = 'https://api.line.me/v2/bot/profile/' + bot.extract_sender_id();
@@ -31,24 +29,20 @@ module.exports = class SkillRegistration {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + process.env.LINE_ACCESS_TOKEN
         }
-        return request.getAsync({
+        
+        const response = await request.getAsync({
             url: url,
             headers: headers,
             json: true
-        }).then(
-            (response) => {
-                let user = {
-                    messenger: "line",
-                    user_id: response.body.userId,
-                    display_name: response.body.displayName,
-                    picture_url: response.body.pictureUrl
-                }
-                return bot_user.save(user);
-            }
-        ).then(
-            (response) => {
-                return resolve();
-            }
-        )
+        })
+
+        let user = {
+            messenger: "line",
+            user_id: response.body.userId,
+            display_name: response.body.displayName,
+            picture_url: response.body.pictureUrl
+        }
+        
+        await bot_user.save(user);
     }
 }

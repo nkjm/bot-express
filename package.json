@@ -2,7 +2,7 @@
   "description": "A development framework to develop tailor-made chatbot lightning fast.",
   "main": "index.js",
   "name": "bot-express",
-  "version": "0.4.8",
+  "version": "0.5.0",
   "private": false,
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
     "facebook messenger"
   ],
   "scripts": {
+    "start": "node sample_app.js",
     "test": "mocha --exit",
     "postinstall": "node script/postinstall.js"
   },

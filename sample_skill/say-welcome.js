@@ -2,14 +2,12 @@
 
 const debug = require("debug")("bot-express:skill");
 
-module.exports = class SkillFollow {
+module.exports = class SkillSayWelcome {
 
-    finish(bot, event, context, resolve, reject){
-        return bot.reply({
+    async finish(bot, event, context){
+        await bot.reply({
             type: "text",
             text: "Welcome."
-        }).then((response) => {
-            return resolve();
-        });
+        })
     }
 }

@@ -8,30 +8,28 @@ module.exports = class SkillTestErrorHandlingInReaction {
                     type: "text",
                     text: "Name?"
                 },
-                parser: async (value, bot, event, context, resolve, reject) => {
+                parser: async (value, bot, event, context) => {
                     if (typeof value == "string"){
                         if (value.length < 5){
-                            return resolve();
+                            return value;
                         } else {
-                            return reject(`Too long.`)
+                            throw new Error(`Too long.`);
                         }
                     }
+                    throw new Error();
                 },
-                reaction: async (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     if (error){
-                        console.log(error);
                         bot.change_message_to_confirm("name", {
                             type: "text",
                             text: error.message
                         })
                     }
-                    return resolve();
                 }
             }
         }
     }
 
     async finish(bot, event, context, resolve, reject){
-        return resolve();
     }
 }

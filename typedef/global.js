@@ -9,6 +9,7 @@ Object which contains context information.
 @prop {Array.<Object>} previous.message - Array of message object exchanged so far.
 @prop {String} previous.message[].from - "bot" or "user"
 @prop {MessageObject} previous.message[].message - Message object sent or received.
+@prop {Object} previous.event - Previous event
 @prop {Object} intent - Intent object which contains various information about current intent based on response from NLP.
 @prop {String} intent.name - Intent name detected by NLP
 @prop {String} intent.text_response - Text response provided by NLP.

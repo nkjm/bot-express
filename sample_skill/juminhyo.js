@@ -1,12 +1,9 @@
 "use strict";
 
-require("dotenv").config();
-
 const debug = require('debug')('bot-express:skill');
 const zip_code = require("../sample_service/zip-code");
 const mecab = require("mecabaas-client");
 const support = require("../sample_service/support");
-Promise = require('bluebird');
 
 module.exports = class SkillJuminhyo {
 
@@ -25,35 +22,18 @@ module.exports = class SkillJuminhyo {
                         ]
                     }
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
-                    const acceptable_values = ["世帯全員分", "本人だけ"];
-                    if (acceptable_values.indexOf(value) >= 0){
-                        return resolve(value);
+                parser: async (value, bot, event, context) => {
+                    if (["世帯全員分", "本人だけ"].includes(value)){
+                        return value;
                     }
-                    return reject();
+                    throw new Error();
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     if (error){
-                        return resolve();
-                        /* Activate following code to enable human support.
-                        let tasks = [];
-                        tasks.push(support.send(bot, process.env.supporter_user_id, `住民票の申請受付中に必要な住民票タイプを聞いていたところ、ユーザーが「${value}」とおっしゃいましたが、何を意味しているのかわかりませんでした。`));
-                        tasks.push(bot.reply({
-                            type: "text",
-                            text: "ちょっとまってください。詳しい人にきいてきます。"
-                        }));
-                        return Promise.all(tasks).then(
-                            (response) => {
-                                debug("success");
-                                bot.pause();
-                                return resolve();
-                            }
-                        );
-                        */
+                        return;
                     }
 
                     bot.queue({text: `${value}ですね。OKです。`});
-                    return resolve();
                 }
             },
             name: {
@@ -61,7 +41,7 @@ module.exports = class SkillJuminhyo {
                     type: "text",
                     text: "次にご本人のことを少々。お名前教えてもらえますか？"
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
+                parser: async (value, bot, event, context) => {
                     return mecab.parse(value).then(
                         (response) => {
                             let name = {};
@@ -72,15 +52,15 @@ module.exports = class SkillJuminhyo {
                                     name.firstname = elem[0];
                                 }
                             }
-                            return resolve(name);
+                            return name;
                         },
                         (response) => {
-                            return reject(response);
+                            throw new Error();
                         }
                     );
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
-                    if (error) return resolve();
+                reaction: async (error, value, bot, event, context) => {
+                    if (error) return;
 
                     if (value && value.lastname && value.firstname){
                         // We got Lastname & Firstname so going to check with user if this is correct.
@@ -98,15 +78,15 @@ module.exports = class SkillJuminhyo {
                                         ]
                                     }
                                 },
-                                parser: (value, bot, event, context, resolve, reject) => {
+                                parser: (value, bot, event, context) => {
                                     const acceptable_values = ["はい", "いいえ"];
                                     if (acceptable_values.indexOf(value) >= 0){
-                                        return resolve(value);
+                                        return value;
                                     }
-                                    return reject();
+                                    throw new Error();
                                 },
-                                reaction: (error, value, bot, event, context, resolve, reject) => {
-                                    if (error) return resolve();
+                                reaction: (error, value, bot, event, context) => {
+                                    if (error) return;
 
                                     if (value == "はい"){
                                         bot.queue({
@@ -118,7 +98,6 @@ module.exports = class SkillJuminhyo {
                                         });
                                         bot.collect("lastname");
                                     }
-                                    return resolve();
                                 }
                             }
                         });
@@ -127,7 +106,6 @@ module.exports = class SkillJuminhyo {
                         bot.queue({text: `すいません、私不勉強なものでどれが姓でどれが名かわかりませんでした。ご面倒ですがそれぞれ順に教えていただきたく。`});
                         bot.collect("lastname");
                     }
-                    return resolve();
                 }
             },
             zip_code: {
@@ -135,30 +113,30 @@ module.exports = class SkillJuminhyo {
                     type: "text",
                     text: "郵便番号を教えていただけますか？"
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
+                parser: async (value, bot, event, context) => {
                     return zip_code.search(value).then(
                         (response) => {
                             // In case we could not find the address.
                             if (response == null){
-                                return resolve({
+                                return {
                                     zip_code: value,
                                     resolved_address: null
-                                });
+                                };
                             }
 
                             // In case we could find the address.
                             let address = response.address1 + response.address2 + response.address3;
-                            return resolve({
+                            return {
                                 zip_code: value,
                                 resolved_address: address
-                            });
+                            };
                         },
                         (response) => {
-                            return reject(response);
+                            throw new Error();
                         }
                     );
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     if (error){
                         if (error.message == "zip code format is incorrect."){
                             // Provide zip code is incorrect.
@@ -166,7 +144,7 @@ module.exports = class SkillJuminhyo {
                                 type: "text",
                                 text: "なんだか郵便番号が正しくないような気がします。もう一度教えていただいてもいいですか？"
                             });
-                            return resolve();
+                            return;
                         } else {
                             // While provided zip code is correct, zip code search is not working.
                             bot.queue({
@@ -174,7 +152,7 @@ module.exports = class SkillJuminhyo {
                                 text: "すみません、郵便番号検索が不調のようで該当する住所を探せませんでした。"
                             });
                             bot.collect("address");
-                            return resolve();
+                            return;
                         }
                     }
 
@@ -185,7 +163,7 @@ module.exports = class SkillJuminhyo {
                             text: "すみません、郵便番号に該当する住所が見つかりませんでした。"
                         });
                         bot.collect("address");
-                        return resolve();
+                        return;
                     }
 
                     // It seems we could find the corresponding address.
@@ -207,15 +185,15 @@ module.exports = class SkillJuminhyo {
                                     ]
                                 }
                             },
-                            parser: (value, bot, event, context, resolve, reject) => {
+                            parser: (value, bot, event, context) => {
                                 const acceptable_values = ["はい", "いいえ"];
                                 if (acceptable_values.indexOf(value) >= 0){
-                                    return resolve(value);
+                                    return value;
                                 }
-                                return reject();
+                                throw new Error();
                             },
-                            reaction: (error, value, bot, event, context, resolve, reject) => {
-                                if (error) return resolve();
+                            reaction: (error, value, bot, event, context) => {
+                                if (error) return;
 
                                 if (value == "はい"){
                                     // Going to collect remaining street address.
@@ -230,11 +208,9 @@ module.exports = class SkillJuminhyo {
                                         }
                                     });
                                 }
-                                return resolve();
                             }
                         }
                     });
-                    return resolve();
                 }
             },
             social_id: {
@@ -251,11 +227,10 @@ module.exports = class SkillJuminhyo {
                     type: "text",
                     text: "氏名（姓）を教えてもらえますか？"
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
-                    if (error) return resolve();
+                reaction: async (error, value, bot, event, context) => {
+                    if (error) return;
 
                     bot.collect("firstname");
-                    return resolve();
                 }
             },
             firstname: {
@@ -263,11 +238,10 @@ module.exports = class SkillJuminhyo {
                     type: "text",
                     text: "氏名（名）を教えてもらえますか？"
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
-                    if (error) return resolve();
+                reaction: async (error, value, bot, event, context) => {
+                    if (error) return;
 
                     bot.queue({text: `${context.confirmed.lastname} ${value}さん、なかなかナウい名前ですね。`});
-                    return resolve();
                 }
             },
             street: {
@@ -287,7 +261,7 @@ module.exports = class SkillJuminhyo {
         this.clear_context_on_finish = true;
     }
 
-    finish(bot, event, context, resolve, reject){
+    async finish(bot, event, context){
         let address = context.confirmed.address || context.confirmed.city + context.confirmed.street;
         let name;
         if (context.confirmed.is_name_correct == "はい"){
@@ -299,10 +273,6 @@ module.exports = class SkillJuminhyo {
             type: "text",
             text: `${name}さん、完璧です。${address}が身分証のご住所と一致しているか担当者がチェックし、問題なければご住所に住民票をお届けしますね。手数料は代引きで300円です。`
         };
-        return bot.reply(messages).then(
-            (response) => {
-                return resolve();
-            }
-        )
+        await bot.reply(messages);
     }
 };

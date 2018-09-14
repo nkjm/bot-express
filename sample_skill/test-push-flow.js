@@ -10,21 +10,19 @@ module.exports = class SkillTestPushFlow {
                     type: "text",
                     text: "Diet type pls."
                 },
-                parser: (value, bot, event, context, resolve, reject) => {
+                parser: async (value, bot, event, context) => {
                     if (["breakfast", "lunch", "dinner"].includes(value)){
-                        resolve(value);
-                    } else {
-                        reject();
+                        return value;
                     }
+                    throw new Error();
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
-                    if (error) return resolve();
+                reaction: async (error, value, bot, event, context) => {
+                    if (error) return;
 
                     bot.change_message_to_confirm("diet", {
                         type: "text",
                         text: `What did you eat for ${value}?`
                     });
-                    resolve();
                 }
             },
             diet: {
@@ -33,12 +31,10 @@ module.exports = class SkillTestPushFlow {
         }
     }
 
-    finish(bot, event, context, resolve, reject){
-        return bot.reply({
+    async finish(bot, event, context){
+        await bot.reply({
             type: "text",
             text: `You ate ${context.confirmed.diet} for ${context.confirmed.diet_type}.`
-        }).then((response) => {
-            return resolve();
-        });
+        })
     }
 }

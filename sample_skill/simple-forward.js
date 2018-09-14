@@ -20,16 +20,16 @@ module.exports = class SkillSimpleForward {
         this.clear_context_on_finish = true;
     }
 
-    finish(bot, event, context, resolve, reject){
+    async finish(bot, event, context){
         if (SUPPORTED_MESSENGERS.indexOf(bot.type) === -1){
             // We do nothing in case of facebook since in Facebook, Admin can see and reply the messege by Facebook Page.
             debug(`${bot.type} messenger is not supported in simple-forward skill. Supported messenger is LINE only. We just skip processing this event.`);
-            return resolve();
+            return;
         }
 
         if (SUPPORTED_MESSAGE_TYPES.indexOf(event.message.type) === -1){
             debug(`${event.message.type} message type is not supported in simple-forward skill. Supported message types are text and sticker message type. We just skip processing this event.`);
-            return resolve();
+            return;
         }
 
         let admin_user_id = process.env.LINE_ADMIN_USER_ID;
@@ -39,29 +39,23 @@ module.exports = class SkillSimpleForward {
             "Authorization": "Bearer " + process.env.LINE_ACCESS_TOKEN
         }
 
-        return request.getAsync({
+        const response = await request.getAsync({
             url: url,
             headers: headers,
             json: true
-        }).then(
-            (response) => {
-                let messages = [];
-                messages.push({
-                    type: "text",
-                    text: `以下、${response.body.displayName}さんからです。`
-                });
+        });
 
-                // We copy original message and just remove id.
-                let orig_message = JSON.parse(JSON.stringify(event.message));
-                delete orig_message.id;
+        let messages = [];
+        messages.push({
+            type: "text",
+            text: `以下、${response.body.displayName}さんからです。`
+        });
 
-                messages.push(orig_message);
-                return bot.send(admin_user_id, messages);
-            }
-        ).then(
-            (response) => {
-                return resolve();
-            }
-        );
+        // We copy original message and just remove id.
+        let orig_message = JSON.parse(JSON.stringify(event.message));
+        delete orig_message.id;
+
+        messages.push(orig_message);
+        await bot.send(admin_user_id, messages);
     }
 };

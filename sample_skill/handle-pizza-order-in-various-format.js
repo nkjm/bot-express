@@ -27,16 +27,16 @@ module.exports = class SkillCompileMessage {
                         ]
                     }
                 },
-                parser: (postback, bot, event, context, resolve, reject) => {
+                parser: async (postback, bot, event, context) => {
                     if (typeof postback == "string"){
-                        return resolve(postback);
+                        return postback;
                     }
                     if (bot.type == "line"){
-                        return resolve(postback.data);
+                        return postback.data;
                     } else if (bot.type == "facebook"){
-                        return resolve(postback.payload);
+                        return postback.payload;
                     }
-                    return reject();
+                    throw new Error();
                 }
             },
             line_template_button_message: { // Will be quick reply in facebook.
@@ -69,16 +69,16 @@ module.exports = class SkillCompileMessage {
                         ]
                     }
                 },
-                parser: (postback, bot, event, context, resolve, reject) => {
+                parser: async (postback, bot, event, context) => {
                     if (typeof postback == "string"){
-                        return resolve(postback);
+                        return postback;
                     }
                     if (bot.type == "line"){
-                        return resolve(postback.data);
+                        return postback.data;
                     } else if (bot.type == "facebook"){
-                        return resolve(postback.payload);
+                        return postback.payload;
                     }
-                    return reject();
+                    throw new Error();
                 }
             },
             line_template_button_uri_more_than_3: { // Will catch exception in facebook.
@@ -96,16 +96,16 @@ module.exports = class SkillCompileMessage {
                         ]
                     }
                 },
-                parser: (postback, bot, event, context, resolve, reject) => {
+                parser: async (postback, bot, event, context) => {
                     if (typeof postback == "string"){
-                        return resolve(postback);
+                        return postback;
                     }
                     if (bot.type == "line"){
-                        return resolve(postback.data);
+                        return postback.data;
                     } else if (bot.type == "facebook"){
-                        return resolve(postback.payload);
+                        return postback.payload;
                     }
-                    return reject();
+                    throw new Error();
                 }
             },
             line_template_confirm: { // Will be quick reply in facebook.
@@ -145,16 +145,16 @@ module.exports = class SkillCompileMessage {
                         }]
                     }
                 },
-                parser: (postback, bot, event, context, resolve, reject) => {
+                parser: (postback, bot, event, context) => {
                     if (typeof postback == "string"){
-                        return resolve(postback);
+                        return postback;
                     }
                     if (bot.type == "line"){
-                        return resolve(postback.data);
+                        return postback.data;
                     } else if (bot.type == "facebook"){
-                        return resolve(postback.payload);
+                        return postback.payload;
                     }
-                    return reject();
+                    throw new Error();
                 }
             },
             /*
@@ -235,16 +235,16 @@ module.exports = class SkillCompileMessage {
                         }
                     }
                 },
-                parser: (postback, bot, event, context, resolve, reject) => {
+                parser: async (postback, bot, event, context) => {
                     if (typeof postback == "string"){
-                        return resolve(postback);
+                        return postback;
                     }
                     if (bot.type == "line"){
-                        return resolve(postback.data);
+                        return postback.data;
                     } else if (bot.type == "facebook"){
-                        return resolve(postback.payload);
+                        return postback.payload;
                     }
-                    return reject();
+                    throw new Error();
                 }
             },
             facebook_template_button_web_url: { // Will be template button postback and uri in line.
@@ -262,16 +262,16 @@ module.exports = class SkillCompileMessage {
                         }
                     }
                 },
-                parser: (postback, bot, event, context, resolve, reject) => {
+                parser: async (postback, bot, event, context) => {
                     if (typeof postback == "string"){
-                        return resolve(postback);
+                        return postback;
                     }
                     if (bot.type == "line"){
-                        return resolve(postback.data);
+                        return postback.data;
                     } else if (bot.type == "facebook"){
-                        return resolve(postback.payload);
+                        return postback.payload;
                     }
-                    return reject();
+                    throw new Error();
                 }
             },
             facebook_template_generic: { // Will be template carousel in line.
@@ -298,16 +298,16 @@ module.exports = class SkillCompileMessage {
                         }
                     }
                 },
-                parser: (postback, bot, event, context, resolve, reject) => {
+                parser: async (postback, bot, event, context) => {
                     if (typeof postback == "string"){
-                        return resolve(postback);
+                        return postback;
                     }
                     if (bot.type == "line"){
-                        return resolve(postback.data);
+                        return postback.data;
                     } else if (bot.type == "facebook"){
-                        return resolve(postback.payload);
+                        return postback.payload;
                     }
-                    return reject();
+                    throw new Error();
                 }
             }
             /*
@@ -336,14 +336,10 @@ module.exports = class SkillCompileMessage {
     }
 
     // パラメーターが全部揃ったら実行する処理を記述します。
-    finish(bot, event, context, resolve, reject){
-        let messages = [{
+    async finish(bot, event, context){
+        let message = {
             text: "完了"
-        }];
-        return bot.reply(messages).then(
-            (response) => {
-                return resolve(response);
-            }
-        );
+        };
+        await bot.reply(message);
     }
 };

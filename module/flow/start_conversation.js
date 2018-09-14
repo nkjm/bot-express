@@ -30,6 +30,10 @@ module.exports = class StartConversationFlow extends Flow {
         super(messenger, event, context, options);
     }
 
+    /**
+     * @method
+     * @return {context}
+     */
     async run(){
         let skip_translate, skip_identify_intent, skip_instantiate_skill, skip_begin, skip_process_params;
 
@@ -119,6 +123,11 @@ module.exports = class StartConversationFlow extends Flow {
         if (!skip_instantiate_skill){
             this.context.skill = super.instantiate_skill(this.context.intent.name);
 
+            if (!this.context.skill){
+                // Since skill not found, we end this conversation.
+                return;
+            }
+
             // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
             // After that, we depend on context.to_confirm to identify to_confirm parameters.
             if (this.context.to_confirm.length == 0){
@@ -166,11 +175,7 @@ module.exports = class StartConversationFlow extends Flow {
                                 }
                             ).catch(
                                 (error) => {
-                                    if (error.name == "BotExpressParseError"){
-                                        return super.react(error, param_key, this.context.intent.parameters[param_key]);
-                                    } else {
-                                        return Promise.reject(error);
-                                    }
+                                    return super.react(error, param_key, this.context.intent.parameters[param_key]);
                                 }
                             )
                         );

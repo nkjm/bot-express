@@ -43,12 +43,10 @@ class Parser {
     @param {Object} bot
     @param {Object} event
     @param {Object} context
-    @param {Function} resolve
-    @param {Function} reject
     */
-    parse(parser, param, bot, event, context, resolve, reject){
+    async parse(parser, param, bot, event, context){
         let builtin_parser = this._parsers.find(builtin_parser => builtin_parser.type === parser);
-        return builtin_parser.parser(builtin_parser.options, param, bot, event, context, resolve, reject);
+        return builtin_parser.parser(builtin_parser.options, param, bot, event, context);
     }
 }
 

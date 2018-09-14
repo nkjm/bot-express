@@ -22,7 +22,7 @@ module.exports = class SkillSimpleReply {
         this.clear_context_on_finish = true;
     }
 
-    finish(bot, event, context, resolve, reject){
+    async finish(bot, event, context){
         let first_message = context.previous.message[context.previous.message.length - 1];
 
         let first_message_text;
@@ -50,10 +50,6 @@ module.exports = class SkillSimpleReply {
             text: "了解。ユーザーへ返信しておきますー。"
         }));
 
-        return Promise.all(tasks).then(
-            (response) => {
-                return resolve();
-            }
-        )
+        await Promise.all(tasks);
     }
 };

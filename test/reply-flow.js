@@ -10,12 +10,12 @@ const messenger_options = [{
     options: {
         line_channel_secret: process.env.LINE_CHANNEL_SECRET
     }
-},{
+}/*,{
     name: "facebook",
     options: {
         facebook_app_secret: process.env.FACEBOOK_APP_SECRET
     }
-}];
+}*/];
 
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -26,6 +26,7 @@ for (let messenger_option of messenger_options){
     describe("Test reply flow from " + emu.messenger_type, function(){
         let user_id = "reply-flow";
 
+        /*
         describe("Correct answer", function(){
             it("will be accepted and fires reaction.", function(){
                 this.timeout(15000);
@@ -73,6 +74,7 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+        */
 
         describe("Restart conversation in the middle of the conversation", function(){
             it("will trigger restart conversation.", function(){
@@ -97,6 +99,7 @@ for (let messenger_option of messenger_options){
             });
         });
 
+        /*
         describe("Change intent in the middle of the conversation", function(){
             it("will trigger change intent.", function(){
                 this.timeout(15000);
@@ -140,5 +143,6 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+        */
     });
 }

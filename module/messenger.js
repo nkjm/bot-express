@@ -2,7 +2,6 @@
 
 const debug = require("debug")("bot-express:messenger");
 const fs = require("fs");
-Promise = require("bluebird");
 
 /**
 Messenger abstraction.
@@ -181,7 +180,7 @@ class Messenger {
     * @param {String} format - Target format to compile. It can be "line" or "facebook".
     * @returns {Promise.<MessageObject>} - Compiled message object.
     */
-    compile_message(message, format = this.type){
+    async compile_message(message, format = this.type){
         let source_format = this._identify_message_format(message);
         debug(`Identified message format is ${source_format}.`);
 
@@ -204,7 +203,7 @@ class Messenger {
             debug(compiled_message);
         }
 
-        return Promise.resolve(compiled_message);
+        return compiled_message;
     }
 
     /**

@@ -14,20 +14,17 @@ module.exports = class SkillBeginFinish {
         }
     }
 
-    begin(bot, event, context, resolve, reject){
+    async begin(bot, event, context){
         bot.queue({
             type: "text",
             text: "ようこそ私を召喚くださいました。"
         });
-        return resolve();
     }
 
-    finish(bot, event, context, resolve, reject){
-        return bot.reply({
+    async finish(bot, event, context){
+        await bot.reply({
             type: "text",
             text: `${context.confirmed.name}さん、さようなら。`
-        }).then((response) => {
-            return resolve();
-        })
+        });
     }
 }

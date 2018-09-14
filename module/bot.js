@@ -12,7 +12,7 @@ class Bot {
         /**
         @prop {String} type - Type of messenger. The value can be "line","facebook" and "google".
         @prop {String} language - ISO-639-1 based language code which is the mother language of this chatbot.
-        @prop {Object} plugin - Object which has direct access to each messenger libraries.
+        @prop {Object} translator - Translator instance.
         */
         this.type = messenger.type;
         this.language = options.language;
@@ -257,11 +257,11 @@ class Bot {
     @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
     */
     check_parameter_type(key){
-        if (!!this._context.skill.required_parameter && !!this._context.skill.required_parameter[key]){
+        if (this._context.skill.required_parameter && this._context.skill.required_parameter[key]){
             return "required_parameter";
-        } else if (!!this._context.skill.optional_parameter && !!this._context.skill.optional_parameter[key]){
+        } else if (this._context.skill.optional_parameter && this._context.skill.optional_parameter[key]){
             return "optional_parameter";
-        } else if (!!this._context.skill.dynamic_parameter && !!this._context.skill.dynamic_parameter[key]){
+        } else if (this._context.skill.dynamic_parameter && this._context.skill.dynamic_parameter[key]){
             return "dynamic_parameter";
         }
         return "not_applicable";
@@ -292,46 +292,45 @@ class Bot {
     Manually apply value to the parameter. This will skip parser but still trigger reaction.
     @param {String} param_key - Name of the parameter to apply.
     @param {Any} value - Value to apply.
+    @return {Promise}
     */
-    apply_parameter(param_key, value){
-        return new Promise((resolve, reject) => {
-            this._context.confirmed[param_key] = value;
+    async apply_parameter(param_key, value){
+        this._context.confirmed[param_key] = value;
 
-            // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
-            this._context.previous.confirmed.unshift(param_key);
+        // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
+        this._context.previous.confirmed.unshift(param_key);
 
-            // Remove item from to_confirm if it exits.
-            let index_to_remove = this._context.to_confirm.indexOf(param_key);
-            if (index_to_remove !== -1){
-                debug(`Removing ${param_key} from to_confirm.`);
-                this._context.to_confirm.splice(index_to_remove, 1);
-            }
+        // Remove item from to_confirm if it exits.
+        let index_to_remove = this._context.to_confirm.indexOf(param_key);
+        if (index_to_remove !== -1){
+            debug(`Removing ${param_key} from to_confirm.`);
+            this._context.to_confirm.splice(index_to_remove, 1);
+        }
 
-            // Clear confirming.
-            if (this._context.confirming === param_key){
-                debug(`Clearing confirming.`);
-                this._context.confirming = null;
-            }
+        // Clear confirming.
+        if (this._context.confirming === param_key){
+            debug(`Clearing confirming.`);
+            this._context.confirming = null;
+        }
 
-            let param_type = this.check_parameter_type(param_key);
+        let param_type = this.check_parameter_type(param_key);
 
-            if (this._context.skill[param_type] && this._context.skill[param_type][param_key]){
-                if (this._context.skill[param_type][param_key].reaction){
-                    debug(`Reaction for ${param_key} found. Performing reaction...`);
-                    return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context, resolve, reject);
-                } else if (this._context.skill["reaction_" + param_key]){
-                    debug(`Reaction for ${param_key} found. Performing reaction...`);
-                    return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context, resolve, reject);
-                } else {
-                    // This parameter does not have reaction so do nothing.
-                    debug(`Reaction for ${param_key} not found.`);
-                    return resolve();
-                }
+        if (this._context.skill[param_type] && this._context.skill[param_type][param_key]){
+            if (this._context.skill[param_type][param_key].reaction){
+                debug(`Reaction for ${param_key} found. Performing reaction...`);
+                return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context);
+            } else if (this._context.skill["reaction_" + param_key]){
+                debug(`Reaction for ${param_key} found. Performing reaction...`);
+                return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context);
             } else {
-                debug(`There is no parameter we should care about. So skip reaction.`);
-                return resolve(`There is no parameter we should care about. So skip reaction.`);
+                // This parameter does not have reaction so do nothing.
+                debug(`Reaction for ${param_key} not found.`);
+                return;
             }
-        })
+        } else {
+            debug(`There is no parameter we should care about. So skip reaction.`);
+            return;
+        }
     }
 
     /**

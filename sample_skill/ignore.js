@@ -3,8 +3,7 @@
 const debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillIgnore {
-    finish(bot, event, context, resolve, reject){
+    async finish(bot, event, context){
         debug("We ignore this event using ignore skill.");
-        return resolve();
     }
 }

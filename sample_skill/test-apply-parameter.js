@@ -8,12 +8,10 @@ module.exports = class SkillTestApplyParameter {
                     type: "text",
                     text: "a pls"
                 },
-                reaction: async (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     if (value == "skip_b"){
                         await bot.apply_parameter("b", "hoge");
-                        return resolve();
                     }
-                    return resolve();
                 }
             },
             b: {
@@ -25,7 +23,6 @@ module.exports = class SkillTestApplyParameter {
         }
     }
 
-    finish(bot, event, context, resolve, reject){
-        return resolve();
+    async finish(bot, event, context){
     }
 }

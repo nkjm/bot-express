@@ -1,7 +1,5 @@
 "use strict";
 
-require("dotenv").config();
-
 const debug = require('debug')('bot-express:skill');
 const rightnow = require("../sample_service/rightnow.js");
 Promise = require('bluebird');
@@ -14,13 +12,12 @@ module.exports = class SkillRealHumanReply {
                 message_to_confirm: {
                     text: "OK. 答えプリーズ"
                 },
-                reaction: (error, value, bot, event, context, resolve, reject) => {
+                reaction: async (error, value, bot, event, context) => {
                     if (!error){
                         if (process.env.FAQ_CONFIRM_AUTO_LEARN == "enable"){
                             bot.collect("auto_learn");
                         }
                     }
-                    return resolve();
                 }
             }
         }
@@ -40,7 +37,7 @@ module.exports = class SkillRealHumanReply {
         this.clear_context_on_finish = true;
     }
 
-    finish(bot, bot_event, context, resolve, reject){
+    async finish(bot, bot_event, context){
         let first_message = context.previous.message[context.previous.message.length - 1];
 
         let first_message_text;
@@ -107,10 +104,6 @@ module.exports = class SkillRealHumanReply {
             text: message_text
         }));
 
-        return Promise.all(tasks).then(
-            (response) => {
-                return resolve();
-            }
-        )
+        await Promise.all(tasks);
     }
 };

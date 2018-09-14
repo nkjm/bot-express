@@ -2,12 +2,10 @@
 
 const debug = require("debug")("bot-express:flow");
 const log = require("../logger");
-const BotExpressParseError = require("../error/parse");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");
 const Translator = require("../translator");
 const Parser = require("../parser");
-Promise = require('bluebird');
 
 module.exports = class Flow {
     constructor(messenger, event, context, options){
@@ -57,14 +55,15 @@ module.exports = class Flow {
             skill_instance = new skill_class();
         } else {
             debug(`Look for ${skill} skill.`);
-            let skill_class;
             try {
-                skill_class = require(`${this.options.skill_path}${skill}`);
-                debug("Found skill.")
-            } catch(exception){
-                debug("Skill not found.");
-                throw(exception);
+                require.resolve(`${this.options.skill_path}${skill}`);
+            } catch (e){
+                debug(`Skill: "${skill}" not found.`)
+                return;
             }
+
+            debug(`Found skill: "${skill}".`);
+            let skill_class = require(`${this.options.skill_path}${skill}`);
             skill_instance = new skill_class();
         }
 
@@ -198,9 +197,7 @@ module.exports = class Flow {
         let message_to_confirm;
         if (typeof message === "function"){
             debug("message_to_confirm is made of function. We generate message with it.");
-            message_to_confirm = await new Promise((resolve, reject) => {
-                return message(this.bot, this.event, this.context, resolve, reject);
-            });
+            message_to_confirm = await message(this.bot, this.event, this.context);
         } else if (typeof message === "object" || typeof message === "string"){
             debug("message_to_confirm is made of object|string. We use it as it is.");
             message_to_confirm = message;
@@ -230,6 +227,14 @@ module.exports = class Flow {
         return this.apply_parameter(key, value, true);
     }
 
+    /**
+     * Apply parameter. Use _parse_parameter and _add_parameter inside.
+     * @method
+     * @param {String} key 
+     * @param {*} value 
+     * @param {Boolean} is_change 
+     * @return {Object} key: {String}, value: {*}
+     */
     async apply_parameter(key, value, is_change = false){
         debug(`Applying parameter.`);
 
@@ -244,15 +249,13 @@ module.exports = class Flow {
         try {
             parsed_value = await this._parse_parameter(parameter_type, key, value);
         } catch (e) {
-            if (e && e.name === "BotExpressParseError"){
-                debug(`Parser rejected following value for parameter: "${key}".`);
-                debug(value);
-            }
+            debug(`Parser rejected following value for parameter: "${key}".`);
+            debug(JSON.stringify(value));
             throw(e);
         }
 
         debug(`Parser accepted the value. Parsed value for parameter: "${key}" follows.`);
-        debug(parsed_value);
+        debug(JSON.stringify(parsed_value));
 
         this._add_parameter(key, parsed_value, is_change);
 
@@ -261,7 +264,7 @@ module.exports = class Flow {
         return {
             key: key,
             value: parsed_value
-        };
+        }
     }
 
     /**
@@ -274,71 +277,56 @@ module.exports = class Flow {
     @returns {Promise.<String|Object>}
     */
     async _parse_parameter(type, key, value, strict = false){
-        return new Promise((resolve, reject) => {
-            debug(`Parsing following value for parameter "${key}"`);
-            debug(value);
+        debug(`Parsing following value for parameter "${key}"`);
+        debug(JSON.stringify(value));
 
-            // We define new reject just for parse.
-            let parse_reject = (e) => {
-                let message;
-                if (e instanceof Error){
-                    message = e.message;
-                } else {
-                    message = e;
-                }
-                return reject(new BotExpressParseError(message));
+        let parser;
+        if (!!this.context.skill[type][key].parser){
+            debug("Parse method found in parameter definition.");
+            parser = this.context.skill[type][key].parser;
+        } else if (!!this.context.skill["parse_" + key]){
+            debug("Parse method found in default parser function name.");
+            parser = this.context.skill["parse_" + key];
+        } else {
+            if (strict){
+                throw new Error("Parser not found.");
             }
-
-            let parser;
-            if (!!this.context.skill[type][key].parser){
-                debug("Parse method found in parameter definition.");
-                parser = this.context.skill[type][key].parser;
-                //return this.context.skill[type][key].parser(value, this.bot, this.event, this.context, resolve, parse_reject);
-            } else if (!!this.context.skill["parse_" + key]){
-                debug("Parse method found in default parser function name.");
-                parser = this.context.skill["parse_" + key];
-                //return this.context.skill["parse_" + key](value, this.bot, this.event, this.context, resolve, parse_reject);
+            debug("Parse method NOT found. We use the value as it is as long as the value is set.");
+            if (value === undefined || value === null || value === ""){
+                throw new Error("Value is not set.");
             } else {
-                if (strict){
-                    return parse_reject("PARSER NOT FOUND");
-                }
-                debug("Parse method NOT found. We use the value as it is as long as the value is set.");
-                if (value === null || value === ""){
-                    return parse_reject("Value not set");
-                } else {
-                    return resolve(value);
-                }
+                return value;
             }
+        }
 
-            /**
-            As parser, we support 3 types which are function, string and object.
-            In case of function, we use it as it is.
-            In case of string and object, we use builtin parser.
-            As for the object, following is the format.
-            @param {Object} parser
-            @param {String} parser.type - Type of builting parser. Supported value is dialogflow.
-            @param {String} [parser.parameter] - The parameter name which is defined in dialogflow. When this value is undefined, we use the parameter name of the skill.
-            */
-            if (typeof parser === "function"){
-                // We use the defined function.
-                debug(`Parser is function so we use it as it is.`)
-                return parser(value, this.bot, this.event, this.context, resolve, parse_reject);
-            } else if (typeof parser === "string"){
-                // We use builtin parser.
-                debug(`Parser is string so we use builtin parser: ${parser}.`);
-                return this.builtin_parser.parse(parser, {key: key, value: value}, this.bot, this.event, this.context, resolve, parse_reject);
-            } else if (typeof parser === "object"){
-                // We use builtin parser.
-                if (!parser.type){
-                    throw new Error(`Parser object is invalid. Required property: "type" not found.`);
-                }
-                debug(`Parser is object so we use builtin parser: ${parser.type}.`);
-                return this.builtin_parser.parse(parser.type, {key: parser.parameter || key, value: value}, this.bot, this.event, this.context, resolve, parse_reject);
-            } else {
-                // Invalid parser.
-                throw new Error(`Parser for the parameter: ${key} is invalid.`);
+        /**
+        As parser, we support 3 types which are function, string and object.
+        In case of function, we use it as it is.
+        In case of string and object, we use builtin parser.
+        As for the object, following is the format.
+        @param {Object} parser
+        @param {String} parser.type - Type of builting parser. Supported value is dialogflow.
+        @param {String} [parser.parameter] - The parameter name which is defined in dialogflow. When this value is undefined, we use the parameter name of the skill.
+        */
+        if (typeof parser === "function"){
+            // We use the defined function.
+            debug(`Parser is function so we use it as it is.`)
+            return parser(value, this.bot, this.event, this.context);
+        } else if (typeof parser === "string"){
+            // We use builtin parser.
+            debug(`Parser is string so we use builtin parser: ${parser}.`);
+            return this.builtin_parser.parse(parser, {key: key, value: value}, this.bot, this.event, this.context);
+        } else if (typeof parser === "object"){
+            // We use builtin parser.
+            if (!parser.type){
+                throw new Error(`Parser object is invalid. Required property: "type" not found.`);
             }
-        });
+            debug(`Parser is object so we use builtin parser: ${parser.type}.`);
+            return this.builtin_parser.parse(parser.type, {key: parser.parameter || key, value: value}, this.bot, this.event, this.context);
+        } else {
+            // Invalid parser.
+            throw new Error(`Parser for the parameter: ${key} is invalid.`);
+        }
     }
 
     _add_parameter(key, value, is_change = false){
@@ -372,32 +360,30 @@ module.exports = class Flow {
     async react(error, key, value){
         debug(`Going to perform reaction.`);
 
-        return new Promise((resolve, reject) => {
-            // If pause or exit flag found, we skip remaining process.
-            if (this.context._pause || this.context._exit || this.context._init){
-                debug(`Detected pause or exit or init flag so we skip reaction.`);
-                return resolve();
-            }
+        // If pause or exit flag found, we skip remaining process.
+        if (this.context._pause || this.context._exit || this.context._init){
+            debug(`Detected pause or exit or init flag so we skip reaction.`);
+            return;
+        }
 
-            let param_type = this.bot.check_parameter_type(key);
+        let param_type = this.bot.check_parameter_type(key);
 
-            if (this.context.skill[param_type] && this.context.skill[param_type][key]){
-                if (this.context.skill[param_type][key].reaction){
-                    debug(`Reaction for ${key} found. Performing reaction...`);
-                    return this.context.skill[param_type][key].reaction(error, value, this.bot, this.event, this.context, resolve, reject);
-                } else if (this.context.skill["reaction_" + key]){
-                    debug(`Reaction for ${key} found. Performing reaction...`);
-                    return this.context.skill["reaction_" + key](error, value, this.bot, this.event, this.context, resolve, reject);
-                } else {
-                    // This parameter does not have reaction so do nothing.
-                    debug(`Reaction for ${key} not found.`);
-                    return resolve();
-                }
+        if (this.context.skill[param_type] && this.context.skill[param_type][key]){
+            if (this.context.skill[param_type][key].reaction){
+                debug(`Reaction for ${key} found. Performing reaction...`);
+                return this.context.skill[param_type][key].reaction(error, value, this.bot, this.event, this.context);
+            } else if (this.context.skill["reaction_" + key]){
+                debug(`Reaction for ${key} found. Performing reaction...`);
+                return this.context.skill["reaction_" + key](error, value, this.bot, this.event, this.context);
             } else {
-                debug(`There is no parameter we should care about. So skip reaction.`);
-                return resolve(`There is no parameter we should care about. So skip reaction.`);
+                // This parameter does not have reaction so do nothing.
+                debug(`Reaction for ${key} not found.`);
+                return;
             }
-        });
+        } else {
+            debug(`There is no parameter we should care about. So skip reaction.`);
+            return;
+        }
     }
 
     /**
@@ -441,6 +427,17 @@ module.exports = class Flow {
                 payload: payload
             }
         } else if (intent.name != this.options.default_intent){
+            try {
+                require.resolve(`${this.options.skill_path}${intent.name}`);
+            } catch (e){
+                // This is no idea.
+                debug(`We conclude this is no idea since skill: "${intent.name}" not found.`);
+                return {
+                    result: "no_idea",
+                    intent: this.context.intent
+                }
+            }
+
             // This is dig or change intent or restart conversation.
 
             // Check if this is dig.
@@ -522,15 +519,11 @@ module.exports = class Flow {
                     }
                 ).catch(
                     (error) => {
-                        if (error.name == "BotExpressParseError"){
-                            debug(`Value does not fit to ${param_key}`);
-                            return {
-                                is_fit: false,
-                                key: param_key,
-                                value: payload
-                            }
-                        } else {
-                            throw(error);
+                        debug(`Value does not fit to ${param_key}`);
+                        return {
+                            is_fit: false,
+                            key: param_key,
+                            value: payload
                         }
                     }
                 )
@@ -583,19 +576,16 @@ module.exports = class Flow {
         );
     }
 
-    modify_previous_parameter(){
-        return new Promise((resolve, reject) => {
-            if (this.context.previous && this.context.previous.confirmed && this.context.previous.confirmed.length > 0){
-                if (this.bot.check_parameter_type(this.context.previous.confirmed[0]) != "not_applicable") {
-                    this.bot.collect(this.context.previous.confirmed[0]);
+    async modify_previous_parameter(){
+        if (this.context.previous && this.context.previous.confirmed && this.context.previous.confirmed.length > 0){
+            if (this.bot.check_parameter_type(this.context.previous.confirmed[0]) != "not_applicable") {
+                this.bot.collect(this.context.previous.confirmed[0]);
 
-                    // We remove this parameter from history.
-                    debug(`Removing ${this.context.previous.confirmed[0]} from previous.confirmed.`);
-                    this.context.previous.confirmed.shift();
-                }
+                // We remove this parameter from history.
+                debug(`Removing ${this.context.previous.confirmed[0]} from previous.confirmed.`);
+                this.context.previous.confirmed.shift();
             }
-            return resolve();
-        })
+        }
     }
 
     dig(intent){
@@ -628,7 +618,14 @@ module.exports = class Flow {
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
-            this.context.skill = this.instantiate_skill(this.context.intent.name);
+            let skill = this.instantiate_skill(this.context.intent.name);
+
+            if (!skill){
+                debug(`While it seems user tries to restart conversation, we ignore it since we have no corresponding skill.`);
+                return;
+            }
+
+            this.context.skill = skill;
         }
 
         // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
@@ -665,12 +662,8 @@ module.exports = class Flow {
                         }
                     ).catch(
                         (error) => {
-                            if (error.name == "BotExpressParseError"){
-                                debug("Parser rejected the value.");
-                                return this.react(error, param_key, this.context.intent.parameters[param_key]);
-                            } else {
-                                throw(error);
-                            }
+                            debug("Parser rejected the value.");
+                            return this.react(error, param_key, this.context.intent.parameters[param_key]);
                         }
                     )
                 );
@@ -686,7 +679,14 @@ module.exports = class Flow {
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
-            this.context.skill = this.instantiate_skill(this.context.intent.name);
+            let skill = this.instantiate_skill(this.context.intent.name);
+
+            if (!skill){
+                debug(`While it seems user tries to change intent, we ignore it since we have no corresponding skill.`);
+                return;
+            }
+
+            this.context.skill = skill;
         }
 
         // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
@@ -723,12 +723,8 @@ module.exports = class Flow {
                         }
                     ).catch(
                         (error) => {
-                            if (error.name == "BotExpressParseError"){
-                                debug("Parser rejected the value.");
-                                return this.react(error, param_key, this.context.intent.parameters[param_key]);
-                            } else {
-                                throw(error);
-                            }
+                            debug("Parser rejected the value.");
+                            return this.react(error, param_key, this.context.intent.parameters[param_key]);
                         }
                     )
                 );
@@ -745,13 +741,13 @@ module.exports = class Flow {
         }
 
         debug("Going to perform beginning action.");
-        let done_begin = new Promise((resolve, reject) => {
-            this.context.skill.begin(this.bot, this.event, this.context, resolve, reject);
-        });
-
-        return done_begin;
+        await this.context.skill.begin(this.bot, this.event, this.context);
     }
 
+    /**
+     * @method
+     * @return {context}
+     */
     async finish(){
         // If pause flag has been set, we stop processing remaining actions while keeping context.
         if (this.context._pause){
@@ -785,39 +781,36 @@ module.exports = class Flow {
 
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
         debug("Going to perform final action.");
-        let done_finish = new Promise((resolve, reject) => {
-            this.context.skill.finish(this.bot, this.event, this.context, resolve, reject);
-        });
 
-        return done_finish.then((response) => {
-            debug("Final action succeeded.");
-            // Double check if we have no parameters to confirm since developers can execute collect() method inside finsh().
-            if (this.context.to_confirm.length > 0){
-                debug("Going to collect parameter.");
-                return this._collect().then((response) => {
-                    return this.context;
-                });
-            }
+        // Execute finish method in skill.
+        await this.context.skill.finish(this.bot, this.event, this.context);
 
-            // Log skill status.
-            log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "completed");
+        // Double check if we have no parameters to confirm since developers can execute collect() method inside finsh().
+        if (this.context.to_confirm.length > 0){
+            debug("Going to collect parameter.");
+            return this._collect().then((response) => {
+                return this.context;
+            });
+        }
 
-            if (this.context.parent){
-                // This is sub skill so we get parent context back.
-                debug(`We finished sub skill and get back to parent skill "${this.context.parent.intent.name}".`);
-                this.context.parent.previous.message = this.context.previous.message.concat(this.context.parent.previous.message);
-                this.context = this.context.parent;
-                delete this.context.parent;
-            } else if (this.context.skill.clear_context_on_finish){
-                // This is Root skill. If clear_context_on_finish flag is true, we clear context.
-                debug(`Clearing context.`);
-                this.context = null;
-            } else {
-                // This is Root skill. And we need to keep context. But we should still discard param change history.
-                this.context.param_change_history = [];
-            }
+        // Log skill status.
+        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "completed");
 
-            return this.context;
-        })
+        if (this.context.parent){
+            // This is sub skill so we get parent context back.
+            debug(`We finished sub skill and get back to parent skill "${this.context.parent.intent.name}".`);
+            this.context.parent.previous.message = this.context.previous.message.concat(this.context.parent.previous.message);
+            this.context = this.context.parent;
+            delete this.context.parent;
+        } else if (this.context.skill.clear_context_on_finish){
+            // This is Root skill. If clear_context_on_finish flag is true, we clear context.
+            debug(`Clearing context.`);
+            this.context = null;
+        } else {
+            // This is Root skill. And we need to keep context. But we should still discard param change history.
+            this.context.param_change_history = [];
+        }
+
+        return this.context;
     }
 };

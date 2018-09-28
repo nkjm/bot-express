@@ -45,9 +45,14 @@ module.exports = class ReplyFlow extends Flow {
         debug("Going to perform super.apply_parameter().");
 
         let applied_parameter;
+        let error;
         try {
             applied_parameter = await super.apply_parameter(this.context.confirming, param_value);
         } catch (e) {
+            error = e;
+        }
+
+        if (error){
             // Language translation.
             let translated_param_value;
             if (typeof param_value == "string"){
@@ -72,19 +77,20 @@ module.exports = class ReplyFlow extends Flow {
             } else if (mind.result == "change_parameter"){
                 // Now there is no chance to run this case since detecting change parameter in reply flow is very likely to be false positive.
                 applied_parameter = await super.change_parameter(response.parameter.key, translated_param_value)
+                await super.react(error, this.context.confirming, param_value);
             } else if (mind.result == "no_idea"){
-                // Do nothing. Just go to reaction.
+                await super.react(error, this.context.confirming, param_value);
             } else {
                 throw new Error(`Mind is unknown.`);
             }
-        }
-
-        if (applied_parameter == null){
-            debug("Parameter was not applicable. We skip reaction and go to finish.");
         } else {
-            await super.react(null, applied_parameter.key, applied_parameter.value);
+            if (applied_parameter == null){
+                debug("Parameter was not applicable. We skip reaction and go to finish.");
+            } else {
+                await super.react(error, applied_parameter.key, applied_parameter.value);
+            }
         }
-
+        
         return await super.finish();
     }
 }

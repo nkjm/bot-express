@@ -358,6 +358,13 @@ module.exports = class Flow {
         }
     }
 
+    /**
+     * Method to execute reaction.
+     * @method
+     * @param {Error} error 
+     * @param {String} key 
+     * @param {*} value 
+     */
     async react(error, key, value){
         // If pause or exit flag found, we skip remaining process.
         if (this.context._pause || this.context._exit || this.context._init){
@@ -370,10 +377,10 @@ module.exports = class Flow {
         if (this.context.skill[param_type] && this.context.skill[param_type][key]){
             if (this.context.skill[param_type][key].reaction){
                 debug(`Reaction for ${key} found. Performing reaction...`);
-                return this.context.skill[param_type][key].reaction(error, value, this.bot, this.event, this.context);
+                await this.context.skill[param_type][key].reaction(error, value, this.bot, this.event, this.context);
             } else if (this.context.skill["reaction_" + key]){
                 debug(`Reaction for ${key} found. Performing reaction...`);
-                return this.context.skill["reaction_" + key](error, value, this.bot, this.event, this.context);
+                await this.context.skill["reaction_" + key](error, value, this.bot, this.event, this.context);
             } else {
                 // This parameter does not have reaction so do nothing.
                 debug(`Reaction for ${key} not found.`);

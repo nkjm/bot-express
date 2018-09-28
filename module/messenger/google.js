@@ -28,59 +28,57 @@ module.exports = class MessengerGoogle {
         return;
     }
 
-    multicast(event, to, messages){
-        return Promise.reject(new Error("This method is not supported."));
+    async multicast(event, to, messages){
+        throw new Error("This method is not supported.");
     }
 
-    send(event, to, messages){
-        return Promise.reject(new Error("This method is not supported."));
+    async send(event, to, messages){
+        throw new Error("This method is not supported.");
     }
 
-    reply_to_collect(event, messages){
-        this.reply(event, messages, true);
+    async reply_to_collect(event, messages){
+        return this.reply(event, messages, true);
     }
 
-    reply(event, messages, to_collect){
-        return new Promise((resolve, reject) => {
-            // If this is test, we will not actually issue call out.
-            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                debug("This is test so we skip the actual call out.");
-                return Promise.resolve();
-            }
-            if (!messages || !messages.length || messages.length === 0){
-                return reject(new Error("No message found"));
-            }
-            if (messages.length === 1){
-                if (to_collect){
-                    return resolve(this.sdk.ask(messages[0]));
-                }
-                return resolve(this.sdk.tell(messages[0]));
-            }
-            let concated_message = "";
-            let offset = 1;
-            messages.forEach(message => {
-                if (typeof message === "string"){
-                    concated_message += message;
-                    if (offset < messages.length){
-                        concated_message += "\n";
-                    }
-                } else {
-                    if (message.speech) concated_message += message.speech;
-                    if (message.title) concated_message += message.title;
-                }
-                offset++;
-            })
-            if (concated_message === ""){
-                return reject(new Error("No message found"));
-            }
+    async reply(event, messages, to_collect){
+        // If this is test, we will not actually issue call out.
+        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
+            debug("This is test so we skip the actual call out.");
+            return;
+        }
+        if (!messages || !messages.length || messages.length === 0){
+            throw new Error("No message found");
+        }
+        if (messages.length === 1){
             if (to_collect){
-                return resolve(this.sdk.ask(concated_message));
+                return this.sdk.ask(messages[0]);
             }
-            return resolve(this.sdk.tell(concated_message));
+            return this.sdk.tell(messages[0]);
+        }
+        let concated_message = "";
+        let offset = 1;
+        messages.forEach(message => {
+            if (typeof message === "string"){
+                concated_message += message;
+                if (offset < messages.length){
+                    concated_message += "\n";
+                }
+            } else {
+                if (message.speech) concated_message += message.speech;
+                if (message.title) concated_message += message.title;
+            }
+            offset++;
         })
+        if (concated_message === ""){
+            throw new Error("No message found");
+        }
+        if (to_collect){
+            return this.sdk.ask(concated_message);
+        }
+        return this.sdk.tell(concated_message);
     }
 
-    validate_signature(req){
+    async validate_signature(req){
         return this.sdk.isRequestFromGoogle(this.project_id);
     }
 

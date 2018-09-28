@@ -69,11 +69,11 @@ module.exports = class MessengerLine {
         })
     }
 
-    multicast(event, to, messages){
+    async multicast(event, to, messages){
         // If this is test, we will not actually issue call out.
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             debug("This is test so we skip the actual call out.");
-            return Promise.resolve();
+            return;
         }
 
         // return this.sdk.multicast(to, messages);
@@ -86,29 +86,30 @@ module.exports = class MessengerLine {
             to: to,
             messages: messages
         }
-        return request.postAsync({
+        let response = await request.postAsync({
             url: url,
             headers: headers,
             body: body,
             json: true
-        }).then((response) => {
-            if (response.statusCode == 200){
-                return response.body;
-            }
-            debug(`Failed to multicast message. Status code: ${response.statusCode}`);
-            debug(`Failed request body follows.`);
-            debug(JSON.stringify(body));
-            debug(`Failed response body follows.`);
-            debug(JSON.stringify(response.body));
-            return Promise.reject(response.body);
         });
+
+        if (response.statusCode == 200){
+            return response.body;
+        }
+
+        debug(`Failed to multicast message. Status code: ${response.statusCode}`);
+        debug(`Failed request body follows.`);
+        debug(JSON.stringify(body));
+        debug(`Failed response body follows.`);
+        debug(JSON.stringify(response.body));
+        throw new Error(response.body);
     }
 
-    send(event, to, messages){
+    async send(event, to, messages){
         // If this is test, we will not actually issue call out.
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             debug("This is test so we skip the actual call out.");
-            return Promise.resolve();
+            return;
         }
 
         //return this.sdk.pushMessage(to, messages);
@@ -121,33 +122,35 @@ module.exports = class MessengerLine {
             to: to,
             messages: messages
         }
-        return request.postAsync({
+
+        let response = await request.postAsync({
             url: url,
             headers: headers,
             body: body,
             json: true
-        }).then((response) => {
-            if (response.statusCode == 200){
-                return response.body;
-            }
-            debug(`Failed to send message. Status code: ${response.statusCode}`);
-            debug(`Failed request body follows.`);
-            debug(JSON.stringify(body));
-            debug(`Failed response body follows.`);
-            debug(JSON.stringify(response.body));
-            return Promise.reject(response.body);
         });
+
+        if (response.statusCode == 200){
+            return response.body;
+        }
+
+        debug(`Failed to send message. Status code: ${response.statusCode}`);
+        debug(`Failed request body follows.`);
+        debug(JSON.stringify(body));
+        debug(`Failed response body follows.`);
+        debug(JSON.stringify(response.body));
+        throw new Error(response.body);
     }
 
-    reply_to_collect(event, messages){
+    async reply_to_collect(event, messages){
         return this.reply(event, messages);
     }
 
-    reply(event, messages){
+    async reply(event, messages){
         // If this is test, we will not actually issue call out.
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             debug("This is test so we skip the actual call out.");
-            return Promise.resolve();
+            return;
         }
 
         //return this.sdk.replyMessage(event.replyToken, messages);
@@ -160,22 +163,23 @@ module.exports = class MessengerLine {
             replyToken: event.replyToken,
             messages: messages
         }
-        return request.postAsync({
+        
+        let response = await request.postAsync({
             url: url,
             headers: headers,
             body: body,
             json: true
-        }).then((response) => {
-            if (response.statusCode == 200){
-                return response.body;
-            }
-            debug(`Failed to reply message. Status code: ${response.statusCode}`);
-            debug(`Failed request body follows.`);
-            debug(JSON.stringify(body));
-            debug(`Failed response body follows.`);
-            debug(JSON.stringify(response.body));
-            return Promise.reject(response.body);
         });
+
+        if (response.statusCode == 200){
+            return response.body;
+        }
+        debug(`Failed to reply message. Status code: ${response.statusCode}`);
+        debug(`Failed request body follows.`);
+        debug(JSON.stringify(body));
+        debug(`Failed response body follows.`);
+        debug(JSON.stringify(response.body));
+        throw new Error(response.body);
     }
 
     async validate_signature(req){

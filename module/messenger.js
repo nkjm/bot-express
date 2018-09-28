@@ -138,7 +138,7 @@ class Messenger {
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    reply_to_collect(event, messages){
+    async reply_to_collect(event, messages){
         return this.service.reply_to_collect(event, messages);
     }
 
@@ -148,7 +148,7 @@ class Messenger {
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Promise.<Object>}
     */
-    reply(event, messages){
+    async reply(event, messages){
         return this.service.reply(event, messages);
     }
 
@@ -159,7 +159,7 @@ class Messenger {
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    send(event, recipient_id, messages){
+    async send(event, recipient_id, messages){
         return this.service.send(event, recipient_id, messages);
     }
 
@@ -169,7 +169,7 @@ class Messenger {
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    multicast(event, recipient_ids, messages){
+    async multicast(event, recipient_ids, messages){
         return this.service.multicast(event, recipient_ids, messages);
     }
 

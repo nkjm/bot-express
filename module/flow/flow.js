@@ -330,9 +330,6 @@ module.exports = class Flow {
     }
 
     _add_parameter(key, value, is_change = false){
-        debug(`Adding following value to parameter "${key}".`);
-        debug(value);
-
         // Add the parameter to "confirmed".
         let param = {};
         param[key] = value;
@@ -358,8 +355,6 @@ module.exports = class Flow {
     }
 
     async react(error, key, value){
-        debug(`Going to perform reaction.`);
-
         // If pause or exit flag found, we skip remaining process.
         if (this.context._pause || this.context._exit || this.context._init){
             debug(`Detected pause or exit or init flag so we skip reaction.`);

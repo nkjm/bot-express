@@ -224,7 +224,7 @@
 
         <tr>
             
-                <td class="name"><code>plugin</code></td>
+                <td class="name"><code>translator</code></td>
             
 
             <td class="type">
@@ -240,7 +240,7 @@
 
             
 
-            <td class="description last">Object which has direct access to each messenger libraries.</td>
+            <td class="description last">Translator instance.</td>
         </tr>
 
     
@@ -858,7 +858,7 @@
     
 
     
-    <h4 class="name" id="collect"><span class="type-signature"></span>collect<span class="signature">(arg)</span><span class="type-signature"> &rarr; {Null}</span></h4>
+    <h4 class="name" id="collect"><span class="type-signature"></span>collect<span class="signature">(arg, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Null}</span></h4>
     
 
     
@@ -890,6 +890,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -918,10 +920,120 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last">Name of the skill parameter or skill_parameter_container object to collect.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Option object.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dedup</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">Set false to allow collecting same parameter multiple times.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -962,7 +1074,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line377">line 377</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line379">line 379</a>
     </li></ul></dd>
     
 
@@ -1138,7 +1250,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line524">line 524</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line534">line 534</a>
     </li></ul></dd>
     
 
@@ -1399,7 +1511,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line466">line 466</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line476">line 476</a>
     </li></ul></dd>
     
 
@@ -1556,7 +1668,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line475">line 475</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line485">line 485</a>
     </li></ul></dd>
     
 
@@ -1713,7 +1825,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line484">line 484</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line494">line 494</a>
     </li></ul></dd>
     
 
@@ -1870,7 +1982,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line493">line 493</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line503">line 503</a>
     </li></ul></dd>
     
 
@@ -2027,7 +2139,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line502">line 502</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line512">line 512</a>
     </li></ul></dd>
     
 
@@ -2184,7 +2296,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line511">line 511</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line521">line 521</a>
     </li></ul></dd>
     
 
@@ -3345,7 +3457,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Sep 11 2018 09:54:59 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Sep 28 2018 10:48:47 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

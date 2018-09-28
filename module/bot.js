@@ -372,15 +372,21 @@ class Bot {
     /**
     * Make the specified skill paramter being collected next.
     * @param {String|Skill#skill_parameter_container} arg - Name of the skill parameter or skill_parameter_container object to collect.
+    * @param {Object} [options] - Option object.
+    * @param {Boolean} [options.dedup=true] - Set false to allow collecting same parameter multiple times.
     * @returns {Null}
     */
-    collect(arg){
+    collect(arg, options = {}){
+        if (options.dedup === undefined || options.dedup === null){
+            options.dedup = true;
+        }
+
         if (typeof arg == "string"){
             debug(`Reserving collection of parameter: ${arg}.`);
-            return this._collect_by_parameter_key(arg);
+            return this._collect_by_parameter_key(arg, options);
         } else if (typeof arg == "object"){
             debug(`Reserving collection of parameter: ${Object.keys(arg)[0]}.`);
-            return this._collect_by_parameter_obj(arg);
+            return this._collect_by_parameter_obj(arg, options);
         } else {
             throw(new Error("Invalid argument for messenger.collect()"));
         }
@@ -390,18 +396,20 @@ class Bot {
     * Collect specified parameter.
     * @private
     * @param {String} parameter_key - Name of the parameter to collect.
+    * @param {Object} options - Option object.
+    * @param {Boolean} options.dedup - Set false to allow collecting same parameter multiple times.
     * @returns {Null}
     */
-    _collect_by_parameter_key(parameter_key){
+    _collect_by_parameter_key(parameter_key, options){
         // If there is confirmed parameter, we remove it to re-confirm.
         if (this._context.confirmed[parameter_key]){
             delete this._context.confirmed[parameter_key];
         }
 
-        // If the parameter is already in the to_confirm list, we remove it to avoid duplicate.
+        // If the parameter is already in the to_confirm list and dedup is true, we remove it to avoid duplicate.
         let index_to_remove = this._context.to_confirm.indexOf(parameter_key);
-        if (index_to_remove !== -1){
-            debug(`Removing ${parameter_key} from to_confirm.`);
+        if (index_to_remove !== -1 && options.dedup){
+            debug(`We found this parameter has already been confirmed so remove ${parameter_key} from to_confirm to dedup.`);
             this._context.to_confirm.splice(index_to_remove, 1);
         }
 
@@ -413,9 +421,11 @@ class Bot {
     * Collect specified parameter.
     * @private
     * @param {Skill#skill_parameter_container} param_container - The parameter container object to collect.
+    * @param {Object} options - Option object.
+    * @param {Boolean} options.dedup - Set false to allow collecting same parameter multiple times.
     * @returns {Null}
     */
-    _collect_by_parameter_obj(param_container){
+    _collect_by_parameter_obj(param_container, options){
         if (Object.keys(param_container).length !== 1){
             throw("Malformed parameter container object. You can pass just 1 parameter.");
         }
@@ -448,8 +458,8 @@ class Bot {
 
         // If the parameter is already in the to_confirm list, we remove it to avoid duplicate.
         let index_to_remove = this._context.to_confirm.indexOf(param_key);
-        if (index_to_remove !== -1){
-            debug(`We found the parameter in to_confirm so removing it to avoid duplicate.`);
+        if (index_to_remove !== -1 && options.dedup){
+            debug(`We found this parameter has already been confirmed so remove ${param_key} from to_confirm to dedup.`);
             this._context.to_confirm.splice(index_to_remove, 1);
         }
 

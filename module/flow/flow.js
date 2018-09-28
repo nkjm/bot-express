@@ -162,6 +162,11 @@ module.exports = class Flow {
         return false;
     }
 
+    /**
+     * Send/reply to user to ask to_confirm parameter.
+     * @method
+     * @return {Promise}
+     */
     async _collect(){
         if (this.context.to_confirm.length == 0){
             debug("While collect() is called, there is no parameter to confirm.");
@@ -189,8 +194,7 @@ module.exports = class Flow {
             debug("Found messenger specific message object.");
             message = this.context.skill[param_type][param_key].message_to_confirm[this.bot.type];
         } else if (this.context.skill[param_type][param_key].message_to_confirm){
-            // Found common message object. We compile this message object to get message platform specific message object.
-            debug("Found common message object.");
+            // We compile this message object to get message platform specific message object.
             message = this.context.skill[param_type][param_key].message_to_confirm;
         }
 
@@ -216,10 +220,10 @@ module.exports = class Flow {
         if (this.context._flow == "push"){
             debug("We use send method to collect parameter since this is push flow.");
             debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
-            return this.bot.send(this.event.to[`${this.event.to.type}Id`], message_to_confirm, this.context.sender_language);
+            await this.bot.send(this.event.to[`${this.event.to.type}Id`], message_to_confirm, this.context.sender_language);
         } else {
             debug("We use reply method to collect parameter.");
-            return this.bot.reply_to_collect(message_to_confirm);
+            await this.bot.reply_to_collect(message_to_confirm);
         }
     }
 
@@ -769,9 +773,8 @@ module.exports = class Flow {
         // If we still have parameters to confirm, we collect them.
         if (this.context.to_confirm.length > 0){
             debug("Going to collect parameter.");
-            return this._collect().then((response) => {
-                return this.context;
-            });
+            await this._collect();
+            return this.context;
         }
 
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
@@ -783,9 +786,8 @@ module.exports = class Flow {
         // Double check if we have no parameters to confirm since developers can execute collect() method inside finsh().
         if (this.context.to_confirm.length > 0){
             debug("Going to collect parameter.");
-            return this._collect().then((response) => {
-                return this.context;
-            });
+            await this._collect();
+            return this.context;
         }
 
         // Log skill status.

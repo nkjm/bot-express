@@ -30,7 +30,7 @@ class Bot {
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */
-    reply_to_collect(messages){
+    async reply_to_collect(messages){
         return this.reply(messages, true)
     }
 
@@ -39,7 +39,7 @@ class Bot {
     * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to reply.
     * @returns {Promise.<Object>} - Returns promise returning response from Messenger API.
     */
-    reply(messages, to_collect = false){
+    async reply(messages, to_collect = false){
         if (messages){
             this.queue(messages);
         }
@@ -105,7 +105,7 @@ class Bot {
     * @param {String} language - ISO-639-1 based language code to translate to.
     * @returns {Promise.<Object>} - Returns promise returning response from Messenger API.
     */
-    send(recipient_id, messages, language){
+    async send(recipient_id, messages, language){
         // If messages is not array, we make it array.
         if (messages.length === undefined){
             messages = [messages];
@@ -163,7 +163,7 @@ class Bot {
     * @param {String} language - ISO-639-1 based language code to translate to.
     * @returns {Promise.<Object>} - Returns promise returning response from Messenger API.
     */
-    multicast(recipient_ids, messages, language){
+    async multicast(recipient_ids, messages, language){
         // If messages is not array, we make it array.
         if (messages.length === undefined){
             messages = [messages];

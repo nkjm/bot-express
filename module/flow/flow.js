@@ -309,7 +309,7 @@ module.exports = class Flow {
         In case of string and object, we use builtin parser.
         As for the object, following is the format.
         @param {Object} parser
-        @param {String} parser.type - Type of builting parser. Supported value is dialogflow.
+        @param {String} parser.type - Type of builtin parser. Supported value is dialogflow.
         @param {String} [parser.parameter] - The parameter name which is defined in dialogflow. When this value is undefined, we use the parameter name of the skill.
         */
         if (typeof parser === "function"){

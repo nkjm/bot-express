@@ -594,7 +594,7 @@ module.exports = class Flow {
         }
     }
 
-    dig(intent){
+    async dig(intent){
         this.context.parent = {
             intent: this.context.intent,
             skill: {

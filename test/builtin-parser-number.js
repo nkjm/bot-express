@@ -38,7 +38,7 @@ describe("Test builtin number parser", async function(){
             context.intent.name.should.equal("test-builtin-parser-number");
             context.confirming.should.equal("minmax");
 
-            context = await emu.send(emu.create_message_event(user_id, 2));
+            context = await emu.send(emu.create_postback_event(user_id, { data: 2 }));
 
             // Test
             should.not.exist(context.confirmed.minmax);
@@ -64,7 +64,7 @@ describe("Test builtin number parser", async function(){
             context.intent.name.should.equal("test-builtin-parser-number");
             context.confirming.should.equal("minmax");
 
-            context = await emu.send(emu.create_message_event(user_id, 6));
+            context = await emu.send(emu.create_postback_event(user_id, { data: 6 }));
 
             // Test
             should.not.exist(context.confirmed.minmax);
@@ -90,7 +90,7 @@ describe("Test builtin number parser", async function(){
             context.intent.name.should.equal("test-builtin-parser-number");
             context.confirming.should.equal("minmax");
 
-            context = await emu.send(emu.create_message_event(user_id, 5));
+            context = await emu.send(emu.create_postback_event(user_id, { data: 5 }));
 
             // Test
             context.confirmed.minmax.should.equal(5);
@@ -153,7 +153,7 @@ describe("Test builtin number parser", async function(){
             context = await emu.send(emu.create_message_event(user_id, "123"));
 
             // Test
-            context.confirmed.minmax.should.equal(123);
+            context.confirmed.no_policy.should.equal(123);
         });
     });
 });

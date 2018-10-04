@@ -8,7 +8,7 @@ module.exports = class ParserEmail {
      * @param {Object} [options]
      */
     constructor(options){
-        this.type = "string";
+        this.type = "email";
         this.required_options = [];
 
         for (let required_option of this.required_options){

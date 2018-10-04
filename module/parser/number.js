@@ -8,7 +8,7 @@ module.exports = class ParserNumber {
      * @param {Object} [options]
      */
     constructor(options){
-        this.type = "string";
+        this.type = "number";
         this.required_options = [];
 
         for (let required_option of this.required_options){
@@ -32,14 +32,19 @@ module.exports = class ParserNumber {
         let parsed_value;
 
         if (typeof param.value != "number"){
-            if (typeof param.value != "string"){
-                throw new Error("should_be_number");
-            }
+            if (typeof param.value == "string"){
+                parsed_value = Number(param.value);
 
-            parsed_value = Number(param.value);
-
-            if (parsed_value === NaN){
-                throw new Error("should_be_number");
+                if (parsed_value === NaN){
+                    throw new Error("should_be_number");
+                }
+            } else if (typeof param.value == "object"){
+                let value = param.value.data;
+                if (typeof value == "number"){
+                    parsed_value = value;
+                } else {
+                    throw new Error("should_be_number");
+                }
             }
         } else {
             parsed_value = param.value;

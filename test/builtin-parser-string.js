@@ -122,7 +122,7 @@ describe("Test builtin string parser", async function(){
             context = await emu.send(emu.create_message_event(user_id, "マルゲリータ"));
 
             // Test
-            context.confirmed.katakana.should.equal("まるげりいた");
+            context.confirmed.hiragana.should.equal("まるげりいた");
         });
     });
 
@@ -151,7 +151,7 @@ describe("Test builtin string parser", async function(){
             context = await emu.send(emu.create_message_event(user_id, "まるげりいた"));
 
             // Test
-            context.confirmed.katakana.should.equal("まるげりいた");
+            context.confirmed.hiragana.should.equal("まるげりいた");
         });
     });
 
@@ -315,7 +315,7 @@ describe("Test builtin string parser", async function(){
 
             context = await emu.send(emu.create_message_event(user_id, "abb"));
 
-            context.confirming.regex.should.equal("abb");
+            context.confirmed.regex.should.equal("abb");
         });
     });
 
@@ -344,7 +344,7 @@ describe("Test builtin string parser", async function(){
             context.intent.name.should.equal("test-builtin-parser-string");
             context.confirming.should.equal("no_policy");
 
-            context = await emu.send(emu.create_message_event(user_id, 1));
+            context = await emu.send(emu.create_postback_event(user_id, {data: 1}));
 
             // Test
             should.not.exist(context.confirmed.no_policy);
@@ -352,7 +352,7 @@ describe("Test builtin string parser", async function(){
             context = await emu.send(emu.create_message_event(user_id, "マルゲリータ"));
 
             // Test
-            context.confirming.no_policy.should.equal("マルゲリータ");
+            context.confirmed.no_policy.should.equal("マルゲリータ");
         });
     });
 

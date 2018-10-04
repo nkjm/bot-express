@@ -72,7 +72,7 @@ Function which is applied to the message from user to validate the value. You ca
 The object of built-in parser configuratin.
 @typedef {Object} Skill#parser_object
 @property {String} type - Type of built-in parser. Supported value is dialogflow.
-@property {String} [parameter] - The parameter name which is defined in dialogflow. When this value is undefined, we use the parameter name of the skill.
+@property {Object} policy - Policy configuration depending on the each parser implementation.
 */
 
 /**

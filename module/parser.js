@@ -14,39 +14,52 @@ class Parser {
     @param {Array.<Object>} options_list
     */
     constructor(options_list = []){
-        this._parsers = [];
+        this.parsers = [];
 
-        for (let options of options_list){
-            if (!options.type) throw new Error(`Type of the parser not set.`);
+        let scripts = fs.readdirSync(__dirname + "/parser");
 
-            if (!options.type.match(/^[a-z\d-]+$/i)) throw new Error(`Type of the parser: ${options.type} is invalid.`);
-
-            try {
-                this._parsers.push({
-                    type: options.type,
-                    options: options.options,
-                    parser: require(`./parser/${options.type}`)
-                });
-                debug(`Builtin parser: ${options.type} loaded.`);
-            } catch(e) {
-                throw new Error(`Spedified parser type: ${options.type} not found under parser directory or could not import.`);
+        for (let script of scripts){
+            if (!script.match(/.js$/)){
+                // Skip directory or other non-js file.
+                continue;
             }
+            
+            debug("Loading parser implementaion: " + script + "...");
+            let Parser_implementation= require("./parser/" + script);
+            let options = options_list.find(options => options.type === script.replace(".js", ""));
+            if (!options){
+                options = {};
+            }
+            
+            try {
+                let parser = new Parser_implementation(options.options);
+                this.parsers.push(parser);
+            } catch(e){
+                debug(`Failed to instanticate parser implementation: ${script} so we skip this parser.`);
+                if (e && e.message){
+                    debug(e.message);
+                }
+                continue;
+            }
+            debug(`Builtin parser: ${script} loaded.`);
         }
     }
 
     /**
-    @method parse
-    @param {String} parser - Name of the builtin parser. Need to exist ${parser}.js under module/parser directory.
-    @param {Object} param
-    @param {String} param.key
-    @param {String} param.value
-    @param {Object} bot
-    @param {Object} event
-    @param {Object} context
-    */
-    async parse(parser, param, bot, event, context){
-        let builtin_parser = this._parsers.find(builtin_parser => builtin_parser.type === parser);
-        return builtin_parser.parser(builtin_parser.options, param, bot, event, context);
+     * @method parse
+     * @param {String} parser_type - Name of the builtin parser. Need to exist ${parser}.js under module/parser directory.
+     * @param {Object} param
+     * @param {String} param.key
+     * @param {String} param.value
+     * @param {Object} policy - Policy configuration depending on the implementation of each parser.
+     */
+    async parse(parser_type, param, policy){
+        if (!param || !param.key){
+            throw new Error("param.key is required.");
+        }
+
+        let parser = this.parsers.find(parser => parser.type === parser_type);
+        return parser.parse(param, policy);
     }
 }
 

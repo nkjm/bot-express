@@ -39,7 +39,8 @@
     "morgan": "^1.8.1",
     "redis": "^2.8.0",
     "request": "^2.87.0",
-    "secure-compare": "^3.0.1"
+    "secure-compare": "^3.0.1",
+    "wanakana": "^4.0.2"
   },
   "devDependencies": {
     "chai": "*",

@@ -1,10 +1,8 @@
 "use strict";
 
 const debug = require("debug")("bot-express:skill");
-const parser = require("../sample_service/parser");
-const mecab = require("mecabaas-client");
 
-module.exports = class SkillHandlePizzaOrder {
+module.exports = class SkillTestBuiltinParserDialogflow {
 
     // コンストラクター。このスキルで必要とする、または指定することができるパラメータを設定します。
     constructor() {
@@ -54,70 +52,6 @@ module.exports = class SkillHandlePizzaOrder {
                 },
                 parser: "dialogflow"
             },
-            address: {
-                message_to_confirm: {
-                    type: "text",
-                    text: "お届け先の住所を教えていただけますか？"
-                },
-                parser: async (value, bot, event, context) => {
-                    if (typeof value == "string"){
-                        return {
-                            address: value,
-                            latitude: null,
-                            longitude: null
-                        }
-                    } else if (typeof value == "object"){
-                        if (value.address){
-                            // This is LINE location message.
-                            return {
-                                address: value.address,
-                                latitude: value.latitude,
-                                longitude: value.longitude
-                            }
-                        } else if (value.attachments){
-                            for (let attachment of value.attachments){
-                                if (attachment.type == "location"){
-                                    return {
-                                        address: null, // Need to fill out some day...
-                                        latitude: attachment.payload.coordinates.lat,
-                                        longitude: attachment.payload.coordinates.long
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    throw new Error();
-                }
-            },
-            name: {
-                message_to_confirm: {
-                    type: "text",
-                    text: "お客様のお名前を教えていただけますか？"
-                },
-                parser: async (value, bot, event, context) => {
-                    let lastname, firstname, fullname;
-                    return mecab.parse(value).then(
-                        (response) => {
-                            for (let elem of response){
-                                if (elem[3] == "人名" && elem[4] == "姓"){
-                                    lastname = elem[0];
-                                } else if (elem[3] == "人名" && elem[4] == "名"){
-                                    firstname = elem[0];
-                                }
-                            }
-                            fullname = "";
-                            if (lastname) fullname += lastname + " "; // Add trailing space. It will be removed if we don't have firstname.
-                            if (firstname) fullname += firstname;
-                            if (fullname == "") throw new Error();
-                            return fullname.trim();
-                        },
-                        (response) => {
-                            throw new Error(response);
-                        }
-                    )
-                }
-            },
             review: {
                 message_to_confirm: (bot, event, context) => {
                     let message = {
@@ -134,7 +68,12 @@ module.exports = class SkillHandlePizzaOrder {
                     }
                     return message;
                 },
-                parser: {type: "dialogflow", parameter: "yes_no"},
+                parser: {
+                    type: "dialogflow", 
+                    policy: {
+                        parameter_name: "yes_no"
+                    }
+                },
                 reaction: async (error, value, bot, event, context) => {
                     if (error) return;
 
@@ -149,11 +88,6 @@ module.exports = class SkillHandlePizzaOrder {
         this.clear_context_on_finish = true;
     }
 
-    // パラメーターが全部揃ったら実行する処理を記述します。
     async finish(bot, event, context){
-        const messages = {
-            text: `${context.confirmed.name} 様、ご注文ありがとうございました！${context.confirmed.pizza}の${context.confirmed.size}サイズを30分以内にご指定の${context.confirmed.address.address}までお届けに上がります。`
-        };
-        await bot.reply(messages);
     }
 };

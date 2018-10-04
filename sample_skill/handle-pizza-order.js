@@ -1,8 +1,6 @@
 "use strict";
 
 const debug = require("debug")("bot-express:skill");
-const parser = require("../sample_service/parser");
-const mecab = require("mecabaas-client");
 
 module.exports = class SkillHandlePizzaOrder {
 
@@ -96,27 +94,19 @@ module.exports = class SkillHandlePizzaOrder {
                     type: "text",
                     text: "最後に、お客様のお名前を教えていただけますか？"
                 },
-                parser: async (value, bot, event, context) => {
-                    let lastname, firstname, fullname;
-                    return mecab.parse(value).then(
-                        (response) => {
-                            for (let elem of response){
-                                if (elem[3] == "人名" && elem[4] == "姓"){
-                                    lastname = elem[0];
-                                } else if (elem[3] == "人名" && elem[4] == "名"){
-                                    firstname = elem[0];
-                                }
-                            }
-                            fullname = "";
-                            if (lastname) fullname += lastname + " "; // Add trailing space. It will be removed if we don't have firstname.
-                            if (firstname) fullname += firstname;
-                            if (fullname == "") throw new Error();
-                            return fullname.trim();
-                        },
-                        (response) => {
-                            throw new Error();
-                        }
-                    )
+                parser: {
+                    type: "string",
+                    policy: {
+                        max: 20
+                    }
+                },
+                reaction: async (error, value, bot, event, context) => {
+                    if (error){
+                        bot.change_message_to_confirm("name", {
+                            type: "text",
+                            text: "すみません、お名前は20文字まででお願いします。"
+                        })
+                    }
                 }
             }
         }

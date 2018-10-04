@@ -255,6 +255,9 @@ module.exports = class Flow {
         } catch (e) {
             debug(`Parser rejected following value for parameter: "${key}".`);
             debug(JSON.stringify(value));
+            if (e.message){
+                debug(e.message);
+            }
             throw(e);
         }
 
@@ -310,7 +313,7 @@ module.exports = class Flow {
         As for the object, following is the format.
         @param {Object} parser
         @param {String} parser.type - Type of builtin parser. Supported value is dialogflow.
-        @param {String} [parser.parameter] - The parameter name which is defined in dialogflow. When this value is undefined, we use the parameter name of the skill.
+        @param {String} parser.policy - Policy configuration depending on the each parser implementation.
         */
         if (typeof parser === "function"){
             // We use the defined function.
@@ -319,14 +322,14 @@ module.exports = class Flow {
         } else if (typeof parser === "string"){
             // We use builtin parser.
             debug(`Parser is string so we use builtin parser: ${parser}.`);
-            return this.builtin_parser.parse(parser, {key: key, value: value}, this.bot, this.event, this.context);
+            return this.builtin_parser.parse(parser, {key: key, value: value}, {});
         } else if (typeof parser === "object"){
             // We use builtin parser.
             if (!parser.type){
                 throw new Error(`Parser object is invalid. Required property: "type" not found.`);
             }
             debug(`Parser is object so we use builtin parser: ${parser.type}.`);
-            return this.builtin_parser.parse(parser.type, {key: parser.parameter || key, value: value}, this.bot, this.event, this.context);
+            return this.builtin_parser.parse(parser.type, {key: key, value: value}, parser.policy);
         } else {
             // Invalid parser.
             throw new Error(`Parser for the parameter: ${key} is invalid.`);

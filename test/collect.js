@@ -5,135 +5,131 @@ require("dotenv").config();
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const Emulator = require("../test-util/emulator");
-const messenger_options = [{
+const messenger_option = {
     name: "line",
     options: {
         line_channel_secret: process.env.LINE_CHANNEL_SECRET
     }
-}];
+};
 
 chai.use(chaiAsPromised);
 const should = chai.should();
 
-for (let messenger_option of messenger_options){
-    let emu = new Emulator(messenger_option.name, messenger_option.options);
+const emu = new Emulator(messenger_option.name, messenger_option.options);
+const user_id = "dummy_user_id";
 
-    describe("Test collect from " + emu.messenger_type, function(){
-        let user_id = "collect";
+describe("Test collect", async function(){
 
-        describe("collect undefined parameter using collect_by_parameter_obj()", function(){
-            it("will collect parameter as dynamic parameter.", function(){
-                this.timeout(15000);
+    describe("Collect undefined parameter using collect_by_parameter_obj()", async function(){
+        it("will collect parameter as dynamic parameter.", async function(){
+            this.timeout(15000);
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_postback_event(user_id, {
-                        data: JSON.stringify({
-                            _type: "intent",
-                            intent: {
-                                name: "juminhyo"
-                            },
-                            language: "ja"
-                        })
-                    });
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking juminhyo type
-                    let event = emu.create_message_event(user_id, "本人だけ");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking name.
-                    let event = emu.create_message_event(user_id, "中嶋一樹です");
-                    context.to_confirm.includes("is_name_correct").should.equal(false);
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now confirming if name is correct.
-                    context.to_confirm.includes("is_name_correct").should.equal(true);
-                    context.confirming.should.equal("is_name_correct");
-                });
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-collect"
+                    }
+                })
             });
-        })
+            let context = await emu.send(event);
 
-        describe("collect optional parameter using collect_by_parameter_key()", function(){
-            it("will collect optional parameter.", function(){
-                this.timeout(15000);
+            context.intent.name.should.equal("test-collect");
+            context.confirming.should.equal("req_a");
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_postback_event(user_id, {
-                        data: JSON.stringify({
-                            _type: "intent",
-                            intent: {
-                                name: "juminhyo"
-                            },
-                            language: "ja"
-                        })
-                    });
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking juminhyo type
-                    let event = emu.create_message_event(user_id, "本人だけ");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking name.
-                    let event = emu.create_message_event(user_id, "中嶋一樹です");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now confirming if name is correct.
-                    let event = emu.create_message_event(user_id, "いいえ");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking lastname
-                    context.should.have.property("confirming", "lastname");
-                    context.to_confirm[0].should.equal("lastname");
+            context = await emu.send(emu.create_message_event(user_id, "dynamic"));
 
-                    let event = emu.create_message_event(user_id, "中嶋");
-                    return emu.send(event);
-                }).then(function(context){
-                    context.confirmed.should.have.property("lastname", "中嶋");
-                });
-            });
-        });
-
-        describe("collect required parameter using collect_by_parameter_obj()", function(){
-            it("will collect required parameter with overriden message.", function(){
-                this.timeout(15000);
-
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_postback_event(user_id, {
-                        data: JSON.stringify({
-                            _type: "intent",
-                            intent: {
-                                name: "juminhyo"
-                            },
-                            language: "ja"
-                        })
-                    });
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking juminhyo type
-                    let event = emu.create_message_event(user_id, "本人だけ");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking name.
-                    let event = emu.create_message_event(user_id, "中嶋一樹です");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now confirming if name is correct.
-                    let event = emu.create_message_event(user_id, "はい");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking zip code.
-                    let event = emu.create_message_event(user_id, "107-0061");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking if address is correct.
-                    let event = emu.create_message_event(user_id, "いいえ");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is now asking zip code once again.
-                    context.previous.message[0].message.text.should.equal("なんと。もう一度郵便番号うかがってもいいですか？");
-                });;
-            });
+            context.confirming.should.equal("dynamic");
+            context.previous.message[0].message.text.should.equal("dynamic?");
         });
     });
 
-}
+    describe("collect optional parameter using collect_by_parameter_key()", async function(){
+        it("will collect optional parameter.", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-collect"
+                    }
+                })
+            });
+            let context = await emu.send(event);
+
+            context.intent.name.should.equal("test-collect");
+            context.confirming.should.equal("req_a");
+
+            context = await emu.send(emu.create_message_event(user_id, "opt_a_key"));
+
+            context.confirming.should.equal("opt_a");
+            context.previous.message[0].message.text.should.equal("opt_a?");
+        });
+    });
+
+    describe("collect optional parameter using collect_by_parameter_obj()", async function(){
+        it("will collect optional parameter with overriden message.", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-collect"
+                    }
+                })
+            });
+            let context = await emu.send(event);
+
+            context.intent.name.should.equal("test-collect");
+            context.confirming.should.equal("req_a");
+
+            context = await emu.send(emu.create_message_event(user_id, "opt_a_obj"));
+
+            context.confirming.should.equal("opt_a");
+            context.previous.message[0].message.text.should.equal("opt_a_obj?");
+        });
+    });
+
+    describe("collect required parameter using collect_by_parameter_obj()", async function(){
+        it("will collect required parameter with overriden message.", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-collect"
+                    }
+                })
+            });
+            let context = await emu.send(event);
+
+            context.intent.name.should.equal("test-collect");
+            context.confirming.should.equal("req_a");
+
+            context = await emu.send(emu.create_message_event(user_id, "req_b"));
+
+            context.confirming.should.equal("req_b");
+            context.previous.message[0].message.text.should.equal("req_b_obj?");
+
+            context = await emu.send(emu.create_message_event(user_id, "hoge"));
+
+            should.not.exist(context.confirming);
+        });
+    });
+});
+

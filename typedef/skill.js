@@ -63,8 +63,6 @@ Function which is applied to the message from user to validate the value. You ca
 @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
 @param {Object} event - Event object which triggers this flow.
 @param {context} context - Context information.
-@param {Function} resolve - Method to call when parser judges the value fits the parameter. Return the parsed value as its argument.
-@param {Function} reject - Method to call when parse judges the value does not fit the parameter. Optionally return the reason as its argument.
 @return {Promise} You have to return promise including parsed value or error object.
 */
 

@@ -15,115 +15,142 @@ const messenger_option = {
 chai.use(chaiAsPromised);
 const should = chai.should();
 
-let emu = new Emulator(messenger_option.name, messenger_option.options);
+const emu = new Emulator(messenger_option.name, messenger_option.options);
+const user_id = "dummy_user_id";
 
-describe("Test parser from " + emu.messenger_type, function(){
-    let user_id = "parser";
-
-    describe("NLP return some params but no corresponding parameter found in skill", function(){
-        it("will skip that parameter.", function(){
+describe("Test parser", async function(){
+    describe("Valid parameter value is included in intent response", async function(){
+        it("will be applied in advance", async function(){
             this.timeout(15000);
 
-            return emu.clear_context(user_id).then(function(){
-                let event = emu.create_postback_event(user_id, {
-                    data: JSON.stringify({
-                        _type: "intent",
-                        intent: {
-                            name: "juminhyo",
-                            parameters: {
-                                dummy: "dummy"
-                            }
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-parser",
+                        parameters: {
+                            function_based: "本人だけ"
                         }
-                    })
-                });
-                return emu.send(event);
-            }).then(function(context){
-                context.should.have.property("confirming", "type");
-                context.confirmed.should.deep.equal({});
+                    }
+                })
             });
+            let context = await emu.send(event);
+
+            context.intent.name.should.equal("test-parser");
+            context.confirmed.function_based.should.equal("本人だけ");
+        });
+    })
+
+    describe("Invalid parameter value is included in intent response", async function(){
+        it("will be rejected", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-parser",
+                        parameters: {
+                            function_based: "他人の分"
+                        }
+                    }
+                })
+            });
+            let context = await emu.send(event);
+
+            context.intent.name.should.equal("test-parser");
+            should.not.exist(context.confirmed.function_based);
+        });
+    })
+
+    describe("Parameter is included in intent response but there is no corresponding parameter in skill", async function(){
+        it("will be ignored", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-parser",
+                        parameters: {
+                            dummy_param: "dummy_value"
+                        }
+                    }
+                })
+            });
+            let context = await emu.send(event);
+
+            context.intent.name.should.equal("test-parser");
+            context.confirming.should.equal("function_based");
+        });
+    })
+
+    describe("Function based parser", async function(){
+        it("will run function", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-parser",
+                    }
+                })
+            });
+            let context = await emu.send(event);
+
+            context.intent.name.should.equal("test-parser");
+            context.confirming.should.equal("function_based");
+            
+            context = await emu.send(emu.create_message_event(user_id, "他人の分"));
+
+            should.not.exist(context.confirmed.function_based);
+            context.previous.message[0].message.text.should.equal("「世帯全員分」または「本人だけ」とお答えください。");
+
+            context = await emu.send(emu.create_message_event(user_id, "本人だけ"));
+
+            context.confirmed.function_based.should.equal("本人だけ")
         });
     });
 
-    describe("There is corresponding parameter and parser. If parser succeeds,", function(){
-        it("will apply the value.", function(){
+    describe("No parser", async function(){
+        it("will apply the value as it is unless the value is empty.", async function(){
             this.timeout(15000);
 
-            return emu.clear_context(user_id).then(function(){
-                let event = emu.create_postback_event(user_id, {
-                    data: JSON.stringify({
-                        _type: "intent",
-                        intent: {
-                            name: "juminhyo"
+            await emu.clear_context(user_id);
+
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-parser",
+                        parameters: {
+                            function_based: "本人だけ"
                         }
-                    })
-                });
-                return emu.send(event);
-            }).then(function(context){
-                context.should.have.property("confirming", "type");
-                context.confirmed.should.deep.equal({});
-                let event = emu.create_message_event(user_id, "世帯全員分");
-                return emu.send(event);
-            }).then(function(context){
-                context.confirmed.should.have.property("type", "世帯全員分");
+                    }
+                })
             });
-        });
-    });
+            let context = await emu.send(event);
 
-    describe("There is corresponding parameter and parser. If parser fails,", function(){
-        it("does not apply the value and ask samke question once again.", function(){
-            this.timeout(15000);
+            context.intent.name.should.equal("test-parser");
+            context.confirming.should.equal("no_parser");
 
-            return emu.clear_context(user_id).then(function(){
-                let event = emu.create_postback_event(user_id, {
-                    data: JSON.stringify({
-                        _type: "intent",
-                        intent: {
-                            name: "juminhyo"
-                        }
-                    })
-                });
-                return emu.send(event);
-            }).then(function(context){
-                context.should.have.property("confirming", "type");
-                context.confirmed.should.deep.equal({});
-                let event = emu.create_message_event(user_id, "他人の分");
-                return emu.send(event);
-            }).then(function(context){
-                context.should.have.property("confirming", "type");
-                context.confirmed.should.deep.equal({});
-            });
-        });
-    });
+            event = emu.create_message_event(user_id, "中嶋一樹");
+            context = await emu.send(event);
 
-    describe("There is corresponding parameter but no parser found", function(){
-        it("will apply the value as it is unless the value is empty.", function(){
-            this.timeout(15000);
-
-            return emu.clear_context(user_id).then(function(){
-                let event = emu.create_postback_event(user_id, {
-                    data: JSON.stringify({
-                        _type: "intent",
-                        intent: {
-                            name: "juminhyo"
-                        }
-                    })
-                });
-                return emu.send(event);
-            }).then(function(context){
-                let event = emu.create_message_event(user_id, "本人だけ");
-                return emu.send(event);
-            }).then(function(context){
-                let event = emu.create_message_event(user_id, "中嶋一樹です");
-                return emu.send(event);
-            }).then(function(context){
-                let event = emu.create_message_event(user_id, "いいえ");
-                return emu.send(event);
-            }).then(function(context){
-                let event = emu.create_message_event(user_id, "中嶋");
-                return emu.send(event);
-            }).then(function(context){
-                context.confirmed.should.have.property("lastname", "中嶋");
-            });
+            context.confirmed.no_parser.should.equal("中嶋一樹");
         });
     });
 });

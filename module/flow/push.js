@@ -104,11 +104,7 @@ module.exports = class PushFlow extends Flow {
                                 }
                             ).catch(
                                 (error) => {
-                                    if (error.name == "BotExpressParseError"){
-                                        return super.react(error, param_key, this.context.intent.parameters[param_key]);
-                                    } else {
-                                        throw(error);
-                                    }
+                                    return super.react(error, param_key, this.context.intent.parameters[param_key]);
                                 }
                             )
                         );

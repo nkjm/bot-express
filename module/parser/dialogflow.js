@@ -54,7 +54,7 @@ module.exports = class ParserDialogflow {
      * @param {Object} [policy]
      * @param {String} [policy.parameter_name=param.key] - Parameter name which dialogflow looks up.
      */
-    async parse(param, policy){
+    async parse(param, policy = {}){
         if (typeof param.value != "string"){
             throw new Error("should_be_string");
         }

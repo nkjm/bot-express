@@ -21,7 +21,7 @@ module.exports = class ParserString {
 
     /**
      * @method
-     * @param {Object} param 
+     * @param {Object} param
      * @param {String} param.key
      * @param {*} param.value
      * @param {Object} [policy]
@@ -31,21 +31,21 @@ module.exports = class ParserString {
      * @param {String} [policy.regex] - Regex expression to match value.
      * @return {String} - Parsed value.
      */
-    async parse(param, policy){
+    async parse(param, policy = {}){
         if (typeof param.value != "string"){
             throw new Error("should_be_string");
         }
         if (!param.value){
             throw new Error("value_is_empty");
         }
-    
-        if (policy && policy.min){
+
+        if (policy.min){
             if (param.value.length < policy.min){
                 throw new Error("violates_min");
             }
         }
-    
-        if (policy && policy.max){
+
+        if (policy.max){
             if (param.value.length > policy.max){
                 throw new Error("violates_max");
             }
@@ -76,7 +76,7 @@ module.exports = class ParserString {
                 throw new Error("should_follow_regex");
             }
         }
-    
+
         return parsed_value;
     }
 }

@@ -20,7 +20,7 @@ module.exports = class ParserNumber {
 
     /**
      * @method
-     * @param {Object} param 
+     * @param {Object} param
      * @param {String} param.key
      * @param {*} param.value
      * @param {Object} [policy]
@@ -28,7 +28,7 @@ module.exports = class ParserNumber {
      * @param {Number} [policy.max]
      * @return {String} - Parsed value.
      */
-    async parse(param, policy){
+    async parse(param, policy = {}){
         let parsed_value;
 
         if (typeof param.value != "number"){

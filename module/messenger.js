@@ -133,6 +133,24 @@ class Messenger {
     }
 
     /**
+     * Check if this is intent postback
+     */
+    is_intent_postback(payload){
+        let parsed_payload;
+        try {
+            parsed_payload = JSON.parse(payload);
+        } catch(e) {
+            debug(`Postback payload is not JSON format so this is not intent postback.`);
+            return false;
+        }
+
+        if (typeof parsed_payload == "object" && parsed_payload._type == "intent"){
+            debug(`This is intent postback.`);
+            return true;
+        }
+    }
+
+    /**
     * Reply messages to sender to collect parameter
     * @param {Object} event - Event object.
     * @param {Array.<MessageObject>} messages - The array of message objects.

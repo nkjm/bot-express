@@ -25,7 +25,7 @@ module.exports = class ParserEmail {
      * @param {String} param.value
      * @param {Object} [policy]
      */
-    async parse(param, policy){
+    async parse(param, policy = {}){
         if (typeof param.value != "string"){
             throw new Error("should_be_string");
         }

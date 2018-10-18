@@ -234,9 +234,9 @@ module.exports = class Flow {
     /**
      * Apply parameter. Use _parse_parameter and _add_parameter inside.
      * @method
-     * @param {String} key 
-     * @param {*} value 
-     * @param {Boolean} is_change 
+     * @param {String} key
+     * @param {*} value
+     * @param {Boolean} is_change
      * @return {Object} key: {String}, value: {*}
      */
     async apply_parameter(key, value, is_change = false){
@@ -364,9 +364,9 @@ module.exports = class Flow {
     /**
      * Method to execute reaction.
      * @method
-     * @param {Error} error 
-     * @param {String} key 
-     * @param {*} value 
+     * @param {Error} error
+     * @param {String} key
+     * @param {*} value
      */
     async react(error, key, value){
         // If pause or exit flag found, we skip remaining process.
@@ -408,6 +408,41 @@ module.exports = class Flow {
     */
     async identify_mind(payload){
         debug(`Going to identify mind.`);
+
+        // Check if this is intent postback
+        if (typeof payload === "object"){
+            if (payload.data){
+                let parsed_data;
+                try {
+                    parsed_data = JSON.parse(payload.data);
+                } catch(e) {
+                    debug(`Postback payload.data is not JSON format so this is not intent postback.`);
+                }
+
+                if (typeof parsed_data == "object" && parsed_data._type == "intent"){
+                    debug(`This is intent postback.`);
+                    if (!parsed_data.intent || !parsed_data.intent.name){
+                        throw new Error(`It seems this is intent postback but intent is not set or invalid.`);
+                    }
+
+                    if (parsed_data.intent.name === this.context.intent.name){
+                        debug(`This is restart conversation.`);
+                        return {
+                            result: "restart_conversation",
+                            intent: parsed_data.intent,
+                            payload: payload
+                        }
+                    } else {
+                        debug(`This is change intent.`);
+                        return {
+                            result: "change_intent",
+                            intent: parsed_data.intent,
+                            payload: payload
+                        }
+                    }
+                }
+            }
+        }
 
         let intent;
         if (typeof payload !== "string"){
@@ -467,7 +502,6 @@ module.exports = class Flow {
             }
 
             // Check if this is restart conversation.
-            debug("This is dig, change intent or restart conversation.");
             if (intent.name == this.context.intent.name){
                 // This is restart conversation.
                 debug("We conclude this is restart conversation.");

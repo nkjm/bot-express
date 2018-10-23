@@ -160,32 +160,28 @@ module.exports = class StartConversationFlow extends Flow {
                 debug(`Detected pause or exit or init flag so we skip processing parameters.`);
             } else {
                 // If we find some parameters from initial message, add them to the conversation.
-                let parameters_processed = [];
                 if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
                     for (let param_key of Object.keys(this.context.intent.parameters)){
                         // Parse and Add parameters using skill specific logic.
-                        parameters_processed.push(
-                            super.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
-                                (applied_parameter) => {
-                                    if (applied_parameter == null){
-                                        debug("Parameter was not applicable. We skip reaction and go to finish.");
-                                        return;
-                                    }
-                                    return super.react(null, applied_parameter.key, applied_parameter.value);
-                                }
-                            ).catch(
-                                (error) => {
-                                    return super.react(error, param_key, this.context.intent.parameters[param_key]);
-                                }
-                            )
-                        );
+                        let applied_parameter;
+                        try {
+                            applied_parameter = await super.apply_parameter(param_key, this.context.intent.parameters[param_key]);
+                        } catch(e) {
+                            await super.react(e, param_key, this.context.intent.parameters[param_key]);
+                            continue;
+                        }
+
+                        if (applied_parameter == null){
+                            debug("Parameter was not applicable. We skip reaction.");
+                            continue;
+                        }
+
+                        await super.react(null, applied_parameter.key, applied_parameter.value);
                     }
                 }
-
-                await Promise.all(parameters_processed);
             }
         }
 
-        return await super.finish();
+        return super.finish();
     } // End of run()
 };

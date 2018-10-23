@@ -42,6 +42,6 @@ module.exports = class leaveFlow extends Flow {
         log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "launched");
 
         await super.begin();
-        return await super.finish();
+        return super.finish();
     }
 };

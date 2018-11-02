@@ -32,7 +32,7 @@ if (!process.env.TRAVIS && process.env.NODE_ENV != "test" && process.env.NODE_EN
 
 function create_skill_dir(skill_dir){
     console.log("Creating skill directory for you...");
-    fs.mkdir(skill_dir);
+    fs.mkdirSync(skill_dir);
 }
 
 function create_indexjs(dest){

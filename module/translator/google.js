@@ -1,6 +1,6 @@
 'use strict';
 
-const google_translate = require('@google-cloud/translate');
+const {Translate} = require('@google-cloud/translate');
 const debug = require("debug")("bot-express:translator");
 const required_options = ["project_id"];
 
@@ -50,7 +50,7 @@ class TranslatorGoogle {
         }
 
         // Instantiates a translater
-        this.translator = google_translate(google_options);
+        this.translator = new Translate(google_options);
     }
 
     async detect(text){

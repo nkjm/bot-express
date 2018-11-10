@@ -8,7 +8,6 @@ const REQUIRED_OPTIONS = {
 const DEFAULT_SKILL_PATH = "../../../../skill/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
-const DEFAULT_NLP = "dialogflow";
 const DEFAULT_LANGUAGE = "ja";
 const DEFAULT_PARALLEL_EVENT = "ignore";
 

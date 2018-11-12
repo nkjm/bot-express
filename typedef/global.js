@@ -3,7 +3,8 @@ Object which contains context information.
 @typedef {Object} context
 @prop {Array.<Object>} to_confirm - Array of parameter names to confirm.
 @prop {Sting} confirming - Parameter name which Bot is now confirming.
-@prop {Object} confirmed - Object which contains confirmed value of the parameters as properties. If you want to retrieve confirmed value of "date" parameter, access confirmed.date.
+@prop {Object} confirmed - Object which contains confirmed parameters. If you want to retrieve confirmed value of "date" parameter, access confirmed.date.
+@prop {Object} heard - Object which contains heard parameters which are waiting for beging applied.
 @prop {Object} previous - Object which contains conversation history in the current context.
 @prop {Array.<Object>} previous.confirmed - Previously confirmed parameter.
 @prop {Array.<Object>} previous.message - Array of message object exchanged so far.

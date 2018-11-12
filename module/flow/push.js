@@ -18,6 +18,7 @@ module.exports = class PushFlow extends Flow {
             confirmed: {},
             to_confirm: [],
             confirming: null,
+            heard: {},
             event: event,
             previous: {
                 confirmed: [],
@@ -86,28 +87,7 @@ module.exports = class PushFlow extends Flow {
             if (this.context._pause || this.context._exit || this.context._init){
                 debug(`Detected pause or exit or init flag so we skip processing parameters.`);
             } else {
-                // If we find some parameters from initial message, add them to the conversation.
-                if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
-                    debug(`Intent contains ${Object.keys(this.context.intent.parameters).length} parameter[s].`);
-
-                    for (let param_key of Object.keys(this.context.intent.parameters)){
-                        // Parse and Add parameters using skill specific logic.
-                        let applied_parameter;
-                        try {
-                            applied_parameter = await super.apply_parameter(param_key, this.context.intent.parameters[param_key]);
-                        } catch(e) {
-                            await super.react(e, param_key, this.context.intent.parameters[param_key]);
-                            continue;
-                        }
-
-                        if (applied_parameter == null){
-                            debug("Parameter was not applicable. We skip reaction.");
-                            continue;
-                        }
-
-                        await super.react(null, applied_parameter.key, applied_parameter.value);
-                    }
-                }
+                await super.process_parameters(this.context.intent.parameters);
             }
         }
 

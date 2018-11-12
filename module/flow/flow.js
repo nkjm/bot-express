@@ -227,6 +227,48 @@ module.exports = class Flow {
         }
     }
 
+    /**
+     * Process parameters with multiple input parameters.
+     * @method
+     * @param {Object} parameters
+     */
+    async process_parameters(parameters){
+        if (!(parameters && Object.keys(parameters).length)){
+            debug("There is no parameters in input parameters. Exit process parameters.");
+            return;
+        }
+
+        if (!(this.context && this.context.to_confirm && this.context.to_confirm.length)){
+            debug("There is parameters in context to process. Exit process parameters.");
+            return;
+        }
+
+        if (!parameters[this.context.to_confirm[0]]){
+            debug("Input parameters does not contain the parameter we should process now. We save the rest of input parameters as heard in context and exit process parameters.");
+            if (!this.context.heard){
+                this.context.heard = {};
+            }
+            Object.assign(this.context.heard, parameters);
+            return;
+        }
+
+        let applied_parameter;
+        try {
+            applied_parameter = await this.apply_parameter(this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
+        } catch(e){
+            await this.react(e, this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
+            debug("Parameter was rejected. Exit process parameters.");
+            return;
+        }
+
+        await this.react(null, applied_parameter.key, applied_parameter.value);
+
+        let updated_parameters = JSON.parse(JSON.stringify(parameters));
+        delete updated_parameters[applied_parameter.key];
+
+        await this.process_parameters(updated_parameters);
+    }
+
     change_parameter(key, value){
         return this.apply_parameter(key, value, true);
     }
@@ -640,6 +682,7 @@ module.exports = class Flow {
             to_confirm: this.context.to_confirm,
             confirming: this.context.confirming,
             confirmed: this.context.confirmed,
+            heard: this.context.heard,
             previous: this.context.previous,
             param_change_history: this.context.param_change_history,
             sender_language: this.context.sender_language,
@@ -653,6 +696,7 @@ module.exports = class Flow {
         this.context.to_confirm = [];
         this.context.confirming = null;
         this.context.confirmed = {};
+        this.context.heard = {};
         this.context.previous = {
             confirmed: [],
             message: []
@@ -690,6 +734,9 @@ module.exports = class Flow {
         }
 
         // If we find some parameters from initial message, add them to the conversation.
+        await this.process_parameters(this.context.intent.parameters);
+
+        /*
         let parameters_processed = [];
         if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
             for (let param_key of Object.keys(this.context.intent.parameters)){
@@ -713,9 +760,11 @@ module.exports = class Flow {
             }
         }
         return Promise.all(parameters_processed);
+        */
     }
 
     async change_intent(intent){
+        // We keep some inforamtion like context.confirmed, context.heard and context.previous.
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
@@ -751,6 +800,9 @@ module.exports = class Flow {
         }
 
         // If we find some parameters from initial message, add them to the conversation.
+        await this.process_parameters(this.context.intent.parameters);
+        
+        /*
         let all_parameters_processed = [];
         if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
             for (let param_key of Object.keys(this.context.intent.parameters)){
@@ -775,6 +827,7 @@ module.exports = class Flow {
         }
 
         return Promise.all(all_parameters_processed);
+        */
     }
 
     async begin(){
@@ -814,22 +867,28 @@ module.exports = class Flow {
             return this.context;
         }
 
+        // Check if there is corresponding parameter in context.heard.
+        if (this.context.to_confirm.length && this.context.heard[this.context.to_confirm[0]]){
+            debug("Found corresponding parameter in context.heard. We try to apply.");
+            await this.process_parameters(this.context.heard);
+        }
+
         // If we still have parameters to confirm, we collect them.
-        if (this.context.to_confirm.length > 0){
-            debug("Going to collect parameter.");
+        if (this.context.to_confirm.length){
+            debug("We still have parameters to confirm. Going to collect.");
             await this._collect();
             return this.context;
         }
 
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
-        debug("Going to perform final action.");
+        debug("We have non parameters to confirm anymore. Going to perform final action.");
 
         // Execute finish method in skill.
         await this.context.skill.finish(this.bot, this.event, this.context);
 
         // Double check if we have no parameters to confirm since developers can execute collect() method inside finsh().
-        if (this.context.to_confirm.length > 0){
-            debug("Going to collect parameter.");
+        if (this.context.to_confirm.length){
+            debug("We still have parameters to confirm. Going to collect.");
             await this._collect();
             return this.context;
         }

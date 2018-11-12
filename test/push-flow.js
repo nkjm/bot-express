@@ -91,5 +91,44 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+
+        describe("bot-express:push event with parameters and some are not for now.", function(){
+            it("should trigger specified skill.", function(){
+                this.timeout(15000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = {
+                        type: "bot-express:push",
+                        to: {
+                            type: "user",
+                            userId: user_id
+                        },
+                        intent: {
+                            name: "test-push-flow",
+                            parameters: {
+                                diet: "yakiniku"
+                            }
+                        },
+                        language: "ja"
+                    }
+                    return emu.send(event);
+                }).then(function(context){
+                    context._flow.should.equal("push");
+                    context.confirming.should.equal("diet_type");
+                    context.confirmed.should.deep.equal({});
+                    context.heard.should.deep.equal({
+                        diet: "yakiniku"
+                    });
+                    let event = emu.create_message_event(user_id, "lunch");
+                    return emu.send(event);
+                }).then(function(context){
+                    context._flow.should.equal("reply");
+                    context.confirmed.should.deep.equal({
+                        diet_type: "lunch",
+                        diet: "yakiniku"
+                    })
+                });
+            });
+        });
     });
 }

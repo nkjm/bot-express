@@ -217,5 +217,69 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+
+        describe("Postback which contains intent object and parameters and some are not for now.", function(){
+            it("will trigger change intent and set parameters.", function(){
+                this.timeout(15000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event = emu.create_message_event(user_id, "こんにちは");
+                    return emu.send(event);
+                }).then(function(context){
+                    context.intent.name.should.equal("simple-response");
+                    let event;
+                    if (emu.messenger_type === "line"){
+                        event = emu.create_postback_event(user_id, {
+                            data: JSON.stringify({
+                                _type: "intent",
+                                intent: {
+                                    name: "handle-pizza-order",
+                                    parameters: {
+                                        pizza: "マリナーラ",
+                                        address: "東京都港区南青山"
+                                    }
+                                }
+                            })
+                        });
+                    } else if (emu.messenger_type === "facebook"){
+                        event = emu.create_postback_event(user_id, {
+                            payload: JSON.stringify({
+                                _type: "intent",
+                                intent: {
+                                    name: "handle-pizza-order",
+                                    parameters: {
+                                        pizza: "マリナーラ",
+                                        address: "東京都港区南青山"
+                                    }
+                                }
+                            })
+                        });
+                    }
+                    return emu.send(event);
+                }).then(function(context){
+                    context._flow.should.equal("btw");
+                    context.intent.name.should.equal("handle-pizza-order");
+                    context.confirming.should.equal("size");
+                    context.confirmed.should.deep.equal({
+                        pizza: "マリナーラ"
+                    })
+                    context.heard.should.deep.equal({
+                        address: "東京都港区南青山"
+                    })
+                    return emu.send(emu.create_message_event(user_id, "S"));
+                }).then(function(context){
+                    context.confirmed.should.deep.equal({
+                        pizza: "マリナーラ",
+                        size: "S",
+                        address: {
+                            address: "東京都港区南青山",
+                            latitude: null,
+                            longitude: null,
+                        }
+                    })
+                    context.confirming.should.equal("name");
+                });
+            });
+        });
     });
 }

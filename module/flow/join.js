@@ -17,6 +17,7 @@ module.exports = class JoinFlow extends Flow {
             confirmed: {},
             to_confirm: [],
             confirming: null,
+            heard: {},
             event: event,
             previous: {
                 confirmed: [],

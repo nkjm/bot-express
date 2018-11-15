@@ -156,4 +156,38 @@ describe("Test builtin number parser", async function(){
             context.confirmed.no_policy.should.equal(123);
         });
     });
+
+    describe("NaN String", async function(){
+        it("will be rejected.", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+            
+            let event = emu.create_postback_event(user_id, {data: JSON.stringify({
+                _type: "intent",
+                language: "ja",
+                intent: {
+                    name: "test-builtin-parser-number",
+                    parameters: {
+                        minmax: 5
+                    }
+                }
+            })});
+            let context = await emu.send(event);
+
+            // Test
+            context.intent.name.should.equal("test-builtin-parser-number");
+            context.confirming.should.equal("no_policy");
+
+            context = await emu.send(emu.create_message_event(user_id, "abc"));
+
+            // Test
+            should.not.exist(context.confirmed.no_policy);
+
+            context = await emu.send(emu.create_message_event(user_id, "hoge"));
+
+            // Test
+            context.confirming.should.equal("no_policy");
+        });
+    });
 });

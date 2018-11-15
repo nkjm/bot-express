@@ -35,7 +35,7 @@ module.exports = class ParserNumber {
             if (typeof param.value == "string"){
                 parsed_value = Number(param.value);
 
-                if (parsed_value === NaN){
+                if (isNaN(parsed_value)){
                     throw new Error("should_be_number");
                 }
             } else if (typeof param.value == "object"){

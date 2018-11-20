@@ -467,7 +467,14 @@ module.exports = class Flow {
                         throw new Error(`It seems this is intent postback but intent is not set or invalid.`);
                     }
 
-                    if (parsed_data.intent.name === this.context.intent.name){
+                    if (parsed_data.intent.name === this.options.modify_previous_parameter_intent){
+                        debug(`This is modify previous parameter.`);
+                        return {
+                            result: "modify_previous_parameter",
+                            intent: parsed_data.intent,
+                            payload: payload
+                        }
+                    } else if (parsed_data.intent.name === this.context.intent.name){
                         debug(`This is restart conversation.`);
                         return {
                             result: "restart_conversation",

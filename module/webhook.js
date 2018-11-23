@@ -68,9 +68,7 @@ class Webhook {
 
         // Instantiate messenger instance.
         this.messenger = new Messenger(this.options);
-        if (!["test", "development"].includes(process.env.BOT_EXPRESS_ENV)){
-            await this.messenger.refresh_token();
-        }
+        await this.messenger.refresh_token();
         debug("Messenger instantiated.");
 
         // Validate Signature

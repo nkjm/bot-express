@@ -859,7 +859,18 @@ module.exports = class Flow {
         } else if (this.context.skill.clear_context_on_finish){
             // This is Root skill. If clear_context_on_finish flag is true, we clear context.
             debug(`Clearing context.`);
+            // While we clear context, still need to retain information to switch skill if it has been turned on.
+            const intent = this.context.intent;
+            const sender_language = this.context.sender_language;
+            const switch_skill = this.context._switch_skill;
             this.context = null;
+            if (switch_skill){
+                this.context = {
+                    _switch_skill: true,
+                    intent: intent,
+                    sender_language: sender_language
+                }
+            }
         } else {
             // This is Root skill. And we need to keep context. But we should still discard param change history.
             this.context.param_change_history = [];

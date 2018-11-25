@@ -742,32 +742,6 @@ module.exports = class Flow {
 
         // If we find some parameters from initial message, add them to the conversation.
         await this.process_parameters(this.context.intent.parameters);
-
-        /*
-        let parameters_processed = [];
-        if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
-            for (let param_key of Object.keys(this.context.intent.parameters)){
-                // Parse and Add parameters using skill specific logic.
-                parameters_processed.push(
-                    this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
-                        (applied_parameter) => {
-                            if (applied_parameter == null){
-                                debug("Parameter was not applicable. We skip reaction and go to finish.");
-                                return;
-                            }
-                            return this.react(null, applied_parameter.key, applied_parameter.value);
-                        }
-                    ).catch(
-                        (error) => {
-                            debug("Parser rejected the value.");
-                            return this.react(error, param_key, this.context.intent.parameters[param_key]);
-                        }
-                    )
-                );
-            }
-        }
-        return Promise.all(parameters_processed);
-        */
     }
 
     async change_intent(intent){
@@ -808,33 +782,6 @@ module.exports = class Flow {
 
         // If we find some parameters from initial message, add them to the conversation.
         await this.process_parameters(this.context.intent.parameters);
-        
-        /*
-        let all_parameters_processed = [];
-        if (this.context.intent.parameters && Object.keys(this.context.intent.parameters).length > 0){
-            for (let param_key of Object.keys(this.context.intent.parameters)){
-                // Parse and Add parameters using skill specific logic.
-                all_parameters_processed.push(
-                    this.apply_parameter(param_key, this.context.intent.parameters[param_key]).then(
-                        (applied_parameter) => {
-                            if (applied_parameter == null){
-                                debug("Parameter was not applicable. We skip reaction and go to finish.");
-                                return;
-                            }
-                            return this.react(null, applied_parameter.key, applied_parameter.value);
-                        }
-                    ).catch(
-                        (error) => {
-                            debug("Parser rejected the value.");
-                            return this.react(error, param_key, this.context.intent.parameters[param_key]);
-                        }
-                    )
-                );
-            }
-        }
-
-        return Promise.all(all_parameters_processed);
-        */
     }
 
     async begin(){
@@ -888,7 +835,7 @@ module.exports = class Flow {
         }
 
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
-        debug("We have non parameters to confirm anymore. Going to perform final action.");
+        debug("We have no parameters to confirm anymore. Going to perform final action.");
 
         // Execute finish method in skill.
         await this.context.skill.finish(this.bot, this.event, this.context);

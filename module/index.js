@@ -132,8 +132,7 @@ module.exports = (options) => {
             }
         }
 
-        debug("Successful End of Webhook. Current context follows.");
-        debug(JSON.stringify(context));
+        debug("Successful End of Webhook.");
 
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             return res.json(context);

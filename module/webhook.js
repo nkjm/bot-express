@@ -87,22 +87,24 @@ class Webhook {
         for (let e of events){
             done_process_events.push(this.process_event(e));
         }
-        let responses = await Promise.all(done_process_events);
+        const context_list = await Promise.all(done_process_events);
 
-        // Close memory connection.
-        //await this.memory.close();
+        for (let context of context_list){
+            debug("Updated context follows.");
+            debug(context);
+        }
 
-        if (responses && responses.length === 1){
-            return responses[0];
+        if (context_list && context_list.length === 1){
+            return context_list[0];
         } else {
-            return responses;
+            return context_list;
         }
     }
 
     /**
     Process events
     @param {Object} - Event object.
-    @returns {Promise}
+    @returns {Promise.<context>}
     */
     async process_event(event){
         debug(`Processing following event.`);
@@ -216,6 +218,26 @@ class Webhook {
 
             debug("Updating context");
             await this.memory.put(memory_id, updated_context);
+
+            // If switch_intent flag is true, we run another process_event() thread.
+            if (updated_context._switch_skill){
+                // Turn off _switch_intent flag to prevent infinite loop.
+                updated_context._switch_skill = false;
+                updated_context._exit = false;
+                updated_context = await this.process_event({
+                    type: "postback",
+                    replyToken: event.replyToken,
+                    source: event.source,
+                    timestamp: Date.now(),
+                    postback: {
+                        data: JSON.stringify({
+                            _type: "intent",
+                            intent: updated_context.intent,
+                            language: updated_context.sender_language
+                        })
+                    }
+                })
+            }
         }
 
         return updated_context;

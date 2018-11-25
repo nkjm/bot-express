@@ -215,6 +215,21 @@ class Bot {
     }
 
     /**
+     * Switch skill.
+     * @param {Object} options 
+     * @param {String} options.name
+     * @param {Object} options.parameters
+     */
+    switch_skill(options){
+        this.exit();
+        this._context._switch_skill = true;
+        this._context.intent = {
+            name: options.name,
+            parameters: options.parameters
+        }
+    }
+
+    /**
     * Queue messages. The messages will be sent out when reply(MESSAGES) function is called.
     * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to queue.
     * @returns {Null}

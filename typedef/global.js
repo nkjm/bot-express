@@ -11,16 +11,18 @@ Object which contains context information.
 @prop {String} previous.message[].from - "bot" or "user"
 @prop {MessageObject} previous.message[].message - Message object sent or received.
 @prop {Object} previous.event - Previous event
-@prop {Object} intent - Intent object which contains various information about current intent based on response from NLP.
-@prop {String} intent.name - Intent name detected by NLP
-@prop {String} intent.text_response - Text response provided by NLP.
-@prop {Array.<Object>} intent.parameters - Entities identified by NLP
+@prop {intent} intent - Intent object which contains various information about current intent based on response from NLP.
+@prop {intent} switch_intent - Intent object to switch.
 @prop {Skill} skill - Skill object currelty applied.
 @prop {Array.<Object>} param_change_history - Change log to revive skill instance in the next event.
 @prop {String} sender_language - Automatically detected ISO-639-1 based code of the senders language.
 @prop {String} translation - Translated text of current message.
 @prop {Boolean} _in_progress - Flag to indicate if bot is currenty processing an event from this user.
 @prop {String} _flow - Flow applied to current event.
+@prop {Boolean} _pause - Flag to pause.
+@prop {Boolean} _exit - Flag to exit.
+@prop {Boolean} _init - Flag to init context.
+@prop {Boolean} _switch_skill - Flag to switch skill.
 */
 
 /**

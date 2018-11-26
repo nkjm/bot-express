@@ -22,7 +22,7 @@ Object which contains context information.
 @prop {Boolean} _pause - Flag to pause.
 @prop {Boolean} _exit - Flag to exit.
 @prop {Boolean} _init - Flag to init context.
-@prop {Boolean} _switch_skill - Flag to switch skill.
+@prop {intent} _switch_intent - Intent object to switch skill.
 */
 
 /**

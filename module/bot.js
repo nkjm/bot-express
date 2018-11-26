@@ -216,17 +216,16 @@ class Bot {
 
     /**
      * Switch skill.
-     * @param {Object} options 
-     * @param {String} options.name
-     * @param {Object} options.parameters
+     * @param {intent} intent 
      */
-    switch_skill(options){
+    switch_skill(intent){
         this.exit();
-        this._context._switch_skill = true;
-        this._context.intent = {
-            name: options.name,
-            parameters: options.parameters
+
+        if (!(intent.name && typeof intent.name === "string")){
+            throw new Error("Required parameter: 'name' for switch_skill() should be set and string.");
         }
+        
+        this._context._switch_intent = intent;
     }
 
     /**

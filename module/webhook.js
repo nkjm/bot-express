@@ -202,7 +202,7 @@ class Webhook {
         }
 
         // Update memory.
-        if (!updated_context){
+        if (!updated_context || updated_context._clear){
             debug("Clearing context");
             await this.memory.del(memory_id);
         } else {
@@ -218,26 +218,29 @@ class Webhook {
 
             debug("Updating context");
             await this.memory.put(memory_id, updated_context);
+        }
 
-            // If switch_intent flag is true, we run another process_event() thread.
-            if (updated_context._switch_skill){
-                // Turn off _switch_intent flag to prevent infinite loop.
-                updated_context._switch_skill = false;
-                updated_context._exit = false;
-                updated_context = await this.process_event({
-                    type: "postback",
-                    replyToken: event.replyToken,
-                    source: event.source,
-                    timestamp: Date.now(),
-                    postback: {
-                        data: JSON.stringify({
-                            _type: "intent",
-                            intent: updated_context.intent,
-                            language: updated_context.sender_language
-                        })
-                    }
-                })
-            }
+        // Switch skill.
+        if (updated_context && updated_context._switch_intent) {
+            // Turn off _switch_intent flag to prevent infinite loop.
+            let intent = JSON.parse(JSON.stringify(updated_context._switch_intent));
+            delete updated_context._switch_intent;
+            // Turn off _exit flag to prevent exit once again.
+            updated_context._exit = false;
+
+            updated_context = await this.process_event({
+                type: "postback",
+                replyToken: event.replyToken,
+                source: event.source,
+                timestamp: Date.now(),
+                postback: {
+                    data: JSON.stringify({
+                        _type: "intent",
+                        intent: intent,
+                        language: updated_context.sender_language
+                    })
+                }
+            })
         }
 
         return updated_context;

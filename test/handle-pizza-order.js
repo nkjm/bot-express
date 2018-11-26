@@ -129,7 +129,7 @@ for (let messenger_option of messenger_options){
 
                 let event = emu.create_message_event(user_id, "中嶋一樹");
                 return emu.send(event).then(function(context){
-                    should.not.exist(context);
+                    context._clear.should.equal(true);
                 });
             });
         });

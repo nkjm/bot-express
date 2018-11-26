@@ -35,7 +35,7 @@ for (let messenger_option of messenger_options){
                     }
                     return emu.send(event);
                 }).then(function(context){
-                    should.not.exist(context);
+                    context._clear.should.equal(true);
                 });
             });
         });

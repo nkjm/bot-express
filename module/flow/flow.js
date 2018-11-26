@@ -840,7 +840,7 @@ module.exports = class Flow {
         // Execute finish method in skill.
         await this.context.skill.finish(this.bot, this.event, this.context);
 
-        // Double check if we have no parameters to confirm since developers can execute collect() method inside finsh().
+        // Double check if we have no parameters to confirm since developers can execute collect() method inside finish().
         if (this.context.to_confirm.length){
             debug("We still have parameters to confirm. Going to collect.");
             await this._collect();
@@ -858,19 +858,8 @@ module.exports = class Flow {
             delete this.context.parent;
         } else if (this.context.skill.clear_context_on_finish){
             // This is Root skill. If clear_context_on_finish flag is true, we clear context.
-            debug(`Clearing context.`);
-            // While we clear context, still need to retain information to switch skill if it has been turned on.
-            const intent = this.context.intent;
-            const sender_language = this.context.sender_language;
-            const switch_skill = this.context._switch_skill;
-            this.context = null;
-            if (switch_skill){
-                this.context = {
-                    _switch_skill: true,
-                    intent: intent,
-                    sender_language: sender_language
-                }
-            }
+            debug(`Mark this context should be cleared.`);
+            this.context._clear = true
         } else {
             // This is Root skill. And we need to keep context. But we should still discard param change history.
             this.context.param_change_history = [];

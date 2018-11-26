@@ -275,7 +275,7 @@ for (let messenger_option of messenger_options){
 
                     return emu.send(emu.create_message_event(user_id, "S"));
                 }).then(function(context){
-                    should.not.exist(context);
+                    context._clear.should.equal(true);
                 });
             });
         });

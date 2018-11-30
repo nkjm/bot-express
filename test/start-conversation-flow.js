@@ -279,5 +279,56 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+
+        describe("Postback which contains intent object with parameters and parser reject first one.", function(){
+            it("should set params as heard and they're applied afterwards.", function(){
+                this.timeout(15000);
+
+                return emu.clear_context(user_id).then(function(){
+                    let event;
+                    if (emu.messenger_type === "line"){
+                        event = emu.create_postback_event(user_id, {
+                            data: JSON.stringify({
+                                _type: "intent",
+                                intent: {
+                                    name: "handle-pizza-order",
+                                    parameters: {
+                                        pizza: "しらすピザ",
+                                        size: "S"
+                                    }
+                                }
+                            })
+                        });
+                    } else if (emu.messenger_type === "facebook"){
+                        event = emu.create_postback_event(user_id, {
+                            payload: JSON.stringify({
+                                _type: "intent",
+                                intent: {
+                                    name: "handle-pizza-order",
+                                    parameters: {
+                                        pizza: "しらすピザ",
+                                        size: "S"
+                                    }
+                                }
+                            })
+                        });
+                    }
+                    return emu.send(event);
+                }).then(function(context){
+                    context.should.have.property("_flow").and.equal("start_conversation");
+                    context.intent.name.should.equal("handle-pizza-order");
+                    context.heard.should.deep.equal({
+                        size: "S"
+                    })
+                    context.confirming.should.equal("pizza");
+
+                    return emu.send(emu.create_message_event(user_id, "マリナーラ"));
+                }).then(function(context){
+                    context.confirmed.pizza.should.equal("マリナーラ");
+                    context.confirmed.size.should.equal("S");
+                    context.confirming.should.equal("address");
+                });
+            });
+        });
     });
 }

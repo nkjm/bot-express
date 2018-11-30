@@ -239,7 +239,7 @@ module.exports = class Flow {
         }
 
         if (!(this.context && this.context.to_confirm && this.context.to_confirm.length)){
-            debug("There is parameters in context to process. Exit process parameters.");
+            debug("There is no parameters to confirm. Exit process parameters.");
             return;
         }
 
@@ -257,15 +257,22 @@ module.exports = class Flow {
             applied_parameter = await this.apply_parameter(this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
         } catch(e){
             await this.react(e, this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
-            debug("Parameter was rejected. Exit process parameters.");
-            return;
         }
 
-        await this.react(null, applied_parameter.key, applied_parameter.value);
+        if (applied_parameter){
+            // If parsing succeeded, take reaction.
+            await this.react(null, applied_parameter.key, applied_parameter.value);
+        }
 
         let updated_parameters = JSON.parse(JSON.stringify(parameters));
-        delete updated_parameters[applied_parameter.key];
 
+        // Delete processed parameter.
+        if (applied_parameter){
+            delete updated_parameters[applied_parameter.key];
+        } else {
+            delete updated_parameters[this.context.to_confirm[0]];
+        }
+        
         await this.process_parameters(updated_parameters);
     }
 

@@ -233,6 +233,9 @@ module.exports = class Flow {
      * @param {Object} parameters
      */
     async process_parameters(parameters){
+        debug("Input parameters follow.");
+        debug(parameters);
+
         if (!(parameters && Object.keys(parameters).length)){
             debug("There is no parameters in input parameters. Exit process parameters.");
             return;
@@ -243,8 +246,8 @@ module.exports = class Flow {
             return;
         }
 
-        if (!parameters[this.context.to_confirm[0]]){
-            debug("Input parameters does not contain the parameter we should process now. We save the rest of input parameters as heard in context and exit process parameters.");
+        if (typeof parameters[this.context.to_confirm[0]] === "undefined"){
+            debug(`Input parameters does not contain "${this.context.to_confirm[0]}" which we should process now. We save the rest of input parameters as heard in context and exit process parameters.`);
             if (!this.context.heard){
                 this.context.heard = {};
             }
@@ -272,6 +275,9 @@ module.exports = class Flow {
         } else {
             delete updated_parameters[this.context.to_confirm[0]];
         }
+
+        debug("Updated input parameters follow.");
+        debug(updated_parameters);
         
         await this.process_parameters(updated_parameters);
     }

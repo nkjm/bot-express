@@ -34,12 +34,12 @@ class Messenger {
         }
     }
 
-    async refresh_token(){
-        await this.service.refresh_token();
-    }
-
     async validate_signature(req){
         return this.service.validate_signature(req);
+    }
+
+    async refresh_token(){
+        await this.service.refresh_token();
     }
 
     extract_events(body){

@@ -53,9 +53,11 @@ describe(`${u} user(s).`, async function(){
         let contexts = await Promise.all(done_launch_skill);
 
         // Test
+        let user_id_set = new Set();
         for (let context of contexts){
             context.intent.name.should.equal("handle-pizza-order");
-            console.log(context.event.source.userId);
+            user_id_set.add(context.event.source.userId);
         }
+        user_id_set.size.should.equal(3);
     })
 });

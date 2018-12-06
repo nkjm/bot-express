@@ -1,11 +1,5 @@
 "use strict";
 
-const REQUIRED_OPTIONS = {
-    line: ["channel_id", "channel_secret"],
-    facebook: ["facebook_app_secret", "facebook_page_access_token"],
-    google: ["project_id"]
-}
-
 // Import NPM Packages
 Promise = require("bluebird");
 
@@ -68,17 +62,15 @@ class Webhook {
 
         // Instantiate messenger instance.
         this.messenger = new Messenger(this.options);
-        await this.messenger.refresh_token();
         debug("Messenger instantiated.");
 
         // Validate Signature
-        try {
-            await this.messenger.validate_signature(this.options.req);
-        } catch(e){
-            debug(`Signature validation failed.`);
-            throw e;
-        }
+        await this.messenger.validate_signature(this.options.req);
         debug("Signature validation succeeded.");
+
+        // Refresh token.
+        await this.messenger.refresh_token();
+        debug("Refresh token succeeded.");
 
         // Process events
         let events = this.messenger.extract_events(this.options.req.body);

@@ -18,10 +18,10 @@ server.listen(process.env.PORT || 5000, () => {
 server.use('/bot/webhook', bot_express({
     language: "ja",
     messenger: {
-        line: {
+        line: [{
             channel_id: process.env.LINE_CHANNEL_ID,
             channel_secret: process.env.LINE_CHANNEL_SECRET
-        },
+        }],
         facebook: {
             app_secret: process.env.FACEBOOK_APP_SECRET,
             page_access_token: [

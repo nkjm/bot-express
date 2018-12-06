@@ -14,17 +14,63 @@ Promise.promisifyAll(request);
 module.exports = class MessengerLine {
 
     constructor(options){
-        for (let p of REQUIRED_PARAMETERS){
-            if (!options.messenger.line[p]){
-                throw new Error(`Required parameter: "${p}" for LINE configuration not set.`);
+        if (!options.messenger.line){
+            throw new Error(`Required parameter for LINE not set.`);
+        }
+
+        // Check if option is properly set.
+        if (Array.isArray(options.messenger.line)){
+            for (let option_for_line of options.messenger.line){
+                for (let p of REQUIRED_PARAMETERS){
+                    if (!option_for_line[p]){
+                        throw new Error(`Required parameter: "${p}" for LINE configuration not set.`);
+                    }
+                }
+            }
+        } else if (typeof options.messenger.line == "object"){
+            for (let p of REQUIRED_PARAMETERS){
+                if (!options.messenger.line[p]){
+                    throw new Error(`Required parameter: "${p}" for LINE configuration not set.`);
+                }
+            }
+        } else {
+            throw new Error(`Required parameter for LINE is invalid.`);
+        }
+
+        if (Array.isArray(options.messenger.line)){
+            this._option_list = options.messenger.line;
+        } else {
+            this._option_list = [options.messenger.line];
+        }
+
+        /* Since we now support multi-channel, these will be set in validate_signature().
+        this._channel_id = options.messenger.line.channel_id;
+        this._channel_secret = options.messenger.line.channel_secret;
+        this._endpoint = options.messenger.line.endpoint || "api.line.me";
+        */
+
+        this._access_token = null; // Will be set when this.refresh_token is called.
+        this.sdk = null; // Will be set when this.refresh_token is called.
+    }
+
+    async validate_signature(req){
+        let signature = req.get('X-Line-Signature');
+        let raw_body = req.raw_body;
+
+        // Signature Validation. We try all credentials in this._option_list.
+        for (let o of this._option_list){
+            let hash = crypto.createHmac('sha256', o.channel_secret).update(raw_body).digest('base64');
+            debug(`Going to validate using channel "${o.channel_id}"..`);
+            if (secure_compare(hash, signature)){
+                debug(`Channel is "${o.channel_id}".`);
+                this._channel_id = o.channel_id;
+                this._channel_secret = o.channel_secret;
+                this._endpoint = o.endpoint || "api.line.me";
+                return;
             }
         }
 
-        this._channel_id = options.messenger.line.channel_id;
-        this._channel_secret = options.messenger.line.channel_secret;
-        this._endpoint = options.messenger.line_endpoint || "api.line.me";
-        this._access_token = null; // Will be set when this.refresh_token is called.
-        this.sdk = null; // Will be set when this.refresh_token is called.
+        throw new Error(`Signature validation failed.`);
     }
 
     async refresh_token(){
@@ -180,20 +226,6 @@ module.exports = class MessengerLine {
         debug(`Failed response body follows.`);
         debug(JSON.stringify(response.body));
         throw new Error(response.body);
-    }
-
-    async validate_signature(req){
-        let signature = req.get('X-Line-Signature');
-        let raw_body = req.raw_body;
-
-        // Signature Validation
-        let hash = crypto.createHmac('sha256', this._channel_secret).update(raw_body).digest('base64');
-
-        if (secure_compare(hash, signature)){
-            return;
-        }
-
-        throw new Error(`Signature validation failed.`);
     }
 
     static extract_events(body){

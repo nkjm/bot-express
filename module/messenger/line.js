@@ -74,7 +74,7 @@ module.exports = class MessengerLine {
     }
 
     async refresh_token(){
-        let access_token = cache.get(`${CACHE_PREFIX}access_token`);
+        let access_token = cache.get(`${CACHE_PREFIX}${this._channel_id}_access_token`);
 
         if (access_token){
             debug(`Found access_token for LINE Messaging API.`);
@@ -103,7 +103,7 @@ module.exports = class MessengerLine {
             }
 
             // We save access token in cache for 24 hours.
-            cache.put(`${CACHE_PREFIX}access_token`, body.access_token, 86400000);
+            cache.put(`${CACHE_PREFIX}${this._channel_id}_access_token`, body.access_token, 86400000);
 
             access_token = body.access_token;
         }

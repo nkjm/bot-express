@@ -96,7 +96,7 @@ module.exports = class MessengerFacebook {
 
     async validate_signature(req){
         let signature = req.get('X-Hub-Signature');
-        let raw_body = req.raw_body;
+        let raw_body = Buffer.from(JSON.stringify(req.body));
 
         // Signature Validation
         let hash = "sha1=" + crypto.createHmac("sha1", this._app_secret).update(raw_body).digest("hex");

@@ -55,7 +55,7 @@ module.exports = class MessengerLine {
 
     async validate_signature(req){
         let signature = req.get('X-Line-Signature');
-        let raw_body = req.raw_body;
+        let raw_body = Buffer.from(JSON.stringify(req.body));
 
         // Signature Validation. We try all credentials in this._option_list.
         for (let o of this._option_list){

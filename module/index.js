@@ -18,11 +18,7 @@ const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
 const Memory = require("./memory");
 
-router.use(body_parser.json({
-    verify: (req, res, buf, encoding) => {
-        req.raw_body = buf;
-    }
-}));
+router.use(body_parser.json());
 
 /**
 bot-express module. This module should be mounted on webhook URI and requires configuration as options parameter.

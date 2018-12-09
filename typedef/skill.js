@@ -7,6 +7,7 @@ Class to define skill.
 Constructor of skill class. Required/optional parameters can be defined in this function.
 @method Skill#constructor
 @memberof Skill
+@param {Object} config - Object which contains skill specific configurations.
 @prop {Skill#skill_parameter_container} required_parameter - Object to list required parameters for the skill.
 @prop {Skill#skill_parameter_container} optional_parameter - Object to list optional parameters for the skill.
 @prop {boolean} clear_context_on_finish=false - Flag to flush context information on skill finishes. Set true to flush.

@@ -122,7 +122,7 @@ module.exports = class StartConversationFlow extends Flow {
 
         // Instantiate skill.
         if (!skip_instantiate_skill){
-            this.context.skill = super.instantiate_skill(this.context.intent.name);
+            this.context.skill = super.instantiate_skill(this.context.intent);
 
             if (!this.context.skill){
                 // Since skill not found, we end this conversation.

@@ -52,7 +52,7 @@ module.exports = class PushFlow extends Flow {
         if (!skip_instantiate_skill){
             this.context.intent = this.event.intent;
             this.context.sender_language = this.event.language;
-            this.context.skill = super.instantiate_skill(this.event.intent.name);
+            this.context.skill = super.instantiate_skill(this.event.intent);
 
             if (!this.context.skill){
                 // Since skill not found, we end this conversation.

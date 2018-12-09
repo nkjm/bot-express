@@ -22,7 +22,7 @@ module.exports = class Flow {
 
         if (this.context.intent && this.context.intent.name){
             debug(`Init and reviving skill instance.`);
-            this.context.skill = this.revive_skill(this.instantiate_skill(this.context.intent.name));
+            this.context.skill = this.revive_skill(this.instantiate_skill(this.context.intent));
 
             // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
             // After that, we depend on context.to_confirm to identify to_confirm parameters.
@@ -33,43 +33,49 @@ module.exports = class Flow {
         }
     }
 
+    /**
+     * Instantiate skill.
+     * @param {intent} intent - Intent object.
+     * @return {Object} Skill instance.
+     */
     instantiate_skill(intent){
-        if (!intent){
-            debug("Intent should have been set but not.");
+        if (!(intent && intent.name)){
+            debug("intent.name should have been set but not.");
             return;
         }
 
-        let skill;
+        let skill_name;
+
         // If the intent is not identified, we use skill.default.
-        if (intent == this.options.default_intent){
-            skill = this.options.skill.default;
+        if (intent.name == this.options.default_intent){
+            skill_name = this.options.skill.default;
         } else {
-            skill = intent;
+            skill_name = intent.name;
         }
 
-        let skill_instance;
+        let skill;
 
-        if (skill == "builtin_default"){
+        if (skill_name == "builtin_default"){
             debug("Use built-in default skill.");
-            let skill_class = require("../skill/default");
-            skill_instance = new skill_class();
+            let Skill = require("../skill/default");
+            skill = new Skill(intent.config);
         } else {
-            debug(`Look for ${skill} skill.`);
+            debug(`Look for ${skill_name} skill.`);
             try {
-                require.resolve(`${this.options.skill_path}${skill}`);
+                require.resolve(`${this.options.skill_path}${skill_name}`);
             } catch (e){
-                debug(`Skill: "${skill}" not found.`)
+                debug(`Skill: "${skill_name}" not found.`)
                 return;
             }
 
-            debug(`Found skill: "${skill}".`);
-            let skill_class = require(`${this.options.skill_path}${skill}`);
-            skill_instance = new skill_class();
+            debug(`Found skill: "${skill_name}".`);
+            let Skill = require(`${this.options.skill_path}${skill_name}`);
+            skill = new Skill(intent.config);
         }
 
-        skill_instance.type = skill;
+        skill.type = skill_name;
 
-        return skill_instance;
+        return skill;
     }
 
     identify_to_confirm_parameter(required_parameter, confirmed){
@@ -725,7 +731,7 @@ module.exports = class Flow {
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
-            let skill = this.instantiate_skill(this.context.intent.name);
+            let skill = this.instantiate_skill(this.context.intent);
 
             if (!skill){
                 debug(`While it seems user tries to restart conversation, we ignore it since we have no corresponding skill.`);
@@ -765,7 +771,7 @@ module.exports = class Flow {
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
-            let skill = this.instantiate_skill(this.context.intent.name);
+            let skill = this.instantiate_skill(this.context.intent);
 
             if (!skill){
                 debug(`While it seems user tries to change intent, we ignore it since we have no corresponding skill.`);

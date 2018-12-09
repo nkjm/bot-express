@@ -26,7 +26,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {Object} options - Configuration of bot-express.
 @param {Object} [options.language="ja"] - ISO-639-1 based language code which is the mother language of this chatbot.
 @param {Object} options.messenger - Messenger configuration. line, facebook and google are supported.
-@param {Object | Array.<Object>} [options.messenger.line] - Messenger configuration for LINE.
+@param {Object | Array.<Object>} [options.messenger.line] - Messenger configuration for LINE. You can support multiple channel by providing array of this object.
 @param {String} [options.messenger.line.channel_id] - Channel ID of Messaging API. Required when you use LINE as messenger.
 @param {String} [options.messenger.line.channel_secret] - Channel Secret of Messaging API. Required when you use LINE as messenger.
 @param {String} [options.messenger.line.endpoint="api.line.me"] - Test purpose onlyl. Change Messaging API endpoint hostname.

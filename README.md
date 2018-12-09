@@ -9,7 +9,7 @@ bot-express is a chatbot development framework to build tailer-made chatbot ligh
 - NLU integration.
 - Context aware behavior.
 - Auto parameter collection based on skill.
-- Auto language translation. \*Google project id is required.
+- Auto language translation.
 - Support multiple messengers.
 - Available as npm package.
 

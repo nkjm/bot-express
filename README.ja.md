@@ -8,9 +8,10 @@ bot-expressはオーダーメイドのChatbotを高速に開発するための�
 
 - NLU（Natural Language Understanding）によるメッセージの意図解析
 - 文脈の記憶
-- 複数メッセンジャーへの対応（LINEとFacebook Messengerに対応）
 - ユーザーからの情報収集・リアクション
 - 多言語翻訳
+- 複数メッセンジャーへの対応（LINEとFacebook Messengerに対応）
+- NPM Packageとして利用可能
 
 # 構成
 

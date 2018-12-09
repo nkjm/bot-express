@@ -8,11 +8,10 @@ const fs = require("fs");
 * @class
 */
 class Parser {
-
     /**
-    @constructor
-    @param {Array.<Object>} options_list
-    */
+     * @constructor
+     * @param {Array.<Object>} options_list
+     */
     constructor(options_list = []){
         this.parsers = [];
 

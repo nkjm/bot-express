@@ -60,10 +60,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.default_intent="input.unknown"] - Intent name to be returned by NLP when it cannot identify the intent.
 @param {String} [options.modify_previous_parameter_intent] - Intent name to modify the previously collected parameter.
 @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
-@param {String} [options.auto_translation] - Flag to enable auto translation. Set this value to "enable" to enable auto translation. When set to "enable", you need to set options.google_project_id and GOOGLE_APPLICATION_CREDENTIALS environment variables.
 @param {String} [options.parallel_event="ignore"] - Flag to decide the behavior in receiving parallel event. If set to "ignore", bot ignores the event during processing the event from same user. Supported value are "ignore" and "allow".
-@param {String} [options.google_project_id] - Google Project Id to be used when you want to enable auto translation.
-@param {String} [options.google_api_key] - Google API Key for translattion.
 @param {Object} [options.translator] - Option object for translator.
 @param {String} [options.translator.type="google"] - Translator type.
 @param {Boolean} [options.translator.enable_lang_detection=true] - Flag to enable language detection.

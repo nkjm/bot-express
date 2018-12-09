@@ -12,7 +12,6 @@ Object which contains context information.
 @prop {MessageObject} previous.message[].message - Message object sent or received.
 @prop {Object} previous.event - Previous event
 @prop {intent} intent - Intent object which contains various information about current intent based on response from NLP.
-@prop {intent} switch_intent - Intent object to switch.
 @prop {Skill} skill - Skill object currelty applied.
 @prop {Array.<Object>} param_change_history - Change log to revive skill instance in the next event.
 @prop {String} sender_language - Automatically detected ISO-639-1 based code of the senders language.

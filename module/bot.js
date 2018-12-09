@@ -4,16 +4,21 @@ const debug = require("debug")("bot-express:bot");
 const log = require("./logger");
 
 /**
-Toolkit to be used by skill.
-@class
-*/
+ * Toolkit to be used by skill.
+ * @class
+ * @prop {String} type - Type of messenger. The value can be "line","facebook" and "google".
+ * @prop {String} language - ISO-639-1 based language code which is the mother language of this chatbot.
+ * @prop {Object} translator - Translator instance.
+ */
 class Bot {
+    /**
+     * @constructor
+     * @param {*} options 
+     * @param {*} event 
+     * @param {*} context 
+     * @param {*} messenger 
+     */
     constructor(options, event, context, messenger){
-        /**
-        @prop {String} type - Type of messenger. The value can be "line","facebook" and "google".
-        @prop {String} language - ISO-639-1 based language code which is the mother language of this chatbot.
-        @prop {Object} translator - Translator instance.
-        */
         this.type = messenger.type;
         this.language = options.language;
         for (let messenger_type of Object.keys(messenger.plugin)){
@@ -215,7 +220,7 @@ class Bot {
     }
 
     /**
-     * Switch skill.
+     * Switch skill using provided intent. If this method is called in the middle of flow, rest of the process is skipped.
      * @param {intent} intent 
      */
     switch_skill(intent){

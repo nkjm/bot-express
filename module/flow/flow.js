@@ -323,7 +323,7 @@ module.exports = class Flow {
         }
 
         debug(`Parser accepted the value. Parsed value for parameter: "${key}" follows.`);
-        debug(JSON.stringify(parsed_value));
+        debug(parsed_value);
 
         this._add_parameter(key, parsed_value, is_change);
 

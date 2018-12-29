@@ -49,7 +49,11 @@ module.exports = class ReplyFlow extends Flow {
         try {
             applied_parameter = await super.apply_parameter(this.context.confirming, param_value);
         } catch (e) {
-            error = e;
+            if (e.name === "Error"){
+                error = e;
+            } else {
+                throw e;
+            }
         }
 
         if (error){

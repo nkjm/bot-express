@@ -15,6 +15,10 @@ module.exports = class SkillTestParser {
                     if (["世帯全員分", "本人だけ"].includes(value)){
                         return value;
                     }
+                    if (value === "unexpected"){
+                        hoge(); // Undefined function.
+                        return value; // Never be executed.
+                    }
                     throw new Error("「世帯全員分」または「本人だけ」とお答えください。");
                 },
                 reaction: async (error, value, bot, event, context) => {

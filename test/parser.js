@@ -19,12 +19,12 @@ const emu = new Emulator(messenger_option.name, messenger_option.options);
 const user_id = "dummy_user_id";
 
 describe("Test parser", async function(){
+    beforeEach(async () => {
+        await emu.clear_context(user_id);
+    });
+
     describe("Valid parameter value is included in intent response", async function(){
         it("will be applied in advance", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -46,10 +46,6 @@ describe("Test parser", async function(){
 
     describe("Invalid parameter value is included in intent response", async function(){
         it("will be rejected", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -68,12 +64,33 @@ describe("Test parser", async function(){
         });
     })
 
+    describe("Unexpected error ocurrs", async function(){
+        it("throws exception.", async function(){
+            let event = emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-parser",
+                        parameters: {
+                            function_based: "unexpected"
+                        }
+                    }
+                })
+            });
+
+            let exception = false;
+            try {
+                await emu.send(event);
+            } catch (e){
+                e.name.should.equal("ReferenceError");
+                exception = true;
+            }
+            exception.should.equal(true);
+        });
+    })
+
     describe("Parameter is included in intent response but there is no corresponding parameter in skill", async function(){
         it("will be ignored", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -95,10 +112,6 @@ describe("Test parser", async function(){
 
     describe("Function based parser", async function(){
         it("will run function", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -126,10 +139,6 @@ describe("Test parser", async function(){
 
     describe("No parser", async function(){
         it("will apply the value as it is unless the value is empty.", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",

@@ -33,22 +33,25 @@ module.exports = class TestUtilEmulator {
     @method
     @param {Object} event - Event object.
     */
-    send(event){
+    async send(event){
         let url = TEST_WEBHOOK_URL;
         let body = this._create_body(event);
         let headers = this._create_header(body);
 
-        return request.postAsync({
+        let res = await request.postAsync({
             url: url,
             headers: headers,
             body: body,
             json: true
-        }).then((response) => {
-            if (response.statusCode == 200){
-                return response.body;
-            }
-            return Promise.reject(new Error(response.body));
-        });
+        })
+
+        if (res.statusCode == 200){
+            return res.body;
+        }
+
+        const e = new Error(res.body.message);
+        e.name = res.body.name;
+        throw e;
     }
 
     /**

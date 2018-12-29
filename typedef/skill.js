@@ -53,7 +53,7 @@
  */
 
 /**
- * Function which is applied to the message from user to validate the value. If validation succeeds, return any type of value you like to set as confirmed parameter. If validation fails, throw error.
+ * Function which is applied to the message from user to validate the value. If validation succeeds, return any type of value you like to set as confirmed parameter. If validation fails, throw error without changing error name.
  * @typedef {Function} Skill#parser_function
  * @async
  * @param {*} value - Data to parse. In case of text message, its text will be set in string. In case of postback event, data payload will be set in string. In other cases, message object will be set as it is.

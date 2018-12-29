@@ -117,8 +117,11 @@ module.exports = (options) => {
             debug("Abnormal End of Webhook. Error follows.");
             debug(e);
             if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                if (e && e.message){
-                    return res.status(400).send(e.message);
+                if (e && e.name && e.message){
+                    return res.status(400).json({
+                        name: e.name,
+                        message: e.message,
+                    });
                 } else {
                     return res.sendStatus(400);
                 }

@@ -265,7 +265,11 @@ module.exports = class Flow {
         try {
             applied_parameter = await this.apply_parameter(this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
         } catch(e){
-            await this.react(e, this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
+            if (e.name === "Error"){
+                await this.react(e, this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
+            } else {
+                throw e;
+            }
         }
 
         if (applied_parameter){
@@ -629,12 +633,16 @@ module.exports = class Flow {
                         }
                     }
                 ).catch(
-                    (error) => {
-                        debug(`Value does not fit to ${param_key}`);
-                        return {
-                            is_fit: false,
-                            key: param_key,
-                            value: payload
+                    (e) => {
+                        if (e.name === "Error"){
+                            debug(`Value does not fit to ${param_key}`);
+                            return {
+                                is_fit: false,
+                                key: param_key,
+                                value: payload
+                            }
+                        } else {
+                            throw e;
                         }
                     }
                 )

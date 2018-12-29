@@ -7,8 +7,9 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "プログラムの起動",
-            "program": "${workspaceFolder}/index.js"
+            "name": "bot-express",
+            "program": "${workspaceFolder}/sample_app.js",
+            "console": "externalTerminal"
         }
     ]
 }

@@ -28,6 +28,7 @@ module.exports = class ParserString {
      * @param {Number} [policy.min]
      * @param {Number} [policy.max]
      * @param {String} [policy.charactor] - Supported values are hiragana and katakana.
+     * @param {Array.<String>} [policy.exclude] - List of values to be rejected.
      * @param {String} [policy.regex] - Regex expression to match value.
      * @return {String} - Parsed value.
      */
@@ -69,6 +70,12 @@ module.exports = class ParserString {
             }
         } else {
             parsed_value = param.value;
+        }
+
+        if (Array.isArray(policy.exclude)){
+            if (policy.exclude.includes(parsed_value)){
+                throw new Error("violates_exclude");
+            }
         }
 
         if (policy.regex){

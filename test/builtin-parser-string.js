@@ -347,12 +347,49 @@ describe("Test builtin string parser", async function(){
             context = await emu.send(emu.create_postback_event(user_id, {data: 1}));
 
             // Test
-            should.not.exist(context.confirmed.no_policy);
+            context.confirming.should.equal("no_policy");
 
             context = await emu.send(emu.create_message_event(user_id, "マルゲリータ"));
 
             // Test
             context.confirmed.no_policy.should.equal("マルゲリータ");
+        });
+    });
+
+    describe("Exclude", async function(){
+        it("accepts the value as long as it is not included by exclude.", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+            
+            let event = emu.create_postback_event(user_id, {data: JSON.stringify({
+                _type: "intent",
+                language: "ja",
+                intent: {
+                    name: "test-builtin-parser-string",
+                    parameters: {
+                        katakana: "マルゲリータ",
+                        hiragana: "まるげりいた",
+                        minmax: "マルゲ",
+                        regex: "abb",
+                        no_policy: "マルゲリータ"
+                    }
+                }
+            })});
+            let context = await emu.send(event);
+
+            // Test
+            context.intent.name.should.equal("test-builtin-parser-string");
+            context.confirming.should.equal("exclude");
+
+            context = await emu.send(emu.create_message_event(user_id, "cancel"));
+
+            // Test
+            context.confirming.should.equal("exclude");
+
+            context = await emu.send(emu.create_message_event(user_id, "マルゲリータ"));
+
+            context.confirmed.exclude.should.equal("マルゲリータ");
         });
     });
 

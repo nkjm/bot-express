@@ -86,6 +86,18 @@ module.exports = class SkillTestBuiltinParserString {
                         debug(error.message);
                     }
                 }
+            },
+            exclude: {
+                message_to_confirm: {
+                    type: "text",
+                    text: "exclude"
+                },
+                parser: {
+                    type: "string",
+                    policy: {
+                        exclude: ["cancel"]
+                    }
+                }
             }
         }
     }

@@ -24,8 +24,9 @@ module.exports = class Flow {
             debug(`Init and reviving skill instance.`);
             this.context.skill = this.revive_skill(this.instantiate_skill(this.context.intent));
 
-            // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
-            // After that, we depend on context.to_confirm to identify to_confirm parameters.
+            // At the beginning of the conversation, we identify to_confirm parameters by required_parameter in skill and context.to_confirm.
+            // While context.to_confirm should be empty in start conversation flow, there is a chance that it already has some values in btw flow so we need to check both skill and context.
+            // Other than that, we use context.to_confirm as it is.
             if (this.context.to_confirm.length == 0){
                 this.context.to_confirm = this.identify_to_confirm_parameter(this.context.skill.required_parameter, this.context.confirmed);
             }
@@ -90,15 +91,6 @@ module.exports = class Flow {
         for (let req_param_key of Object.keys(required_parameter)){
             if (typeof confirmed[req_param_key] == "undefined"){
                 to_confirm.push(req_param_key);
-                /*
-                to_confirm.push({
-                    name: req_param_key,
-                    label: required_parameter[req_param_key].label,
-                    message_to_confirm: required_parameter[req_param_key].message_to_confirm,
-                    parser: required_parameter[req_param_key].parser,
-                    reaction: required_parameter[req_param_key].reaction
-                });
-                */
             }
         }
         return to_confirm;

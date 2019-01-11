@@ -19,13 +19,12 @@ const emu = new Emulator(messenger_option.name, messenger_option.options);
 const user_id = "dummy_user_id";
 
 describe("Test collect", async function(){
+    beforeEach(async () => {
+        await emu.clear_context(user_id);
+    })
 
     describe("Collect undefined parameter using collect_by_parameter_obj()", async function(){
         it("will collect parameter as dynamic parameter.", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -49,10 +48,6 @@ describe("Test collect", async function(){
 
     describe("collect optional parameter using collect_by_parameter_key()", async function(){
         it("will collect optional parameter.", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -76,10 +71,6 @@ describe("Test collect", async function(){
 
     describe("collect optional parameter using collect_by_parameter_obj()", async function(){
         it("will collect optional parameter with overriden message.", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -103,10 +94,6 @@ describe("Test collect", async function(){
 
     describe("collect required parameter using collect_by_parameter_obj()", async function(){
         it("will collect required parameter with overriden message.", async function(){
-            this.timeout(15000);
-
-            await emu.clear_context(user_id);
-
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -129,6 +116,37 @@ describe("Test collect", async function(){
             context = await emu.send(emu.create_message_event(user_id, "hoge"));
 
             should.not.exist(context.confirming);
+        });
+    });
+
+    describe("collect collected parameter again.", async function(){
+        it("will collect it once again while retaining old value.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-collect"
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-collect");
+            context.confirming.should.equal("req_a");
+
+            context = await emu.send(emu.create_message_event(user_id, "req_b"));
+
+            context.confirming.should.equal("req_b");
+            context.confirmed.req_a.should.equal("req_b");
+
+            context = await emu.send(emu.create_message_event(user_id, "re-collect"));
+
+            context.confirming.should.equal("req_a");
+            context.confirmed.req_a.should.equal("req_b");
+
+            context = await emu.send(emu.create_message_event(user_id, "hoge"));
+
+            context.confirmed.req_a.should.equal("hoge");
         });
     });
 });

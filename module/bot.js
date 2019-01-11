@@ -400,25 +400,62 @@ class Bot {
             options.dedup = true;
         }
 
+        let parameter_key;
+
         if (typeof arg == "string"){
             debug(`Reserving collection of parameter: ${arg}.`);
-            return this._collect_by_parameter_key(arg, options);
+            parameter_key = arg;
         } else if (typeof arg == "object"){
+            if (Object.keys(arg).length !== 1){
+                throw("Malformed parameter container object. You can pass just 1 parameter.");
+            }
+
             debug(`Reserving collection of parameter: ${Object.keys(arg)[0]}.`);
-            return this._collect_by_parameter_obj(arg, options);
+            let parameter_container = arg;
+            parameter_key = Object.keys(parameter_container)[0];
+    
+            if (this._context.skill.required_parameter && this._context.skill.required_parameter[parameter_key]){
+                // If we have parameter of same parameter key, override it.
+                debug(`Found the parameter in required_parameter so we override it.`);
+                Object.assign(this._context.skill.required_parameter, parameter_container);
+                this._save_param_change_log("required_parameter", parameter_key, parameter_container[parameter_key]);
+            } else if (this._context.skill.optional_parameter && this._context.skill.optional_parameter[parameter_key]){
+                // If we have parameter of same parameter key, override it.
+                debug(`Found the parameter in optional_parameter so we override it.`);
+                Object.assign(this._context.skill.optional_parameter, parameter_container);
+                this._save_param_change_log("optional_parameter", parameter_key, parameter_container[parameter_key]);
+            } else {
+                // If we do not have parameter of same parameter key, add it as dynamic parameter.
+                debug(`The parameter not found in skill so we add it as dynamic parameter.`);
+                if (this._context.skill.dynamic_parameter === undefined) this._context.skill.dynamic_parameter = {};
+                Object.assign(this._context.skill.dynamic_parameter, parameter_container);
+                this._save_param_change_log("dynamic_parameter", parameter_key, parameter_container[parameter_key]);
+            }
         } else {
-            throw(new Error("Invalid argument for messenger.collect()"));
+            throw(new Error("Invalid argument."));
         }
+
+        // If the parameter is already in the to_confirm list and dedup is true, we remove it to avoid duplicate.
+        let index_to_remove = this._context.to_confirm.indexOf(parameter_key);
+        if (index_to_remove !== -1 && options.dedup){
+            debug(`We found this parameter has already been confirmed so remove ${parameter_key} from to_confirm to dedup.`);
+            this._context.to_confirm.splice(index_to_remove, 1);
+        }
+
+        debug(`Reserved collection of parameter: ${parameter_key}. We put it to the top of to_confirm list.`);
+        this._context.to_confirm.unshift(parameter_key);
     }
 
     /**
     * Collect specified parameter.
+    * @deprecated
     * @private
     * @param {String} parameter_key - Name of the parameter to collect.
     * @param {Object} options - Option object.
     * @param {Boolean} options.dedup - Set false to allow collecting same parameter multiple times.
     * @returns {Null}
     */
+    /*
     _collect_by_parameter_key(parameter_key, options){
         // If there is confirmed parameter, we remove it to re-confirm.
         if (this._context.confirmed[parameter_key]){
@@ -435,15 +472,18 @@ class Bot {
         debug(`Reserved collection of parameter: ${parameter_key}. We put it to the top of to_confirm list.`);
         this._context.to_confirm.unshift(parameter_key);
     }
+    */
 
     /**
     * Collect specified parameter.
+    * @deprecated
     * @private
     * @param {Skill#skill_parameter_container} param_container - The parameter container object to collect.
     * @param {Object} options - Option object.
     * @param {Boolean} options.dedup - Set false to allow collecting same parameter multiple times.
     * @returns {Null}
     */
+    /*
     _collect_by_parameter_obj(param_container, options){
         if (Object.keys(param_container).length !== 1){
             throw("Malformed parameter container object. You can pass just 1 parameter.");
@@ -485,6 +525,7 @@ class Bot {
         debug(`Reserved collection of parameter: ${param_key}. We put it to the top of to_confirm list.`);
         this._context.to_confirm.unshift(param_key);
     }
+    */
 
 
     /**

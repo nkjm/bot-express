@@ -45,6 +45,13 @@ module.exports = class SkillTestCollect {
                 message_to_confirm: {
                     type: "text",
                     text: "req_b?"
+                },
+                reaction: async (error, value, bot, event, context) => {
+                    if (error) return;
+
+                    if (value === "re-collect"){
+                        bot.collect("req_a");
+                    }
                 }
             }
         }

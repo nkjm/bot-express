@@ -678,6 +678,209 @@
     
 
     
+    <h4 class="name" id="condition"><span class="type-signature">(async) </span>condition<span class="signature">(bot, event, context)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Function to check if the parameter should be collected.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>bot</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Bot.html">Bot</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Event object which triggers this flow.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#context">context</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Context information.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line46">line 46</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - True to collect the parameter. False to skip.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+            
+                
+
+    
+
+    
     <h4 class="name" id="message_to_confirm"><span class="type-signature">(async) </span>message_to_confirm<span class="signature">(bot, event, context)</span><span class="type-signature"> &rarr; {Object}</span></h4>
     
 
@@ -825,7 +1028,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line45">line 45</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -889,7 +1092,7 @@
 
 
 <div class="description">
-    Function which is applied to the message from user to validate the value. If validation succeeds, return any type of value you like to set as confirmed parameter. If validation fails, throw error.
+    Function which is applied to the message from user to validate the value. If validation succeeds, return any type of value you like to set as confirmed parameter. If validation fails, throw error without changing error name.
 </div>
 
 
@@ -1051,7 +1254,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line55">line 55</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line66">line 66</a>
     </li></ul></dd>
     
 
@@ -1210,7 +1413,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line65">line 65</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -1425,7 +1628,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line72">line 72</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line83">line 83</a>
     </li></ul></dd>
     
 
@@ -1494,6 +1697,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -1522,10 +1727,47 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last">Message Object to ask for users the value of this parameter. As for message format, you can use either LINE or Facebook Messenger. In addition, you can also set function to generate message dynamically.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>condition</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Skill.html#condition">Skill#condition</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Function to check if this parameter should be collected. Return true to collect and false to skip.</td>
         </tr>
 
     
@@ -1551,6 +1793,14 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
 
             
 
@@ -1574,6 +1824,14 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
 
             
 
@@ -1596,6 +1854,14 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
             
 
             
@@ -1763,7 +2029,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line39">line 39</a>
+        <a href="typedef_skill.js.html">typedef/skill.js</a>, <a href="typedef_skill.js.html#line40">line 40</a>
     </li></ul></dd>
     
 
@@ -1799,7 +2065,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Dec 09 2018 17:37:00 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Jan 13 2019 12:02:45 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

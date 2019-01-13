@@ -151,29 +151,30 @@ module.exports = class Flow {
     }
 
     /**
-    Check if the intent is related to the parameter.
-    @param {String} param - Name of the parameter.
-    @param {String} intent - Name of the intent.
-    @returns {Boolean} Returns true if it is related. Otherwise, false.
-    */
+     * Check if the intent is related to the parameter.
+     * @method
+     * @param {String} param - Name of the parameter.
+     * @param {String} intent - Name of the intent.
+     * @returns {Boolean} Returns true if it is related. Otherwise, false.
+     */
     is_intent_related_to_param(param, intent){
         return false;
     }
 
     /**
-     * Send/reply to user to ask to_confirm parameter.
+     * Retrieve parameter to collect next by checking condition.
      * @method
-     * @return {Promise}
+     * @return {skill_parameter} Parameter of skill. If there is no parameter to collect, returns null.
      */
-    async _collect(){
+    async _pop_parameter_to_collect(){
+        // Check if there is parameter to confirm.
         if (this.context.to_confirm.length == 0){
-            debug("While collect() is called, there is no parameter to confirm.");
+            debug("There is no parameter to confirm anymore.");
             return;
         }
 
-        let message;
-        let param_key = this.context.to_confirm[0];
-        let param_type = this.bot.check_parameter_type(param_key);
+        const param_key = this.context.to_confirm[0];
+        const param_type = this.bot.check_parameter_type(param_key);
 
         if (!this.context.skill[param_type]){
             throw new Error(`${param_type} parameter not found in skill.`);
@@ -183,45 +184,98 @@ module.exports = class Flow {
             throw new Error(`Parameter: "${param_key}" not found in skill.`);
         }
 
-        if (!this.context.skill[param_type][param_key].message_to_confirm){
+        // If condition is not defined, we use this parameter.
+        if (typeof this.context.skill[param_type][param_key].condition === "undefined"){
+            // Set confirming.
+            this.context.confirming = param_key;
+
+            return this.context.skill[param_type][param_key];
+        }
+
+        // Since condition is defined, we check if we should use this parameter.
+        const condition = this.context.skill[param_type][param_key].condition;
+
+        // Check if condition is properly implemented.
+        if (typeof condition != "function"){
+            throw new Error("Condition should be function.");
+        }
+
+        // If condition returns true, we use this parameter.
+        if (await condition(this.bot, this.event, this.context)){
+            // Set confirming.
+            this.context.confirming = param_key;
+
+            return this.context.skill[param_type][param_key];
+        }
+
+        // Since condition returns false, we should skip this parameter and check next parameter.
+        debug(`We skip collecting "${param_key}" due to condition.`);
+        this.context.to_confirm.shift();
+
+        return await this._pop_parameter_to_collect();
+    }
+
+    /**
+     * Send/reply to user to ask to_confirm parameter.
+     * @method
+     * @return {Promise}
+     */
+    async _collect(){
+        // Check condition. If condition is undefined or returns true, we collect this parameter.
+        // If condition returns false, we skip this parameter.
+        const param = await this._pop_parameter_to_collect();
+
+        // If there is no parameter to collect, we just return.
+        if (!param){
+            return;
+        }
+
+        // Check if there is message_to_confirm.
+        if (!param.message_to_confirm){
             throw new Error("While we need to send a message to confirm parameter, the message not found.");
         }
 
-        if (this.context.skill[param_type][param_key].message_to_confirm[this.bot.type]){
+        // Setting message_to_confirm.
+        // If there is messenger specific message object under message_to_confirm, we use it.
+        // If there is not, we use message_to_confirm.
+        let message_to_confirm;
+        if (param.message_to_confirm[this.bot.type]){
             // Found message platform specific message object.
             debug("Found messenger specific message object.");
-            message = this.context.skill[param_type][param_key].message_to_confirm[this.bot.type];
-        } else if (this.context.skill[param_type][param_key].message_to_confirm){
+            message_to_confirm = param.message_to_confirm[this.bot.type];
+        } else if (param.message_to_confirm){
             // We compile this message object to get message platform specific message object.
-            message = this.context.skill[param_type][param_key].message_to_confirm;
+            message_to_confirm = param.message_to_confirm;
         }
 
-        let message_to_confirm;
-        if (typeof message === "function"){
+        // Setting message by compiling message_to_confirm.
+        // If message_to_confirm is function, we execute it and use the response.
+        // If message_to_confirm is object, we use it.
+        let message;
+        if (typeof message_to_confirm === "function"){
             debug("message_to_confirm is made of function. We generate message with it.");
-            message_to_confirm = await message(this.bot, this.event, this.context);
-        } else if (typeof message === "object" || typeof message === "string"){
+            message = await message_to_confirm(this.bot, this.event, this.context);
+        } else if (typeof message_to_confirm === "object" || typeof message_to_confirm === "string"){
             debug("message_to_confirm is made of object|string. We use it as it is.");
-            message_to_confirm = message;
+            message = message_to_confirm;
         } else {
             throw new Error("Format of message_to_confirm is invalid.");
         }
 
-        // Set confirming.
-        this.context.confirming = param_key;
-
-        // Send question to the user.
-        if (!(typeof message_to_confirm === "object" && message_to_confirm.length)){
+        // Make sure that message is array.
+        if (!Array.isArray(message)){
             // The message is single object so we make it array.
-            message_to_confirm = [message_to_confirm];
+            message = [message];
         }
+
+        // Send message to user by using reply or push depending on flow type.
         if (this.context._flow == "push"){
             debug("We use send method to collect parameter since this is push flow.");
             debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
-            await this.bot.send(this.event.to[`${this.event.to.type}Id`], message_to_confirm, this.context.sender_language);
+            await this.bot.send(this.event.to[`${this.event.to.type}Id`], message, this.context.sender_language);
         } else {
             debug("We use reply method to collect parameter.");
-            await this.bot.reply_to_collect(message_to_confirm);
+            await this.bot.reply_to_collect(message);
         }
     }
 

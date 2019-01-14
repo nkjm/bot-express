@@ -377,7 +377,7 @@ module.exports = class Flow {
         debug(`Parser accepted the value. Parsed value for parameter: "${key}" follows.`);
         debug(parsed_value);
 
-        this._add_parameter(key, parsed_value, is_change);
+        this._add_parameter(parameter_type, key, parsed_value, is_change);
 
         debug(`We have now ${this.context.to_confirm.length} parameters to confirm.`);
 
@@ -449,11 +449,35 @@ module.exports = class Flow {
         }
     }
 
-    _add_parameter(key, value, is_change = false){
-        // Add the parameter to "confirmed".
+    _add_parameter(type, key, value, is_change = false){
+        // Add the parameter to context.confirmed.
+        // If the parameter should be list, we add value to the list.
+        // IF the parameter should not be list, we just set the value.
+        if (this.context.skill[type][key].list){
+            if (!(typeof this.context.skill[type][key].list === "boolean" || typeof this.context.skill[type][key].list === "object")){
+                throw new Error("list property should be boolean or object.");
+            }
+            if (!Array.isArray(this.context.confirmed[key])){
+                this.context.confirmed[key] = [];
+            }
+            if (this.context.skill[type][key].list === true){
+                this.context.confirmed[key].unshift(value);
+            } else if (this.context.skill[type][key].list.order === "new"){
+                this.context.confirmed[key].unshift(value);
+            } else if (this.context.skill[type][key].list.order === "old"){
+                this.context.confirmed[key].push(value);
+            } else {
+                this.context.confirmed[key].unshift(value);
+            }
+        } else {
+            this.context.confirmed[key] = value;
+        }
+
+        /*
         let param = {};
         param[key] = value;
         Object.assign(this.context.confirmed, param); // TBD: Can't we change this to just assigning property?
+        */
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
         if (!is_change){

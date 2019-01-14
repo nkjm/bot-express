@@ -1,7 +1,7 @@
 /**
 Object which contains context information.
 @typedef {Object} context
-@prop {Array.<Object>} to_confirm - Array of parameter names to confirm.
+@prop {Array.<String>} to_confirm - Array of parameter names to confirm.
 @prop {Sting} confirming - Parameter name which Bot is now confirming.
 @prop {Object} confirmed - Object which contains confirmed parameters. If you want to retrieve confirmed value of "date" parameter, access confirmed.date.
 @prop {Object} heard - Object which contains heard parameters which are waiting for beging applied.

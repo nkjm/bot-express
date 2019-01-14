@@ -218,7 +218,7 @@ module.exports = class Flow {
     /**
      * Send/reply to user to ask to_confirm parameter.
      * @method
-     * @return {Promise}
+     * @async
      */
     async _collect(){
         // Check condition. If condition is undefined or returns true, we collect this parameter.
@@ -876,6 +876,7 @@ module.exports = class Flow {
         if (this.context._pause){
             debug("Detected pause flag. We stop processing finish().");
             this.context._pause = false;
+            
             return this.context;
         }
 
@@ -884,6 +885,7 @@ module.exports = class Flow {
             debug("Detected exit flag. We stop processing finish().");
             this.context.confirming = null;
             this.context._exit = false;
+
             return this.context;
         }
 
@@ -891,6 +893,7 @@ module.exports = class Flow {
         if (this.context._init){
             debug("Detected init flag. We stop processing finish().");
             this.context = null;
+
             return this.context;
         }
 
@@ -904,6 +907,7 @@ module.exports = class Flow {
         if (this.context.to_confirm.length){
             debug("We still have parameters to confirm. Going to collect.");
             await this._collect();
+
             return this.context;
         }
 
@@ -917,24 +921,30 @@ module.exports = class Flow {
         if (this.context.to_confirm.length){
             debug("We still have parameters to confirm. Going to collect.");
             await this._collect();
+
             return this.context;
         }
 
         // Log skill status.
         log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "completed");
 
+        // If this is sub skill, we concat previous message and get parent context back.
         if (this.context.parent){
-            // This is sub skill so we get parent context back.
             debug(`We finished sub skill and get back to parent skill "${this.context.parent.intent.name}".`);
             this.context.parent.previous.message = this.context.previous.message.concat(this.context.parent.previous.message);
             this.context = this.context.parent;
             delete this.context.parent;
-        } else if (this.context.skill.clear_context_on_finish){
-            // This is Root skill. If clear_context_on_finish flag is true, we clear context.
+
+            return this.context;
+        }
+        
+        // Check clear_context_on_finish.
+        if (this.context.skill.clear_context_on_finish){
+            // We clear context.
             debug(`Mark this context should be cleared.`);
             this.context._clear = true
         } else {
-            // This is Root skill. And we need to keep context. But we should still discard param change history.
+            // We keep context. But we still discard param change history.
             this.context.param_change_history = [];
         }
 

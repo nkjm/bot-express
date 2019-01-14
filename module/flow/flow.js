@@ -293,16 +293,18 @@ module.exports = class Flow {
             return;
         }
 
+        if (!this.context.heard){
+            this.context.heard = {};
+        }
+
         if (!(this.context && this.context.to_confirm && this.context.to_confirm.length)){
-            debug("There is no parameters to confirm. Exit process parameters.");
+            debug("There is no parameters to confirm for now but we save the input parameters as heard just in case. Exit process parameters.");
+            Object.assign(this.context.heard, parameters);
             return;
         }
 
         if (typeof parameters[this.context.to_confirm[0]] === "undefined"){
             debug(`Input parameters does not contain "${this.context.to_confirm[0]}" which we should process now. We save the rest of input parameters as heard in context and exit process parameters.`);
-            if (!this.context.heard){
-                this.context.heard = {};
-            }
             Object.assign(this.context.heard, parameters);
             return;
         }
@@ -918,11 +920,11 @@ module.exports = class Flow {
         await this.context.skill.finish(this.bot, this.event, this.context);
 
         // Double check if we have no parameters to confirm since developers can execute collect() method inside finish().
+        // If there is to_confirm param at this moment, we recursively execute finish().
         if (this.context.to_confirm.length){
-            debug("We still have parameters to confirm. Going to collect.");
-            await this._collect();
+            debug("Found parameters to confirm. Going run finish() recursively.");
 
-            return this.context;
+            return await this.finish();
         }
 
         // Log skill status.

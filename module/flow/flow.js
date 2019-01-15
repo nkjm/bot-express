@@ -98,10 +98,10 @@ module.exports = class Flow {
 
 
     /**
-    * Function to revive skill instance from change log.
-    @param {Object} - Skill instance.
-    @return {Object} - Revived skill instance.
-    */
+     * Function to revive skill instance from change log.
+     * @param {Object} - Skill instance.
+     * @return {Object} - Revived skill instance.
+     */
     revive_skill(skill){
         if (!skill){
             throw new Error("Skill not found.");
@@ -118,6 +118,16 @@ module.exports = class Flow {
                         log.param.message_to_confirm = Function.call(this, "return " + log.param.message_to_confirm)();
                     } catch (error) {
                         debug(`message_to_confirm looks like just a string so we use it as it is.`);
+                    }
+                }
+            }
+            if (log.param.condition){
+                if (typeof log.param.condition === "string"){
+                    debug(`condition is string. We try to make it function...`);
+                    try {
+                        log.param.condition = Function.call(this, "return " + log.param.condition)();
+                    } catch (error) {
+                        debug(`condition looks like just a string so we use it as it is.`);
                     }
                 }
             }
@@ -151,22 +161,11 @@ module.exports = class Flow {
     }
 
     /**
-     * Check if the intent is related to the parameter.
-     * @method
-     * @param {String} param - Name of the parameter.
-     * @param {String} intent - Name of the intent.
-     * @returns {Boolean} Returns true if it is related. Otherwise, false.
-     */
-    is_intent_related_to_param(param, intent){
-        return false;
-    }
-
-    /**
      * Retrieve parameter to collect next by checking condition.
      * @method
-     * @return {skill_parameter} Parameter of skill. If there is no parameter to collect, returns null.
+     * @return {String} Parameter key. If there is no parameter to collect, returns null.
      */
-    async _pop_parameter_to_collect(){
+    async _pop_parameter_key_to_collect(){
         // Check if there is parameter to confirm.
         if (this.context.to_confirm.length == 0){
             debug("There is no parameter to confirm anymore.");
@@ -186,10 +185,7 @@ module.exports = class Flow {
 
         // If condition is not defined, we use this parameter.
         if (typeof this.context.skill[param_type][param_key].condition === "undefined"){
-            // Set confirming.
-            this.context.confirming = param_key;
-
-            return this.context.skill[param_type][param_key];
+            return param_key;
         }
 
         // Since condition is defined, we check if we should use this parameter.
@@ -202,17 +198,14 @@ module.exports = class Flow {
 
         // If condition returns true, we use this parameter.
         if (await condition(this.bot, this.event, this.context)){
-            // Set confirming.
-            this.context.confirming = param_key;
-
-            return this.context.skill[param_type][param_key];
+            return param_key;
         }
 
         // Since condition returns false, we should skip this parameter and check next parameter.
         debug(`We skip collecting "${param_key}" due to condition.`);
         this.context.to_confirm.shift();
 
-        return await this._pop_parameter_to_collect();
+        return await this._pop_parameter_key_to_collect();
     }
 
     /**
@@ -223,12 +216,22 @@ module.exports = class Flow {
     async _collect(){
         // Check condition. If condition is undefined or returns true, we collect this parameter.
         // If condition returns false, we skip this parameter.
-        const param = await this._pop_parameter_to_collect();
-
+        const param_key = await this._pop_parameter_key_to_collect();
         // If there is no parameter to collect, we just return.
-        if (!param){
+        if (!param_key){
             return;
         }
+
+        const param_type = this.bot.check_parameter_type(param_key);
+        const param = this.context.skill[param_type][param_key];
+
+        // Check if this parameter has sub parameters.
+        if (param.required_parameter){
+            // TBD
+        }
+
+        // Set context.confirming.
+        this.context.confirming = param_key;
 
         // Check if there is message_to_confirm.
         if (!param.message_to_confirm){

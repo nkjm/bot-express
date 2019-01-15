@@ -117,5 +117,47 @@ describe("Test _collect", async function(){
             should.not.exist(context.confirming);
         });
     });
+
+    describe("If condition returns true in dynamic parameter", async function(){
+        it("collects the parameter.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-_collect"
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-_collect");
+            context.confirming.should.equal("juminhyo_type");
+
+            context = await emu.send(emu.create_message_event(user_id, "戸籍抄本"));
+
+            context.confirming.should.equal("honseki");
+        });
+    });
+
+    describe("If condition returns false in dynamic parameter", async function(){
+        it("does not collect the parameter.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-_collect"
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-_collect");
+            context.confirming.should.equal("juminhyo_type");
+
+            context = await emu.send(emu.create_message_event(user_id, "戸籍謄本"));
+
+            should.not.exist(context.confirming);
+        });
+    });
 });
 

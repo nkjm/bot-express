@@ -7,6 +7,24 @@ module.exports = class SkillTest_Collect {
                 message_to_confirm: {
                     type: "text",
                     text: "必要な住民票の種類を教えてください。"
+                },
+                reaction: async (error, value, bot, event, context) => {
+                    if (["戸籍謄本", "戸籍抄本"].includes(value)){
+                        bot.collect({
+                            "honseki": {
+                                condition: async (bot, event, context) => {
+                                    if (context.confirmed.juminhyo_type === "戸籍謄本"){
+                                        return false;
+                                    }
+                                    return true;
+                                },
+                                message_to_confirm: {
+                                    type: "text",
+                                    text: "本籍地を教えてください。"
+                                }
+                            }
+                        })
+                    }
                 }
             },
             whose: {

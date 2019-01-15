@@ -85,7 +85,7 @@ class Bot {
             if (this._event.type == "bot-express:push"){
                 return this._messenger.send(this._event, this._event.to[`${this._event.to.type}Id`], compiled_messages);
             }
-            if (to_collect || this._context.parent){
+            if (to_collect || this._context._digging){
                 return this._messenger.reply_to_collect(this._event, compiled_messages);
             }
             return this._messenger.reply(this._event, compiled_messages);
@@ -314,7 +314,27 @@ class Bot {
     @return {Promise}
     */
     async apply_parameter(param_key, value){
-        this._context.confirmed[param_key] = value;
+        const param_type = this.check_parameter_type(param_key);
+        
+        if (this._context.skill[param_type][param_key].list){
+            if (!(typeof this._context.skill[param_type][param_key].list === "boolean" || typeof this._context.skill[param_type][param_key].list === "object")){
+                throw new Error("list property should be boolean or object.");
+            }
+            if (!Array.isArray(this._context.confirmed[param_key])){
+                this._context.confirmed[param_key] = [];
+            }
+            if (this._context.skill[param_type][param_key].list === true){
+                this._context.confirmed[param_key].unshift(value);
+            } else if (this._context.skill[param_type][param_key].list.order === "new"){
+                this._context.confirmed[param_key].unshift(value);
+            } else if (this._context.skill[param_type][param_key].list.order === "old"){
+                this._context.confirmed[param_key].push(value);
+            } else {
+                this._context.confirmed[param_key].unshift(value);
+            }
+        } else {
+            this._context.confirmed[param_key] = value;
+        }
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
         this._context.previous.confirmed.unshift(param_key);
@@ -331,8 +351,6 @@ class Bot {
             debug(`Clearing confirming.`);
             this._context.confirming = null;
         }
-
-        let param_type = this.check_parameter_type(param_key);
 
         if (this._context.skill[param_type] && this._context.skill[param_type][param_key]){
             if (this._context.skill[param_type][param_key].reaction){

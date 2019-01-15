@@ -113,7 +113,7 @@ class Bot {
             if (this._event.type == "bot-express:push"){
                 return this._messenger.send(this._event, this._event.to[`${this._event.to.type}Id`], compiled_messages);
             }
-            if (to_collect || this._context.parent){
+            if (to_collect || this._context._digging){
                 return this._messenger.reply_to_collect(this._event, compiled_messages);
             }
             return this._messenger.reply(this._event, compiled_messages);
@@ -342,7 +342,27 @@ class Bot {
     @return {Promise}
     */
     async apply_parameter(param_key, value){
-        this._context.confirmed[param_key] = value;
+        const param_type = this.check_parameter_type(param_key);
+        
+        if (this._context.skill[param_type][param_key].list){
+            if (!(typeof this._context.skill[param_type][param_key].list === "boolean" || typeof this._context.skill[param_type][param_key].list === "object")){
+                throw new Error("list property should be boolean or object.");
+            }
+            if (!Array.isArray(this._context.confirmed[param_key])){
+                this._context.confirmed[param_key] = [];
+            }
+            if (this._context.skill[param_type][param_key].list === true){
+                this._context.confirmed[param_key].unshift(value);
+            } else if (this._context.skill[param_type][param_key].list.order === "new"){
+                this._context.confirmed[param_key].unshift(value);
+            } else if (this._context.skill[param_type][param_key].list.order === "old"){
+                this._context.confirmed[param_key].push(value);
+            } else {
+                this._context.confirmed[param_key].unshift(value);
+            }
+        } else {
+            this._context.confirmed[param_key] = value;
+        }
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
         this._context.previous.confirmed.unshift(param_key);
@@ -359,8 +379,6 @@ class Bot {
             debug(`Clearing confirming.`);
             this._context.confirming = null;
         }
-
-        let param_type = this.check_parameter_type(param_key);
 
         if (this._context.skill[param_type] &amp;&amp; this._context.skill[param_type][param_key]){
             if (this._context.skill[param_type][param_key].reaction){
@@ -398,6 +416,11 @@ class Bot {
         if (param.message_to_confirm){
             if (typeof param.message_to_confirm === "function"){
                 param.message_to_confirm = param.message_to_confirm.toString();
+            }
+        }
+        if (param.condition){
+            if (typeof param.condition === "function"){
+                param.condition = param.condition.toString();
             }
         }
         if (param.parser){
@@ -473,88 +496,6 @@ class Bot {
         debug(`Reserved collection of parameter: ${parameter_key}. We put it to the top of to_confirm list.`);
         this._context.to_confirm.unshift(parameter_key);
     }
-
-    /**
-    * Collect specified parameter.
-    * @deprecated
-    * @private
-    * @param {String} parameter_key - Name of the parameter to collect.
-    * @param {Object} options - Option object.
-    * @param {Boolean} options.dedup - Set false to allow collecting same parameter multiple times.
-    * @returns {Null}
-    */
-    /*
-    _collect_by_parameter_key(parameter_key, options){
-        // If there is confirmed parameter, we remove it to re-confirm.
-        if (this._context.confirmed[parameter_key]){
-            delete this._context.confirmed[parameter_key];
-        }
-
-        // If the parameter is already in the to_confirm list and dedup is true, we remove it to avoid duplicate.
-        let index_to_remove = this._context.to_confirm.indexOf(parameter_key);
-        if (index_to_remove !== -1 &amp;&amp; options.dedup){
-            debug(`We found this parameter has already been confirmed so remove ${parameter_key} from to_confirm to dedup.`);
-            this._context.to_confirm.splice(index_to_remove, 1);
-        }
-
-        debug(`Reserved collection of parameter: ${parameter_key}. We put it to the top of to_confirm list.`);
-        this._context.to_confirm.unshift(parameter_key);
-    }
-    */
-
-    /**
-    * Collect specified parameter.
-    * @deprecated
-    * @private
-    * @param {Skill#skill_parameter_container} param_container - The parameter container object to collect.
-    * @param {Object} options - Option object.
-    * @param {Boolean} options.dedup - Set false to allow collecting same parameter multiple times.
-    * @returns {Null}
-    */
-    /*
-    _collect_by_parameter_obj(param_container, options){
-        if (Object.keys(param_container).length !== 1){
-            throw("Malformed parameter container object. You can pass just 1 parameter.");
-        }
-
-        let param_key = Object.keys(param_container)[0];
-
-        if (this._context.skill.required_parameter &amp;&amp; this._context.skill.required_parameter[param_key]){
-            // If we have parameter of same parameter key, override it.
-            debug(`Found the parameter in required_parameter so we override it.`);
-            Object.assign(this._context.skill.required_parameter, param_container);
-            this._save_param_change_log("required_parameter", param_key, param_container[param_key]);
-        } else if (this._context.skill.optional_parameter &amp;&amp; this._context.skill.optional_parameter[param_key]){
-            // If we have parameter of same parameter key, override it.
-            debug(`Found the parameter in optional_parameter so we override it.`);
-            Object.assign(this._context.skill.optional_parameter, param_container);
-            this._save_param_change_log("optional_parameter", param_key, param_container[param_key]);
-        } else {
-            // If we do not have parameter of same parameter key, add it as dynamic parameter.
-            debug(`The parameter not found in skill so we add it as dynamic parameter.`);
-            if (this._context.skill.dynamic_parameter === undefined) this._context.skill.dynamic_parameter = {};
-            Object.assign(this._context.skill.dynamic_parameter, param_container);
-            this._save_param_change_log("dynamic_parameter", param_key, param_container[param_key]);
-        }
-
-        // If there is confirmed parameter, we remove it to re-confirm.
-        if (this._context.confirmed[param_key]){
-            debug(`We found confirmed value for this parameter so removing it to re-confirm.`);
-            delete this._context.confirmed[param_key];
-        }
-
-        // If the parameter is already in the to_confirm list, we remove it to avoid duplicate.
-        let index_to_remove = this._context.to_confirm.indexOf(param_key);
-        if (index_to_remove !== -1 &amp;&amp; options.dedup){
-            debug(`We found this parameter has already been confirmed so remove ${param_key} from to_confirm to dedup.`);
-            this._context.to_confirm.splice(index_to_remove, 1);
-        }
-
-        debug(`Reserved collection of parameter: ${param_key}. We put it to the top of to_confirm list.`);
-        this._context.to_confirm.unshift(param_key);
-    }
-    */
-
 
     /**
     * Extract message of the event.
@@ -640,7 +581,7 @@ module.exports = Bot;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Jan 13 2019 12:02:45 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Jan 15 2019 19:02:38 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -1,5 +1,7 @@
 "use strict";
 
+const debug = require("debug")("*");
+
 module.exports = class SkillTestConfirmingProperty {
     constructor(){
         this.required_parameter = {
@@ -30,6 +32,7 @@ module.exports = class SkillTestConfirmingProperty {
                             return false;
                         },
                         message_to_confirm: async (bot, event, context) => {
+                            debug("hoge");
                             return {
                                 type: "text",
                                 text: "記載する必要があるのは世帯全員ですが？あるいは個人のみですか？"

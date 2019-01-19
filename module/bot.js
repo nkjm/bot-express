@@ -282,6 +282,8 @@ class Bot {
             return "optional_parameter";
         } else if (this._context.skill.dynamic_parameter && this._context.skill.dynamic_parameter[key]){
             return "dynamic_parameter";
+        } else if (this._context._confirming_property){
+            return this._context._confirming_property.parameter_type;
         }
         return "not_applicable";
     }

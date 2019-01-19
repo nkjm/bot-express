@@ -281,11 +281,18 @@ module.exports = class Flow {
         debug(`Parsing following value for parameter "${key}"`);
         debug(JSON.stringify(value));
 
+        let param;
+        if (this.context._confirming_property){
+            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[key];
+        } else {
+            param = this.context.skill[type][key];
+        }
+
         let parser;
-        if (!!this.context.skill[type][key].parser){
+        if (param.parser){
             debug("Parse method found in parameter definition.");
-            parser = this.context.skill[type][key].parser;
-        } else if (!!this.context.skill["parse_" + key]){
+            parser = param.parser;
+        } else if (this.context.skill["parse_" + key]){
             debug("Parse method found in default parser function name.");
             parser = this.context.skill["parse_" + key];
         } else {
@@ -331,21 +338,28 @@ module.exports = class Flow {
     }
 
     _add_parameter(type, key, value, is_change = false){
+        let param;
+        if (this.context._confirming_property){
+            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[key];
+        } else {
+            param = this.context.skill[type][key];
+        }
+
         // Add the parameter to context.confirmed.
         // If the parameter should be list, we add value to the list.
         // IF the parameter should not be list, we just set the value.
-        if (this.context.skill[type][key].list){
-            if (!(typeof this.context.skill[type][key].list === "boolean" || typeof this.context.skill[type][key].list === "object")){
+        if (param.list){
+            if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
             }
             if (!Array.isArray(this.context.confirmed[key])){
                 this.context.confirmed[key] = [];
             }
-            if (this.context.skill[type][key].list === true){
+            if (param.list === true){
                 this.context.confirmed[key].unshift(value);
-            } else if (this.context.skill[type][key].list.order === "new"){
+            } else if (param.list.order === "new"){
                 this.context.confirmed[key].unshift(value);
-            } else if (this.context.skill[type][key].list.order === "old"){
+            } else if (param.list.order === "old"){
                 this.context.confirmed[key].push(value);
             } else {
                 this.context.confirmed[key].unshift(value);
@@ -395,20 +409,22 @@ module.exports = class Flow {
 
         let param_type = this.bot.check_parameter_type(key);
 
-        if (this.context.skill[param_type] && this.context.skill[param_type][key]){
-            if (this.context.skill[param_type][key].reaction){
-                debug(`Reaction for ${key} found. Performing reaction...`);
-                await this.context.skill[param_type][key].reaction(error, value, this.bot, this.event, this.context);
-            } else if (this.context.skill["reaction_" + key]){
-                debug(`Reaction for ${key} found. Performing reaction...`);
-                await this.context.skill["reaction_" + key](error, value, this.bot, this.event, this.context);
-            } else {
-                // This parameter does not have reaction so do nothing.
-                debug(`Reaction for ${key} not found.`);
-                return;
-            }
+        let param;
+        if (this.context._confirming_property){
+            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[key];
         } else {
-            debug(`There is no parameter we should care about. So skip reaction.`);
+            param = this.context.skill[param_type][key];
+        }
+
+        if (param.reaction){
+            debug(`Reaction for ${key} found. Performing reaction...`);
+            await param.reaction(error, value, this.bot, this.event, this.context);
+        } else if (this.context.skill["reaction_" + key]){
+            debug(`Reaction for ${key} found. Performing reaction...`);
+            await this.context.skill["reaction_" + key](error, value, this.bot, this.event, this.context);
+        } else {
+            // This parameter does not have reaction so do nothing.
+            debug(`Reaction for ${key} not found.`);
             return;
         }
     }
@@ -797,17 +813,29 @@ module.exports = class Flow {
             throw new Error(`${param_type} parameter not found in skill.`);
         }
 
-        if (!this.context.skill[param_type][param_key]){
-            throw new Error(`Parameter: "${param_key}" not found in skill.`);
+        let param;
+        if (this.context._confirming_property && param_key !== this.context._confirming_property.parameter_key){
+            if (!(
+                    this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key] && 
+                    this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property && 
+                    this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[param_key])){
+                throw new Error(`Property: "${param_key}" not found in parameter "${this.context._confirming_property.parameter_key}".`);
+            }
+            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[param_key];
+        } else {
+            if (!this.context.skill[param_type][param_key]){
+                throw new Error(`Parameter: "${param_key}" not found in skill.`);
+            }
+            param = this.context.skill[param_type][param_key]
         }
 
         // If condition is not defined, we use this parameter.
-        if (typeof this.context.skill[param_type][param_key].condition === "undefined"){
+        if (typeof param.condition === "undefined"){
             return param_key;
         }
 
         // Since condition is defined, we check if we should use this parameter.
-        const condition = this.context.skill[param_type][param_key].condition;
+        const condition = param.condition;
 
         // Check if condition is properly implemented.
         if (typeof condition != "function"){
@@ -841,20 +869,31 @@ module.exports = class Flow {
         }
 
         const param_type = this.bot.check_parameter_type(param_key);
-        const param = this.context.skill[param_type][param_key];
+        let param;
+        if (this.context._confirming_property){
+            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[param_key];
+        } else {
+            param = this.context.skill[param_type][param_key];
+        }
 
         // Check if this parameter has property.
         // If has, we collect them.
         if (param.property){
+            // parameter will be used in finish() to identify which parameter we should save properties to.
+            // to_confrim will be used in finish() to identify which confirmed parameter we should aggregate.
             this.context._confirming_property = {
-                parameter: param_key,
+                parameter_key: param_key,
+                parameter_type: param_type,
                 to_confirm: Object.keys(param.property).reverse()
             }
 
             for (let prop_key of this.context._confirming_property.to_confirm){
+                this.context.to_confirm.unshift(prop_key);
+                /*
                 let prop_container = {};
                 prop_container[prop_key] = param.property[prop_key];
                 this.bot.collect(prop_container);
+                */
             }
 
             return await this._collect();
@@ -947,7 +986,7 @@ module.exports = class Flow {
             // While _pop_parameter_key_to_collect() will be executed in _collect() again, it ends up with same result so should be harmless.
             const param_key = await this._pop_parameter_key_to_collect();
 
-            if (param_key === this.context._confirming_property.parameter){
+            if (param_key === this.context._confirming_property.parameter_key){
                 let confirmed_property = {};
 
                 // Set gotten property one by one. There can be undefined property due to condition or manual apply_parameter.

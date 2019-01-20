@@ -53,7 +53,7 @@ describe("Test confirming property", async function(){
             context.confirmed.juminhyo_list.should.deep.equal([{
                 juminhyo_type: "住民票",
                 whose: "個人",
-                quantity: "1"
+                quantity: 1
             }]);
             context.confirming.should.equal("review_juminhyo_list");
             should.not.exist(context.confirmed.juminhyo_type);
@@ -73,16 +73,41 @@ describe("Test confirming property", async function(){
 
             context.confirmed.juminhyo_list.should.deep.equal([{
                 juminhyo_type: "住民票除票",
-                quantity: "2"
+                quantity: 2
             },{
                 juminhyo_type: "住民票",
                 whose: "個人",
-                quantity: "1"
+                quantity: 1
             }]);
             context.confirming.should.equal("review_juminhyo_list");
             should.not.exist(context.confirmed.juminhyo_type);
             should.not.exist(context.confirmed.whose);
             should.not.exist(context.confirmed.quantity);
+        });
+    });
+
+    describe("If bot.apply_parameter() is called in property", async function(){
+        it("save them as corresponding property.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-confirming-property"
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-confirming-property");
+            context.confirming.should.equal("juminhyo_type");
+
+            context = await emu.send(emu.create_message_event(user_id, "abc"));
+
+            context.confirmed.juminhyo_list.should.deep.equal([{
+                juminhyo_type: "abc",
+                quantity: 3
+            }]);
+            context.confirming.should.equal("review_juminhyo_list");
         });
     });
 });

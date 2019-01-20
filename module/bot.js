@@ -317,19 +317,26 @@ class Bot {
     */
     async apply_parameter(param_key, value){
         const param_type = this.check_parameter_type(param_key);
+
+        let param;
+        if (this._context._confirming_property){
+            param = this._context.skill[this._context._confirming_property.parameter_type][this._context._confirming_property.parameter_key].property[param_key];
+        } else {
+            param = this._context.skill[param_type][param_key];
+        }
         
-        if (this._context.skill[param_type][param_key].list){
-            if (!(typeof this._context.skill[param_type][param_key].list === "boolean" || typeof this._context.skill[param_type][param_key].list === "object")){
+        if (param.list){
+            if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
             }
             if (!Array.isArray(this._context.confirmed[param_key])){
                 this._context.confirmed[param_key] = [];
             }
-            if (this._context.skill[param_type][param_key].list === true){
+            if (param.list === true){
                 this._context.confirmed[param_key].unshift(value);
-            } else if (this._context.skill[param_type][param_key].list.order === "new"){
+            } else if (param.list.order === "new"){
                 this._context.confirmed[param_key].unshift(value);
-            } else if (this._context.skill[param_type][param_key].list.order === "old"){
+            } else if (param.list.order === "old"){
                 this._context.confirmed[param_key].push(value);
             } else {
                 this._context.confirmed[param_key].unshift(value);
@@ -354,20 +361,15 @@ class Bot {
             this._context.confirming = null;
         }
 
-        if (this._context.skill[param_type] && this._context.skill[param_type][param_key]){
-            if (this._context.skill[param_type][param_key].reaction){
-                debug(`Reaction for ${param_key} found. Performing reaction...`);
-                return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context);
-            } else if (this._context.skill["reaction_" + param_key]){
-                debug(`Reaction for ${param_key} found. Performing reaction...`);
-                return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context);
-            } else {
-                // This parameter does not have reaction so do nothing.
-                debug(`Reaction for ${param_key} not found.`);
-                return;
-            }
+        if (param.reaction){
+            debug(`Reaction for ${param_key} found. Performing reaction...`);
+            return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context);
+        } else if (this._context.skill["reaction_" + param_key]){
+            debug(`Reaction for ${param_key} found. Performing reaction...`);
+            return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context);
         } else {
-            debug(`There is no parameter we should care about. So skip reaction.`);
+            // This parameter does not have reaction so do nothing.
+            debug(`Reaction for ${param_key} not found.`);
             return;
         }
     }

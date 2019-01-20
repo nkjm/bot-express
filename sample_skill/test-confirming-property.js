@@ -21,22 +21,35 @@ module.exports = class SkillTestConfirmingProperty {
                             return value;
                         },
                         reaction: async (error, value, bot, event, context) => {
-
+                            if (value === "abc"){
+                                await bot.apply_parameter("quantity", 3);
+                            }
                         }
                     },
                     whose: {
                         condition: async (bot, event, context) => {
+                            debug("condition in whose");
                             if (context.confirmed.juminhyo_type === "住民票"){
                                 return true;
                             }
                             return false;
                         },
                         message_to_confirm: async (bot, event, context) => {
-                            debug("hoge");
+                            debug("message_to_confirm in whose");
                             return {
                                 type: "text",
                                 text: "記載する必要があるのは世帯全員ですが？あるいは個人のみですか？"
                             }
+                        },
+                        parser: async (value, bot, event, context) => {
+                            debug("parser in whose");
+                            if (["世帯全員", "個人"].includes(value)){
+                                return value;
+                            }
+                            throw new Error("invalid_error");
+                        },
+                        reaction: async (error, value, bot, event, context) => {
+                            debug("reaction in whose");
                         }
                     },
                     quantity: {
@@ -45,7 +58,8 @@ module.exports = class SkillTestConfirmingProperty {
                                 type: "text",
                                 text: "何通必要ですか？"
                             }
-                        }
+                        },
+                        parser: "number"
                     }
                 }
             },
@@ -76,9 +90,25 @@ module.exports = class SkillTestConfirmingProperty {
 
         this.optional_parameter = {
             juminhyo_to_remove: {
-                message_to_confrim: {
-                    type: "text",
-                    text: "どの住民票を削除しますか？",
+                property: {
+                    juminhyo_type: {
+                        message_to_confrim: {
+                            type: "text",
+                            text: "どの住民票を削除しますか？",
+                        }
+                    },
+                    whose: {
+                        condition: async (bot, event, context) => {
+                            if (context.confirmed.juminhyo_type === "住民票"){
+                                return true;
+                            }
+                            return false;
+                        },
+                        message_to_confirm: {
+                            type: "text",
+                            text: "どなたの書類ですか？"
+                        }
+                    }
                 }
             }
         }

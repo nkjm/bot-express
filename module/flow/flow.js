@@ -115,7 +115,7 @@ module.exports = class Flow {
                 if (typeof log.param.message_to_confirm === "string"){
                     debug(`message_to_confirm is string. We try to make it function...`);
                     try {
-                        log.param.message_to_confirm = Function.call(this, "return " + log.param.message_to_confirm)();
+                        log.param.message_to_confirm = Function.call(skill, "return " + log.param.message_to_confirm)();
                     } catch (error) {
                         debug(`message_to_confirm looks like just a string so we use it as it is.`);
                     }
@@ -125,7 +125,7 @@ module.exports = class Flow {
                 if (typeof log.param.condition === "string"){
                     debug(`condition is string. We try to make it function...`);
                     try {
-                        log.param.condition = Function.call(this, "return " + log.param.condition)();
+                        log.param.condition = Function.call(skill, "return " + log.param.condition)();
                     } catch (error) {
                         debug(`condition looks like just a string so we use it as it is.`);
                     }
@@ -135,14 +135,14 @@ module.exports = class Flow {
                 if (typeof log.param.parser === "string"){
                     debug(`parser is string. We try to make it function...`);
                     try {
-                        log.param.parser = Function.call(this, "return " + log.param.parser)();
+                        log.param.parser = Function.call(skill, "return " + log.param.parser)();
                     } catch (error) {
                         debug(`parser looks like built-in parser so we use it as it is.`);
                     }
                 }
             }
             if (log.param.reaction){
-                log.param.reaction = Function.call(this, "return " + log.param.reaction)();
+                log.param.reaction = Function.call(skill, "return " + log.param.reaction)();
             }
 
             if (log.type === "dynamic_parameter" && skill.dynamic_parameter === undefined){
@@ -367,12 +367,6 @@ module.exports = class Flow {
         } else {
             this.context.confirmed[key] = value;
         }
-
-        /*
-        let param = {};
-        param[key] = value;
-        Object.assign(this.context.confirmed, param); // TBD: Can't we change this to just assigning property?
-        */
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
         if (!is_change){
@@ -868,6 +862,7 @@ module.exports = class Flow {
             return;
         }
 
+        // Set param to be used in this method since there is a chance that either parameter.key or property.key would be the param.
         const param_type = this.bot.check_parameter_type(param_key);
         let param;
         if (this.context._confirming_property){
@@ -889,11 +884,6 @@ module.exports = class Flow {
 
             for (let prop_key of this.context._confirming_property.to_confirm){
                 this.context.to_confirm.unshift(prop_key);
-                /*
-                let prop_container = {};
-                prop_container[prop_key] = param.property[prop_key];
-                this.bot.collect(prop_container);
-                */
             }
 
             return await this._collect();
@@ -996,9 +986,6 @@ module.exports = class Flow {
                     }
                 }
 
-                // Apply aggregated property to parameter.
-                await this.bot.apply_parameter(param_key, confirmed_property);
-
                 // Delete properties from confirmed.
                 for (let prop_key of this.context._confirming_property.to_confirm){
                     if (this.context.confirmed[prop_key]){
@@ -1008,6 +995,9 @@ module.exports = class Flow {
 
                 // Clear confirming property object.
                 delete this.context._confirming_property;
+
+                // Apply aggregated property to parameter.
+                await this.bot.apply_parameter(param_key, confirmed_property);
 
                 return await this.finish();
             }

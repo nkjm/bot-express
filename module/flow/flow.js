@@ -352,20 +352,39 @@ module.exports = class Flow {
             if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
             }
-            if (!Array.isArray(this.context.confirmed[key])){
-                this.context.confirmed[key] = [];
-            }
-            if (param.list === true){
-                this.context.confirmed[key].unshift(value);
-            } else if (param.list.order === "new"){
-                this.context.confirmed[key].unshift(value);
-            } else if (param.list.order === "old"){
-                this.context.confirmed[key].push(value);
+            if (this.context._confirming_property){
+                if (!Array.isArray(this.context._confirming_property.confirmed[key])){
+                    this.context._confirming_property.confirmed[key] = [];
+                }
+                if (param.list === true){
+                    this.context._confirming_property.confirmed[key].unshift(value);
+                } else if (param.list.order === "new"){
+                    this.context._confirming_property.confirmed[key].unshift(value);
+                } else if (param.list.order === "old"){
+                    this.context._confirming_property.confirmed[key].push(value);
+                } else {
+                    this.context._confirming_property.confirmed[key].unshift(value);
+                }
             } else {
-                this.context.confirmed[key].unshift(value);
+                if (!Array.isArray(this.context.confirmed[key])){
+                    this.context.confirmed[key] = [];
+                }
+                if (param.list === true){
+                    this.context.confirmed[key].unshift(value);
+                } else if (param.list.order === "new"){
+                    this.context.confirmed[key].unshift(value);
+                } else if (param.list.order === "old"){
+                    this.context.confirmed[key].push(value);
+                } else {
+                    this.context.confirmed[key].unshift(value);
+                }
             }
         } else {
-            this.context.confirmed[key] = value;
+            if (this.context._confirming_property){
+                this.context._confirming_property.confirmed[key] = value;
+            } else {
+                this.context.confirmed[key] = value;
+            }
         }
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
@@ -874,14 +893,17 @@ module.exports = class Flow {
         // Check if this parameter has property.
         // If has, we collect them.
         if (param.property){
-            // parameter will be used in finish() to identify which parameter we should save properties to.
+            // parameter_key will be used in finish() to identify which parameter we should save properties to.
             // to_confrim will be used in finish() to identify which confirmed parameter we should aggregate.
+            // confirmed will be used to apply to parent parameter when all properties set.
             this.context._confirming_property = {
                 parameter_key: param_key,
                 parameter_type: param_type,
-                to_confirm: Object.keys(param.property).reverse()
+                to_confirm: Object.keys(param.property).reverse(),
+                confirmed: {}
             }
 
+            // Set context.to_confirm based on property.
             for (let prop_key of this.context._confirming_property.to_confirm){
                 this.context.to_confirm.unshift(prop_key);
             }
@@ -976,22 +998,10 @@ module.exports = class Flow {
             // While _pop_parameter_key_to_collect() will be executed in _collect() again, it ends up with same result so should be harmless.
             const param_key = await this._pop_parameter_key_to_collect();
 
+            // If param key is equal to confirming property's parameter, it means we collected all required properties so we're now ready to copy confirmed properties to context.confirmed.
             if (param_key === this.context._confirming_property.parameter_key){
-                let confirmed_property = {};
-
-                // Set gotten property one by one. There can be undefined property due to condition or manual apply_parameter.
-                for (let prop_key of this.context._confirming_property.to_confirm){
-                    if (this.context.confirmed[prop_key] !== undefined){
-                        confirmed_property[prop_key] = this.context.confirmed[prop_key];
-                    }
-                }
-
-                // Delete properties from confirmed.
-                for (let prop_key of this.context._confirming_property.to_confirm){
-                    if (this.context.confirmed[prop_key]){
-                        delete this.context.confirmed[prop_key];
-                    }
-                }
+                // Copy confirmed property temporarily.
+                let confirmed_property = JSON.parse(JSON.stringify(this.context._confirming_property.confirmed));
 
                 // Clear confirming property object.
                 delete this.context._confirming_property;

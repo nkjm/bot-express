@@ -329,20 +329,39 @@ class Bot {
             if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
             }
-            if (!Array.isArray(this._context.confirmed[param_key])){
-                this._context.confirmed[param_key] = [];
-            }
-            if (param.list === true){
-                this._context.confirmed[param_key].unshift(value);
-            } else if (param.list.order === "new"){
-                this._context.confirmed[param_key].unshift(value);
-            } else if (param.list.order === "old"){
-                this._context.confirmed[param_key].push(value);
+            if (this._context._confirming_property){
+                if (!Array.isArray(this._context._confirming_property.confirmed[param_key])){
+                    this._context._confirming_property.confirmed[param_key] = [];
+                }
+                if (param.list === true){
+                    this._context._confirming_property.confirmed[param_key].unshift(value);
+                } else if (param.list.order === "new"){
+                    this._context._confirming_property.confirmed[param_key].unshift(value);
+                } else if (param.list.order === "old"){
+                    this._context._confirming_property.confirmed[param_key].push(value);
+                } else {
+                    this._context._confirming_property.confirmed[param_key].unshift(value);
+                }
             } else {
-                this._context.confirmed[param_key].unshift(value);
+                if (!Array.isArray(this._context.confirmed[param_key])){
+                    this._context.confirmed[param_key] = [];
+                }
+                if (param.list === true){
+                    this._context.confirmed[param_key].unshift(value);
+                } else if (param.list.order === "new"){
+                    this._context.confirmed[param_key].unshift(value);
+                } else if (param.list.order === "old"){
+                    this._context.confirmed[param_key].push(value);
+                } else {
+                    this._context.confirmed[param_key].unshift(value);
+                }
             }
         } else {
-            this._context.confirmed[param_key] = value;
+            if (this._context._confirming_property){
+                this._context._confirming_property.confirmed[param_key] = value;
+            } else {
+                this._context.confirmed[param_key] = value;
+            }
         }
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.

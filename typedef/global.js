@@ -21,6 +21,7 @@ Object which contains context information.
 @prop {String} _confirming_property.parameter_key - Parameter key which properties belong to.
 @prop {String} _confirming_property.parameter_type - Parameter type which properties belong to.
 @prop {Array.<String>} _confirming_property.to_confirm - Properties to confirm.
+@prop {Object} _confirming_property.confirmed - Confirmed properties.
 @prop {Boolean} _digging - True when digging.
 @prop {Array.<context>} _parent - Array of parent context.
 @prop {Boolean} _in_progress - Flag to indicate if bot is currenty processing an event from this user.

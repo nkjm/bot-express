@@ -29,7 +29,7 @@ module.exports = class SkillTestConfirmingProperty {
                     whose: {
                         condition: async (bot, event, context) => {
                             debug("condition in whose");
-                            if (context.confirmed.juminhyo_type === "住民票"){
+                            if (context._confirming_property.confirmed.juminhyo_type === "住民票"){
                                 return true;
                             }
                             return false;
@@ -99,7 +99,7 @@ module.exports = class SkillTestConfirmingProperty {
                     },
                     whose: {
                         condition: async (bot, event, context) => {
-                            if (context.confirmed.juminhyo_type === "住民票"){
+                            if (context._confirming_property.confirmed.juminhyo_type === "住民票"){
                                 return true;
                             }
                             return false;

@@ -178,24 +178,26 @@ module.exports = class Flow {
             this.context.heard = {};
         }
 
-        if (!(this.context && this.context.to_confirm && this.context.to_confirm.length)){
+        const param_key = await this._pop_parameter_key_to_collect();
+
+        if (!param_key){
             debug("There is no parameters to confirm for now but we save the input parameters as heard just in case. Exit process parameters.");
             Object.assign(this.context.heard, parameters);
             return;
         }
 
-        if (typeof parameters[this.context.to_confirm[0]] === "undefined"){
-            debug(`Input parameters does not contain "${this.context.to_confirm[0]}" which we should process now. We save the rest of input parameters as heard in context and exit process parameters.`);
+        if (typeof parameters[param_key] === "undefined"){
+            debug(`Input parameters does not contain "${param_key}" which we should process now. We save the rest of input parameters as heard in context and exit process parameters.`);
             Object.assign(this.context.heard, parameters);
             return;
         }
 
         let applied_parameter;
         try {
-            applied_parameter = await this.apply_parameter(this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
+            applied_parameter = await this.apply_parameter(param_key, parameters[param_key]);
         } catch(e){
             if (e.name === "Error"){
-                await this.react(e, this.context.to_confirm[0], parameters[this.context.to_confirm[0]]);
+                await this.react(e, param_key, parameters[param_key]);
             } else {
                 throw e;
             }
@@ -212,7 +214,7 @@ module.exports = class Flow {
         if (applied_parameter){
             delete updated_parameters[applied_parameter.key];
         } else {
-            delete updated_parameters[this.context.to_confirm[0]];
+            delete updated_parameters[param_key];
         }
 
         debug("Updated input parameters follow.");
@@ -810,6 +812,7 @@ module.exports = class Flow {
     /**
      * Retrieve parameter to collect next by checking condition.
      * @method
+     * @async
      * @return {String} Parameter key. If there is no parameter to collect, returns null.
      */
     async _pop_parameter_key_to_collect(){
@@ -965,6 +968,7 @@ module.exports = class Flow {
 
     /**
      * @method
+     * @async
      * @return {context}
      */
     async finish(){

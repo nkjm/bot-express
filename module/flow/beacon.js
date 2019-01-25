@@ -22,6 +22,7 @@ module.exports = class BeaconFlow extends Flow {
             event: event,
             previous: {
                 confirmed: [],
+                processed: [],
                 message: []
             },
             _message_queue: [],

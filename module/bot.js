@@ -282,8 +282,8 @@ class Bot {
             return "optional_parameter";
         } else if (this._context.skill.dynamic_parameter && this._context.skill.dynamic_parameter[key]){
             return "dynamic_parameter";
-        } else if (this._context._confirming_property){
-            return this._context._confirming_property.parameter_type;
+        } else if (this._context.confirming_property){
+            return this._context.confirming_property.parameter_type;
         }
         return "not_applicable";
     }
@@ -319,8 +319,8 @@ class Bot {
         const param_type = this.check_parameter_type(param_key);
 
         let param;
-        if (this._context._confirming_property){
-            param = this._context.skill[this._context._confirming_property.parameter_type][this._context._confirming_property.parameter_key].property[param_key];
+        if (this._context.confirming_property){
+            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_key].property[param_key];
         } else {
             param = this._context.skill[param_type][param_key];
         }
@@ -329,18 +329,18 @@ class Bot {
             if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
             }
-            if (this._context._confirming_property){
-                if (!Array.isArray(this._context._confirming_property.confirmed[param_key])){
-                    this._context._confirming_property.confirmed[param_key] = [];
+            if (this._context.confirming_property){
+                if (!Array.isArray(this._context.confirming_property.confirmed[param_key])){
+                    this._context.confirming_property.confirmed[param_key] = [];
                 }
                 if (param.list === true){
-                    this._context._confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(value);
                 } else if (param.list.order === "new"){
-                    this._context._confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(value);
                 } else if (param.list.order === "old"){
-                    this._context._confirming_property.confirmed[param_key].push(value);
+                    this._context.confirming_property.confirmed[param_key].push(value);
                 } else {
-                    this._context._confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(value);
                 }
             } else {
                 if (!Array.isArray(this._context.confirmed[param_key])){
@@ -357,8 +357,8 @@ class Bot {
                 }
             }
         } else {
-            if (this._context._confirming_property){
-                this._context._confirming_property.confirmed[param_key] = value;
+            if (this._context.confirming_property){
+                this._context.confirming_property.confirmed[param_key] = value;
             } else {
                 this._context.confirmed[param_key] = value;
             }
@@ -366,6 +366,7 @@ class Bot {
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
         this._context.previous.confirmed.unshift(param_key);
+        this._context.previous.processed.unshift(param_key);
 
         // Remove item from to_confirm if it exits.
         let index_to_remove = this._context.to_confirm.indexOf(param_key);

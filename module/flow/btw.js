@@ -131,7 +131,7 @@ module.exports = class BtwFlow extends Flow {
         // Run mind based flow.
         if (!skip_run_mind_based_flow){
             if (mind.result == "modify_previous_parameter"){
-                await super.modify_previous_parameter();
+                super.modify_previous_parameter();
             } else if (mind.result == "restart_conversation"){
                 await super.restart_conversation(mind.intent);
             } else if (mind.result == "change_intent"){

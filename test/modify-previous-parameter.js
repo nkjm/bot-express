@@ -14,73 +14,103 @@ const messenger_options = [{
 
 chai.use(chaiAsPromised);
 const should = chai.should();
+const user_id = "dummy_user_id";
 
 for (let messenger_option of messenger_options){
     let emu = new Emulator(messenger_option.name, messenger_option.options);
 
-    describe("Test modify_previous_parameter from " + emu.messenger_type, function(){
-        let user_id = "modify-previous-parameter";
+    describe("Test modify_previous_parameter from " + emu.messenger_type, async function(){
+        beforeEach(async () => {
+            await emu.clear_context(user_id);
+        })
 
-        describe("Say 訂正", function(){
-            it("should ask previously confirmed parameter.", function(){
-                this.timeout(15000);
+        describe("Say expression which means modify previous parameter,", async function(){
+            it("asks previously confirmed parameter.", async function(){
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_postback_event(user_id, {data: JSON.stringify({
-                        _type: "intent",
-                        intent: {
-                            name: "test-modify-previous-parameter"
-                        },
-                        language: "ja"
-                    })})
-                    return emu.send(event);
-                }).then(function(context){
-                    context.confirming.should.equal("a");
-                    let event = emu.create_message_event(user_id, "a");
-                    return emu.send(event);
-                }).then(function(context){
-                    context.confirming.should.equal("b");
-                    let event = emu.create_message_event(user_id, "訂正");
-                    return emu.send(event);
-                }).then(function(context){
-                    context.confirming.should.equal("a");
-                })
+                let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-modify-previous-parameter"
+                    },
+                    language: "ja"
+                })}));
+
+                context.confirming.should.equal("a");
+                context = await emu.send(emu.create_message_event(user_id, "a"));
+
+                context.confirming.should.equal("b");
+                context.confirmed.a.should.equal("a");
+                context.previous.confirmed[0].should.equal("a");
+                context.previous.processed[0].should.equal("a");
+
+                context = await emu.send(emu.create_message_event(user_id, "訂正"));
+
+                context.confirming.should.equal("a");
+                context.confirmed.a.should.equal("a");
+                context.previous.confirmed.should.have.lengthOf(0);
+                context.previous.processed.should.have.lengthOf(0);
             })
         })
-    });
 
-    describe("Test modify_previous_parameter from " + emu.messenger_type, function(){
-        let user_id = "modify-previous-parameter";
+        describe("If previously processed parameter is not confirmed,", async function(){
+            it("rewinds one more processed parameter.", async function(){
 
-        describe("Trigger modify_previous_parameter by intent postback", function(){
-            it("should ask previously confirmed parameter.", function(){
-                this.timeout(15000);
+                let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-modify-previous-parameter"
+                    },
+                    language: "ja"
+                })}));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_postback_event(user_id, {data: JSON.stringify({
-                        _type: "intent",
-                        intent: {
-                            name: "test-modify-previous-parameter"
-                        },
-                        language: "ja"
-                    })})
-                    return emu.send(event);
-                }).then(function(context){
-                    context.confirming.should.equal("a");
-                    let event = emu.create_message_event(user_id, "a");
-                    return emu.send(event);
-                }).then(function(context){
-                    context.confirming.should.equal("b");
-                    let event = emu.create_postback_event(user_id, {data: JSON.stringify({
-                        _type: "intent",
-                        intent: {
-                            name: "modify-previous-parameter"
-                        }
-                    })});
-                    return emu.send(event);
-                }).then(function(context){
-                    context.confirming.should.equal("a");
-                })
+                context.confirming.should.equal("a");
+                context = await emu.send(emu.create_message_event(user_id, "skip"));
+
+                context.confirming.should.equal("c");
+                context.confirmed.a.should.equal("skip");
+                context.previous.confirmed.should.deep.equal(["a"]);
+                context.previous.processed.should.deep.equal(["b", "a"]);
+
+                context = await emu.send(emu.create_message_event(user_id, "訂正"));
+
+                context.confirming.should.equal("a");
+                context.confirmed.a.should.equal("skip");
+                context.previous.confirmed.should.deep.equal([]);
+                context.previous.processed.should.deep.equal([]);
+
+                context = await emu.send(emu.create_message_event(user_id, "a"));
+
+                context.confirming.should.equal("b");
+                context.confirmed.a.should.equal("a");
+                context.previous.confirmed.should.deep.equal(["a"]);
+                context.previous.processed.should.deep.equal(["a"]);
+            })
+        })
+
+        describe("Trigger modify_previous_parameter by intent postback", async function(){
+            it("should ask previously confirmed parameter.", async function(){
+                let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-modify-previous-parameter"
+                    },
+                    language: "ja"
+                })}));
+
+                context.confirming.should.equal("a");
+
+                context = await emu.send(emu.create_message_event(user_id, "a"));
+
+                context.confirming.should.equal("b");
+
+                context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "modify-previous-parameter"
+                    }
+                })}));
+
+                context.confirming.should.equal("a");
             })
         })
     });

@@ -21,6 +21,7 @@ module.exports = class FollowFlow extends Flow {
             event: event,
             previous: {
                 confirmed: [],
+                processed: [],
                 message: []
             },
             _message_queue: [],

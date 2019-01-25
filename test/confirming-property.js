@@ -41,18 +41,18 @@ describe("Test confirming property", async function(){
             context = await emu.send(emu.create_message_event(user_id, "住民票"));
 
             should.not.exist(context.confirmed.juminhyo_type);
-            context._confirming_property.confirmed.juminhyo_type.should.equal("住民票");
+            context.confirming_property.confirmed.juminhyo_type.should.equal("住民票");
             context.confirming.should.equal("whose");
 
             context = await emu.send(emu.create_message_event(user_id, "個人"));
 
             should.not.exist(context.confirmed.whose);
-            context._confirming_property.confirmed.whose.should.equal("個人");
+            context.confirming_property.confirmed.whose.should.equal("個人");
             context.confirming.should.equal("quantity");
 
             context = await emu.send(emu.create_message_event(user_id, "1"));
 
-            should.not.exist(context._confirming_property);
+            should.not.exist(context.confirming_property);
             should.not.exist(context.confirmed.juminhyo_type);
             should.not.exist(context.confirmed.whose);
             should.not.exist(context.confirmed.quantity);
@@ -73,7 +73,7 @@ describe("Test confirming property", async function(){
 
             context = await emu.send(emu.create_message_event(user_id, "2"));
 
-            should.not.exist(context._confirming_property);
+            should.not.exist(context.confirming_property);
             should.not.exist(context.confirmed.juminhyo_type);
             should.not.exist(context.confirmed.whose);
             should.not.exist(context.confirmed.quantity);
@@ -106,12 +106,50 @@ describe("Test confirming property", async function(){
 
             context = await emu.send(emu.create_message_event(user_id, "abc"));
 
-            should.not.exist(context._confirming_property);
+            should.not.exist(context.confirming_property);
             context.confirmed.juminhyo_list.should.deep.equal([{
                 juminhyo_type: "abc",
                 quantity: 3
             }]);
             context.confirming.should.equal("review_juminhyo_list");
+        });
+    });
+
+    describe("If user intends modifying previous parameter,", async function(){
+        it("asks previously confirmed property.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    _type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-confirming-property"
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-confirming-property");
+            context.confirming.should.equal("juminhyo_type");
+
+            context = await emu.send(emu.create_message_event(user_id, "住民票除票"));
+
+            context.confirming_property.confirmed.juminhyo_type.should.equal("住民票除票");
+            context.previous.confirmed.should.deep.equal(["juminhyo_type"]);
+            context.previous.processed.should.deep.equal(["whose", "juminhyo_type"]);
+            context.confirming.should.equal("quantity");
+
+            context = await emu.send(emu.create_message_event(user_id, "訂正"));
+
+            context.confirming_property.confirmed.juminhyo_type.should.equal("住民票除票");
+            context.previous.confirmed.should.deep.equal([]);
+            context.previous.processed.should.deep.equal([]);
+            context.confirming.should.equal("juminhyo_type");
+
+            context = await emu.send(emu.create_message_event(user_id, "住民票"));
+
+            context.confirming_property.confirmed.juminhyo_type.should.equal("住民票");
+            context.previous.confirmed.should.deep.equal(["juminhyo_type"]);
+            context.previous.processed.should.deep.equal(["juminhyo_type"]);
+            context.confirming.should.equal("whose");
         });
     });
 });

@@ -284,8 +284,8 @@ module.exports = class Flow {
         debug(JSON.stringify(value));
 
         let param;
-        if (this.context._confirming_property){
-            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[key];
+        if (this.context.confirming_property){
+            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[key];
         } else {
             param = this.context.skill[type][key];
         }
@@ -341,8 +341,8 @@ module.exports = class Flow {
 
     _add_parameter(type, key, value, is_change = false){
         let param;
-        if (this.context._confirming_property){
-            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[key];
+        if (this.context.confirming_property){
+            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[key];
         } else {
             param = this.context.skill[type][key];
         }
@@ -354,18 +354,18 @@ module.exports = class Flow {
             if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
             }
-            if (this.context._confirming_property){
-                if (!Array.isArray(this.context._confirming_property.confirmed[key])){
-                    this.context._confirming_property.confirmed[key] = [];
+            if (this.context.confirming_property){
+                if (!Array.isArray(this.context.confirming_property.confirmed[key])){
+                    this.context.confirming_property.confirmed[key] = [];
                 }
                 if (param.list === true){
-                    this.context._confirming_property.confirmed[key].unshift(value);
+                    this.context.confirming_property.confirmed[key].unshift(value);
                 } else if (param.list.order === "new"){
-                    this.context._confirming_property.confirmed[key].unshift(value);
+                    this.context.confirming_property.confirmed[key].unshift(value);
                 } else if (param.list.order === "old"){
-                    this.context._confirming_property.confirmed[key].push(value);
+                    this.context.confirming_property.confirmed[key].push(value);
                 } else {
-                    this.context._confirming_property.confirmed[key].unshift(value);
+                    this.context.confirming_property.confirmed[key].unshift(value);
                 }
             } else {
                 if (!Array.isArray(this.context.confirmed[key])){
@@ -382,8 +382,8 @@ module.exports = class Flow {
                 }
             }
         } else {
-            if (this.context._confirming_property){
-                this.context._confirming_property.confirmed[key] = value;
+            if (this.context.confirming_property){
+                this.context.confirming_property.confirmed[key] = value;
             } else {
                 this.context.confirmed[key] = value;
             }
@@ -392,6 +392,7 @@ module.exports = class Flow {
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
         if (!is_change){
             this.context.previous.confirmed.unshift(key);
+            this.context.previous.processed.unshift(key);
         }
 
         // Remove item from to_confirm.
@@ -425,8 +426,8 @@ module.exports = class Flow {
         let param_type = this.bot.check_parameter_type(key);
 
         let param;
-        if (this.context._confirming_property){
-            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[key];
+        if (this.context.confirming_property){
+            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[key];
         } else {
             param = this.context.skill[param_type][key];
         }
@@ -679,14 +680,44 @@ module.exports = class Flow {
         );
     }
 
-    async modify_previous_parameter(){
-        if (this.context.previous && this.context.previous.confirmed && this.context.previous.confirmed.length > 0){
-            if (this.bot.check_parameter_type(this.context.previous.confirmed[0]) != "not_applicable") {
-                this.bot.collect(this.context.previous.confirmed[0]);
+    modify_previous_parameter(){
+        // Check if there is previously processed parameter.
+        if (!(this.context.previous && this.context.previous.processed && this.context.previous.processed.length > 0)){
+            debug(`There is no processed parameter.`);
+            return;
+        }
 
-                // We remove this parameter from history.
-                debug(`Removing ${this.context.previous.confirmed[0]} from previous.confirmed.`);
-                this.context.previous.confirmed.shift();
+        const param_key = this.context.previous.processed[0]
+
+        // Check if there is corresponding parameter in skill just in case.
+        if (this.bot.check_parameter_type(param_key) == "not_applicable") {
+            debug(`"${param_key}" not found in skill.`);
+            return;
+        }
+
+        // Put previous parameter to to confirm queue. But this parameter may not be previously confirmed since condition might return false.
+        this.bot.collect(param_key);
+
+        // We remove this parameter from processed history.
+        debug(`Removing ${param_key} from previous.processed.`);
+        this.context.previous.processed.shift();
+
+        // We remove this parameter from confirmed history.
+        if (this.context.previous && this.context.previous.confirmed && this.context.previous.confirmed.length > 0 && this.context.previous.confirmed[0] == param_key){
+            debug(`Removing ${param_key} from previous.confirmed.`);
+            this.context.previous.confirmed.shift();
+        }
+
+        // If this previous parameter has not been confirmed, we rewrind one more processed parameter.
+        if (this.context.confirming_property){
+            if (this.context.confirming_property.confirmed[param_key] === undefined){
+                debug(`We rewrind one more processed parameter since previously processed parameter has not been confirmed.`);
+                return this.modify_previous_parameter();
+            }
+        } else {
+            if (this.context.confirmed[param_key] === undefined){
+                debug(`We rewrind one more processed parameter since previously processed parameter has not been confirmed.`)
+                return this.modify_previous_parameter();
             }
         }
     }
@@ -721,6 +752,7 @@ module.exports = class Flow {
         this.context.heard = {};
         this.context.previous = {
             confirmed: [],
+            processed: [],
             message: []
         }
         this.context._message_queue = [];
@@ -830,14 +862,14 @@ module.exports = class Flow {
         }
 
         let param;
-        if (this.context._confirming_property && param_key !== this.context._confirming_property.parameter_key){
+        if (this.context.confirming_property && param_key !== this.context.confirming_property.parameter_key){
             if (!(
-                    this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key] && 
-                    this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property && 
-                    this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[param_key])){
-                throw new Error(`Property: "${param_key}" not found in parameter "${this.context._confirming_property.parameter_key}".`);
+                    this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key] && 
+                    this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property && 
+                    this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[param_key])){
+                throw new Error(`Property: "${param_key}" not found in parameter "${this.context.confirming_property.parameter_key}".`);
             }
-            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[param_key];
+            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[param_key];
         } else {
             if (!this.context.skill[param_type][param_key]){
                 throw new Error(`Parameter: "${param_key}" not found in skill.`);
@@ -865,6 +897,7 @@ module.exports = class Flow {
 
         // Since condition returns false, we should skip this parameter and check next parameter.
         debug(`We skip collecting "${param_key}" due to condition.`);
+        this.context.previous.processed.unshift(param_key);
         this.context.to_confirm.shift();
 
         return await this._pop_parameter_key_to_collect();
@@ -887,8 +920,8 @@ module.exports = class Flow {
         // Set param to be used in this method since there is a chance that either parameter.key or property.key would be the param.
         const param_type = this.bot.check_parameter_type(param_key);
         let param;
-        if (this.context._confirming_property){
-            param = this.context.skill[this.context._confirming_property.parameter_type][this.context._confirming_property.parameter_key].property[param_key];
+        if (this.context.confirming_property){
+            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[param_key];
         } else {
             param = this.context.skill[param_type][param_key];
         }
@@ -899,7 +932,7 @@ module.exports = class Flow {
             // parameter_key will be used in finish() to identify which parameter we should save properties to.
             // to_confrim will be used in finish() to identify which confirmed parameter we should aggregate.
             // confirmed will be used to apply to parent parameter when all properties set.
-            this.context._confirming_property = {
+            this.context.confirming_property = {
                 parameter_key: param_key,
                 parameter_type: param_type,
                 to_confirm: Object.keys(param.property).reverse(),
@@ -907,7 +940,7 @@ module.exports = class Flow {
             }
 
             // Set context.to_confirm based on property.
-            for (let prop_key of this.context._confirming_property.to_confirm){
+            for (let prop_key of this.context.confirming_property.to_confirm){
                 this.context.to_confirm.unshift(prop_key);
             }
 
@@ -998,17 +1031,17 @@ module.exports = class Flow {
         }
 
         // If we're now confiming property, check if we got all the required properties.
-        if (this.context.to_confirm.length && this.context._confirming_property){
+        if (this.context.to_confirm.length && this.context.confirming_property){
             // While _pop_parameter_key_to_collect() will be executed in _collect() again, it ends up with same result so should be harmless.
             const param_key = await this._pop_parameter_key_to_collect();
 
             // If param key is equal to confirming property's parameter, it means we collected all required properties so we're now ready to copy confirmed properties to context.confirmed.
-            if (param_key === this.context._confirming_property.parameter_key){
+            if (param_key === this.context.confirming_property.parameter_key){
                 // Copy confirmed property temporarily.
-                let confirmed_property = JSON.parse(JSON.stringify(this.context._confirming_property.confirmed));
+                let confirmed_property = JSON.parse(JSON.stringify(this.context.confirming_property.confirmed));
 
                 // Clear confirming property object.
-                delete this.context._confirming_property;
+                delete this.context.confirming_property;
 
                 // Apply aggregated property to parameter.
                 await this.bot.apply_parameter(param_key, confirmed_property);

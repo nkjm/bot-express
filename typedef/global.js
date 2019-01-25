@@ -6,7 +6,8 @@ Object which contains context information.
 @prop {Object} confirmed - Object which contains confirmed parameters. If you want to retrieve confirmed value of "date" parameter, access confirmed.date.
 @prop {Object} heard - Object which contains heard parameters which are waiting for beging applied.
 @prop {Object} previous - Object which contains conversation history in the current context.
-@prop {Array.<Object>} previous.confirmed - Previously confirmed parameter.
+@prop {Array.<String>} previous.confirmed - Previously confirmed parameter key. It does not include skipped parameter due to condition.
+@prop {Array.<String>} previous.processed - Previously processed parameter key. It includes skipped parameter due to condition.
 @prop {Array.<Object>} previous.message - Array of message object exchanged so far.
 @prop {String} previous.message[].from - "bot" or "user"
 @prop {MessageObject} previous.message[].message - Message object sent or received.
@@ -17,11 +18,11 @@ Object which contains context information.
 @prop {String} sender_language - Automatically detected ISO-639-1 based code of the senders language.
 @prop {String} translation - Translated text of current message.
 @prop {Array.<MessageObject>} _message_queue - Array of messages to be sent.
-@prop {Object} _confirming_property - Information about confirming property.
-@prop {String} _confirming_property.parameter_key - Parameter key which properties belong to.
-@prop {String} _confirming_property.parameter_type - Parameter type which properties belong to.
-@prop {Array.<String>} _confirming_property.to_confirm - Properties to confirm.
-@prop {Object} _confirming_property.confirmed - Confirmed properties.
+@prop {Object} confirming_property - Information about confirming property.
+@prop {String} confirming_property.parameter_key - Parameter key which properties belong to.
+@prop {String} confirming_property.parameter_type - Parameter type which properties belong to.
+@prop {Array.<String>} confirming_property.to_confirm - Properties to confirm.
+@prop {Object} confirming_property.confirmed - Confirmed properties.
 @prop {Boolean} _digging - True when digging.
 @prop {Array.<context>} _parent - Array of parent context.
 @prop {Boolean} _in_progress - Flag to indicate if bot is currenty processing an event from this user.

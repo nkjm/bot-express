@@ -545,9 +545,15 @@ module.exports = class Flow {
             if (this.context._flow == "reply" && this.context.confirming){
                 let param_type = this.bot.check_parameter_type(this.context.confirming);
 
+                let param;
+                if (this.context.confirming_property){
+                    param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[this.context.confirming];
+                } else {
+                    param = this.context.skill[param_type][this.context.confirming];
+                }
+
                 // Check if sub skill is configured in the confirming parameter.
-                if (this.context.skill[param_type][this.context.confirming].sub_skill &&
-                    this.context.skill[param_type][this.context.confirming].sub_skill.indexOf(intent.name) !== -1){
+                if (param.sub_skill && param.sub_skill.indexOf(intent.name) !== -1){
                     // This is dig.
                     debug("We conclude this is dig.");
                     return {

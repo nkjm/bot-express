@@ -739,6 +739,7 @@ module.exports = class Flow {
             },
             to_confirm: this.context.to_confirm,
             confirming: this.context.confirming,
+            confirming_property: this.context.confirming_property,
             confirmed: this.context.confirmed,
             heard: this.context.heard,
             previous: this.context.previous,
@@ -754,6 +755,7 @@ module.exports = class Flow {
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
+        delete this.context.confirming_property;
         this.context.confirmed = {};
         this.context.heard = {};
         this.context.previous = {
@@ -802,6 +804,7 @@ module.exports = class Flow {
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
+        delete this.context.confirming_property;
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
@@ -1043,6 +1046,8 @@ module.exports = class Flow {
 
             // If param key is equal to confirming property's parameter, it means we collected all required properties so we're now ready to copy confirmed properties to context.confirmed.
             if (param_key === this.context.confirming_property.parameter_key){
+                debug(`It seems we have all the required property so set it to parameter.`);
+                
                 // Copy confirmed property temporarily.
                 let confirmed_property = JSON.parse(JSON.stringify(this.context.confirming_property.confirmed));
 

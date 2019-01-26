@@ -10,25 +10,8 @@ const log = require("../logger");
 
 module.exports = class FollowFlow extends Flow {
 
-    constructor(messenger, event, options) {
-        let context = {
-            _flow: "follow",
-            intent: {name: options.skill.follow},
-            confirmed: {},
-            to_confirm: [],
-            confirming: null,
-            heard: {},
-            event: event,
-            previous: {
-                confirmed: [],
-                processed: [],
-                message: []
-            },
-            _message_queue: [],
-            sender_language: null,
-            translation: null
-        };
-        super(messenger, event, context, options);
+    constructor(options, messenger, event, context) {
+        super(options, messenger, event, context);
     }
 
     async run(){

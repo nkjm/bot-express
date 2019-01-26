@@ -11,25 +11,8 @@ const log = require("../logger");
 
 module.exports = class StartConversationFlow extends Flow {
 
-    constructor(messenger, event, options) {
-        let context = {
-            _flow: "start_conversation",
-            intent: null,
-            confirmed: {},
-            to_confirm: [],
-            confirming: null,
-            heard: {},
-            event: event,
-            previous: {
-                confirmed: [],
-                processed: [],
-                message: []
-            },
-            _message_queue: [],
-            sender_language: null,
-            translation: null
-        };
-        super(messenger, event, context, options);
+    constructor(options, messenger, event, context) {
+        super(options, messenger, event, context);
     }
 
     /**

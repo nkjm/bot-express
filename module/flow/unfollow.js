@@ -10,30 +10,9 @@ const Flow = require("./flow");
 const log = require("../logger");
 
 module.exports = class UnfollowFlow extends Flow {
-    /*
-    ** ### Unfollow Flow ###
-    ** -> Run final action.
-    */
 
-    constructor(messenger, event, options) {
-        let context = {
-            _flow: "unfollow",
-            intent: {name: options.skill.unfollow},
-            confirmed: {},
-            to_confirm: [],
-            confirming: null,
-            heard: {},
-            event: event,
-            previous: {
-                confirmed: [],
-                processed: [],
-                message: []
-            },
-            _message_queue: [],
-            sender_language: null,
-            translation: null
-        };
-        super(messenger, event, context, options);
+    constructor(options, messenger, event, context) {
+        super(options, messenger, event, context);
     }
 
     async run(){

@@ -10,9 +10,8 @@ const log = require("../logger");
 
 module.exports = class BtwFlow extends Flow {
 
-    constructor(messenger, event, context, options) {
-        context._flow = "btw";
-        super(messenger, event, context, options);
+    constructor(options, messenger, event, context) {
+        super(options, messenger, event, context);
     }
 
     async run(){

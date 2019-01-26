@@ -10,26 +10,8 @@ const log = require("../logger");
 
 module.exports = class BeaconFlow extends Flow {
 
-    constructor(messenger, event, options, beacon_event_type) {
-        // Instantiate the conversation object. This will be saved as Bot Memory.
-        let context = {
-            _flow: "beacon",
-            intent: {name: options.skill.beacon[beacon_event_type]},
-            confirmed: {},
-            to_confirm: [],
-            confirming: null,
-            heard: {},
-            event: event,
-            previous: {
-                confirmed: [],
-                processed: [],
-                message: []
-            },
-            _message_queue: [],
-            sender_language: null,
-            translation: null
-        };
-        super(messenger, event, context, options);
+    constructor(options, messenger, event, context) {
+        super(options, messenger, event, context);
     }
 
     async run(){

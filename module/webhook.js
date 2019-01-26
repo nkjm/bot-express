@@ -35,6 +35,43 @@ class Webhook {
     }
 
     /**
+     * Initialize context.
+     * @method
+     * @param {String} flow
+     * @param {Object} event
+     * @return {context}
+     */
+    init_context(flow, event){
+        const context = {
+            intent: null,
+            confirmed: {},
+            to_confirm: [],
+            confirming: null,
+            confirming_property: null,
+            heard: {},
+            event: event,
+            previous: {
+                event: null,
+                confirmed: [],
+                processed: [],
+                message: []
+            },
+            sender_language: null,
+            skill: null,
+            translation: null,
+            _flow: flow,
+            _message_queue: [],
+            _in_progress: false,
+            _pause: false,
+            _exit: false,
+            _init: false,
+            _digging: false,
+            _switch_intent: null
+        }
+        return context;
+    }
+
+    /**
     Main function.
     @returns {Promise.<context>}
     */
@@ -146,7 +183,11 @@ class Webhook {
                 return;
             }
 
-            flow = new flows[event_type](this.messenger, event, this.options);
+            const context = this.init_context(event_type, event);
+            context.intent = {
+                name: this.options.skill[event_type]
+            }
+            flow = new flows[event_type](this.options, this.messenger, event, context);
         } else if (event_type == "beacon"){
             // ### Beacon Flow ###
             let beacon_event_type = this.messenger.extract_beacon_event_type(event);
@@ -161,20 +202,28 @@ class Webhook {
             }
             debug(`This is beacon flow and we use ${this.options.skill.beacon[beacon_event_type]} as skill`);
 
-            flow = new flows[event_type](this.messenger, event, this.options, beacon_event_type);
+            const context = this.init_context("beacon", event);
+            context.intent = {
+                name: this.options.skill.beacon[beacon_event_type]
+            }
+            flow = new flows[event_type](this.options, this.messenger, event, context);
         } else if (event_type == "bot-express:push"){
             // ### Push Flow ###
-            flow = new flows["push"](this.messenger, event, this.options);
+            const context = this.init_context("push", event);
+            flow = new flows["push"](this.options, this.messenger, event, context);
         } else if (!context || !context.intent){
             // ### Start Conversation Flow ###
-            flow = new flows["start_conversation"](this.messenger, event, this.options);
+            const context = this.init_context("start_conversation", event);
+            flow = new flows["start_conversation"](this.options, this.messenger, event, context);
         } else {
             if (context.confirming){
                 // ### Reply flow ###
-                flow = new flows["reply"](this.messenger, event, context, this.options);
+                context._flow = "reply";
+                flow = new flows["reply"](this.options, this.messenger, event, context);
             } else {
                 // ### BTW Flow ###
-                flow = new flows["btw"](this.messenger, event, context, this.options);
+                context._flow = "btw";
+                flow = new flows["btw"](this.options, this.messenger, event, context);
             }
         }
 

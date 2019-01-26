@@ -53,6 +53,7 @@ for (let messenger_option of messenger_options){
             });
         });
 
+        /*
         describe("Change intent", function(){
             it("will trigger change intent.", function(){
                 this.timeout(15000);
@@ -281,5 +282,6 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+        */
     });
 }

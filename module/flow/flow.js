@@ -8,12 +8,13 @@ const Translator = require("../translator");
 const Parser = require("../parser");
 
 module.exports = class Flow {
-    constructor(messenger, event, context, options){
-        this.context = context;
-        this.event = event;
+    constructor(options, messenger, event, context){
         this.options = options;
         this.messenger = messenger;
-        this.bot = new Bot(this.options, this.event, this.context, messenger);
+        this.event = event;
+        this.context = context;
+
+        this.bot = new Bot(this.options, this.event, this.context, this.messenger);
         if (this.options.translator){
             this.translator = new Translator(this.options.translator);
             this.bot.translator = this.translator;

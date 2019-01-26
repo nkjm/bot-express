@@ -10,9 +10,8 @@ const log = require("../logger");
 
 module.exports = class ReplyFlow extends Flow {
 
-    constructor(messenger, event, context, options) {
-        context._flow = "reply";
-        super(messenger, event, context, options);
+    constructor(options, messenger, event, context) {
+        super(options, messenger, event, context);
     }
 
     async run(){

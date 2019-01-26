@@ -231,6 +231,7 @@ module.exports = class Flow {
     /**
      * Apply parameter. Use _parse_parameter and _add_parameter inside.
      * @method
+     * @async
      * @param {String} key
      * @param {*} value
      * @param {Boolean} is_change
@@ -272,13 +273,15 @@ module.exports = class Flow {
     }
 
     /**
-    Validate the value against the specified parameter.
-    @private
-    @param {String} type - Parameter type. Acceptable values are "required_parameter" or "optional_parameter".
-    @param {String} key - Parameter name.
-    @param {String|Object} value - Value to validate.
-    @param {Boolean} strict - Flag to specify if parser has to exist. If set to true, this function reject the value when parser not found.
-    @returns {Promise.<String|Object>}
+     * Validate the value against the specified parameter.
+     * @method
+     * @async
+     * @private
+     * @param {String} type - Parameter type. Acceptable values are "required_parameter" or "optional_parameter".
+     * @param {String} key - Parameter name.
+     * @param {String|Object} value - Value to validate.
+     * @param {Boolean} strict - Flag to specify if parser has to exist. If set to true, this function reject the value when parser not found.
+     * @returns {String|Object}
     */
     async _parse_parameter(type, key, value, strict = false){
         debug(`Parsing following value for parameter "${key}"`);
@@ -310,15 +313,13 @@ module.exports = class Flow {
             }
         }
 
-        /**
-        As parser, we support 3 types which are function, string and object.
-        In case of function, we use it as it is.
-        In case of string and object, we use builtin parser.
-        As for the object, following is the format.
-        @param {Object} parser
-        @param {String} parser.type - Type of builtin parser. Supported value is dialogflow.
-        @param {String} parser.policy - Policy configuration depending on the each parser implementation.
-        */
+        // As parser, we support 3 types which are function, string and object.
+        // In case of function, we use it as it is.
+        // In case of string and object, we use builtin parser.
+        // As for the object, following is the format.
+        // @param {Object} parser
+        // @param {String} parser.type - Type of builtin parser. Supported value is dialogflow.
+        // @param {String} parser.policy - Policy configuration depending on the each parser implementation.
         if (typeof parser === "function"){
             // We use the defined function.
             debug(`Parser is function so we use it as it is.`)
@@ -340,6 +341,14 @@ module.exports = class Flow {
         }
     }
 
+    /**
+     * Set value to confirmed and change context status.
+     * @method
+     * @param {String} type - required_parameter | optional_parameter | dynamic_parameter
+     * @param {String} key 
+     * @param {*} value 
+     * @param {Boolean} is_change 
+     */
     _add_parameter(type, key, value, is_change = false){
         let param;
         if (this.context.confirming_property){
@@ -413,6 +422,7 @@ module.exports = class Flow {
     /**
      * Method to execute reaction.
      * @method
+     * @async
      * @param {Error} error
      * @param {String} key
      * @param {*} value
@@ -447,16 +457,18 @@ module.exports = class Flow {
     }
 
     /**
-    Identify what the user has in mind.
-    @param {String|MessageObject} payload - Data from which we try to identify what the user like to achieve.
-    @returns {Object} response
-    @returns {String} response.result - "dig", "restart_conversation", "change_intent", "change_parameter" or "no_idea"
-    @returns {Object} response.intent - Intent object.
-    @returns {String|MessageObject} payload - Passed payload.
-    @returns {Object} response.parameter - Parameter.
-    @returns {String} response.parameter.key - Parameter name.
-    @returns {String|Object} response.parameter.value - Parameter value.
-    */
+     * Identify what the user has in mind.
+     * @method
+     * @async
+     * @param {String|MessageObject} payload - Data from which we try to identify what the user like to achieve.
+     * @returns {Object} response
+     * @returns {String} response.result - "dig", "restart_conversation", "change_intent", "change_parameter" or "no_idea"
+     * @returns {Object} response.intent - Intent object.
+     * @returns {String|MessageObject} payload - Passed payload.
+     * @returns {Object} response.parameter - Parameter.
+     * @returns {String} response.parameter.key - Parameter name.
+     * @returns {String|Object} response.parameter.value - Parameter value.
+     */
     async identify_mind(payload){
         debug(`Going to identify mind.`);
 
@@ -687,6 +699,10 @@ module.exports = class Flow {
         );
     }
 
+    /**
+     * Modify previous parameter by changing context status.
+     * @method
+     */
     modify_previous_parameter(){
         // Check if there is previously processed parameter.
         if (!(this.context.previous && this.context.previous.processed && this.context.previous.processed.length > 0)){
@@ -729,6 +745,11 @@ module.exports = class Flow {
         }
     }
 
+    /**
+     * @method
+     * @async
+     * @param {Object} intent 
+     */
     async dig(intent){
         if (!Array.isArray(this.context._parent)){
             this.context._parent = [];
@@ -752,6 +773,11 @@ module.exports = class Flow {
         return this.change_intent(intent);
     }
 
+    /**
+     * @method
+     * @async
+     * @param {Object} intent
+     */
     async restart_conversation(intent){
         this.context.intent = intent;
         this.context.to_confirm = [];
@@ -800,6 +826,11 @@ module.exports = class Flow {
         await this.process_parameters(this.context.intent.parameters);
     }
 
+    /**
+     * @method
+     * @async
+     * @param {Object} intent 
+     */
     async change_intent(intent){
         // We keep some inforamtion like context.confirmed, context.heard and context.previous.
         this.context.intent = intent;
@@ -841,6 +872,11 @@ module.exports = class Flow {
         await this.process_parameters(this.context.intent.parameters);
     }
 
+    /**
+     * Run begin method in skill.
+     * @method
+     * @async
+     */
     async begin(){
         if (!this.context.skill.begin){
             debug(`Beginning action not found. Skipping.`)

@@ -32,8 +32,10 @@ class Bot {
 
     /**
     * Reply messages to sender to collect parameter
+    * @method
+    * @async
     * @param {Array.<MessageObject>} messages - The array of message objects.
-    * @returns {Array.<Promise>}
+    * @return {Object} - Response from Messenger API.
     */
     async reply_to_collect(messages){
         return this.reply(messages, true)
@@ -41,8 +43,10 @@ class Bot {
 
     /**
     * Reply message to sender. This function can be called just once in a flow. To send multiple messages, give multiple messages to this function or use queue(MESSAGES) function instead.
+    * @method
+    * @async
     * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to reply.
-    * @returns {Promise.<Object>} - Returns promise returning response from Messenger API.
+    * @return {Object} - Response from Messenger API.
     */
     async reply(messages, to_collect = false){
         if (messages){
@@ -105,10 +109,12 @@ class Bot {
 
     /**
     * Send(Push) message to specified user.
+    * @method
+    * @async
     * @param {String} recipient_id - Recipient user id.
     * @param {MessageObject|Array.<MessageObject>} messages - Messages object[s] to send.
     * @param {String} language - ISO-639-1 based language code to translate to.
-    * @returns {Promise.<Object>} - Returns promise returning response from Messenger API.
+    * @return {Object} - Response from Messenger API.
     */
     async send(recipient_id, messages, language){
         // If messages is not array, we make it array.
@@ -163,10 +169,12 @@ class Bot {
 
     /**
     * Send(Push) messages to multiple users.
+    * @method
+    * @async
     * @param {Array.<String>} recipient_ids - Array of recipent user id.
     * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to send.
     * @param {String} language - ISO-639-1 based language code to translate to.
-    * @returns {Promise.<Object>} - Returns promise returning response from Messenger API.
+    * @return {Object} - Response from Messenger API.
     */
     async multicast(recipient_ids, messages, language){
         // If messages is not array, we make it array.
@@ -221,6 +229,7 @@ class Bot {
 
     /**
      * Switch skill using provided intent. If this method is called in the middle of flow, rest of the process is skipped.
+     * @method
      * @param {intent} intent 
      */
     switch_skill(intent){
@@ -234,10 +243,10 @@ class Bot {
     }
 
     /**
-    * Queue messages. The messages will be sent out when reply(MESSAGES) function is called.
-    * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to queue.
-    * @returns {Null}
-    */
+     * Queue messages. The messages will be sent out when reply(MESSAGES) function is called.
+     * @method
+     * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to queue.
+     */
     queue(messages){
         if (typeof this._context._message_queue == "undefined"){
             this._context._message_queue = [];
@@ -246,35 +255,36 @@ class Bot {
     }
 
     /**
-    * Stop processing all remaining actions and keep context.
-    * @returns {Null}
-    */
+     * Stop processing all remaining actions and keep context.
+     * @method
+     */
     pause(){
         this._context._pause = true;
     }
 
     /**
-    * Stop processing all remaining actions and keep context except for confirming.
-    * @returns {Null}
-    */
+     * Stop processing all remaining actions and keep context except for confirming.
+     * @method
+     */
     exit(){
         this._context._exit = true;
     }
 
     /**
-    * Stop processing all remaining actions and clear context completely.
-    * @returns {Null}
-    */
+     * Stop processing all remaining actions and clear context completely.
+     * @method
+     */
     init(){
         this._context._init = true;
     }
 
     /**
-    Check parameter type.
-    @private
-    @param {String} key - Parameter name.
-    @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
-    */
+     * Check parameter type.
+     * @method
+     * @private
+     * @param {String} key - Parameter name.
+     * @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
+     */
     check_parameter_type(key){
         if (this._context.skill.required_parameter && this._context.skill.required_parameter[key]){
             return "required_parameter";
@@ -289,11 +299,11 @@ class Bot {
     }
 
     /**
-    * Change the message to collect specified parameter.
-    * @param {String} param_key - Name of the parameter to collect.
-    * @param {MessageObject} message - The message object.
-    * @returns {Null}
-    */
+     * Change the message to collect specified parameter.
+     * @method
+     * @param {String} param_key - Name of the parameter to collect.
+     * @param {MessageObject} message - The message object.
+     */
     change_message_to_confirm(param_key, message){
         let param_type = this.check_parameter_type(param_key);
 
@@ -310,10 +320,11 @@ class Bot {
     }
 
     /**
-    Manually apply value to the parameter. This will skip parser but still trigger reaction.
-    @param {String} param_key - Name of the parameter to apply.
-    @param {Any} value - Value to apply.
-    @return {Promise}
+     * Manually apply value to the parameter. This will skip parser but still trigger reaction.
+     * @method
+     * @async
+     * @param {String} param_key - Name of the parameter to apply.
+     * @param {Any} value - Value to apply.
     */
     async apply_parameter(param_key, value){
         const param_type = this.check_parameter_type(param_key);
@@ -395,12 +406,12 @@ class Bot {
     }
 
     /**
-    * Function to record the change log to revive this change into skill instance in the next event.
-    @param {String} param_type - required_parameter | optional_parameter | dynamic_parameter
-    @param {String} param_key - Name of the parameter.
-    @param {Skill#skill_parameter} param - Skill parameter object.
-    @return {Null}
-    */
+     * Function to record the change log to revive this change into skill instance in the next event.
+     * @method
+     * @param {String} param_type - required_parameter | optional_parameter | dynamic_parameter
+     * @param {String} param_key - Name of the parameter.
+     * @param {Skill#skill_parameter} param - Skill parameter object.
+     */
     _save_param_change_log(param_type, param_key, param_orig){
         // We copy param_orig to param to prevent propagate the change in this function to original object.
         let param = Object.assign({}, param_orig);
@@ -436,12 +447,12 @@ class Bot {
     }
 
     /**
-    * Make the specified skill paramter being collected next.
-    * @param {String|Skill#skill_parameter_container} arg - Name of the skill parameter or skill_parameter_container object to collect.
-    * @param {Object} [options] - Option object.
-    * @param {Boolean} [options.dedup=true] - Set false to allow collecting same parameter multiple times.
-    * @returns {Null}
-    */
+     * Make the specified skill paramter being collected next.
+     * @method
+     * @param {String|Skill#skill_parameter_container} arg - Name of the skill parameter or skill_parameter_container object to collect.
+     * @param {Object} [options] - Option object.
+     * @param {Boolean} [options.dedup=true] - Set false to allow collecting same parameter multiple times.
+     */
     collect(arg, options = {}){
         if (options.dedup === undefined || options.dedup === null){
             options.dedup = true;
@@ -494,25 +505,28 @@ class Bot {
     }
 
     /**
-    * Extract message of the event.
-    * @param {EventObject} event - Event to extract message.
-    * @returns {MessageObject} - Extracted message.
-    */
+     * Extract message of the event.
+     * @method
+     * @param {EventObject} event - Event to extract message.
+     * @returns {MessageObject} - Extracted message.
+     */
     extract_message(event = this._event){
         return this._messenger.extract_message(event);
     }
 
     /**
-    * Extract message text.
-    * @param {EventObject} event - Event to extract message text.
-    * @returns {String} - Extracted message text.
-    */
+     * Extract message text.
+     * @method
+     * @param {EventObject} event - Event to extract message text.
+     * @returns {String} - Extracted message text.
+     */
     extract_message_text(event = this._event){
         return this._messenger.extract_message_text(event);
     }
 
     /**
     * Extract sender's user id.
+    * @method
     * @param {EventObject} event - Event to extract message text.
     * @returns {String} - Extracted sender's user id.
     */
@@ -522,6 +536,7 @@ class Bot {
 
     /**
     * Extract session id.
+    * @method
     * @param {EventObject} event - Event to extract message text.
     * @returns {String} - Extracted sender's user id.
     */
@@ -531,6 +546,7 @@ class Bot {
 
     /**
     * Identify the event type.
+    * @method
     * @param {EventObject} event - Event to identify event type.
     * @returns {String} - Event type. In case of LINE, it can be "message", "follow", "unfollow", "join", "leave", "postback", "beacon". In case of Facebook, it can be "echo", "message", "delivery", "read", "postback", "optin", "referral", "account_linking".
     */
@@ -540,6 +556,7 @@ class Bot {
 
     /**
     * Identify the message type.
+    * @method
     * @param {MessageObject} message - Message Object to identify message type.
     * @returns {String} - Message type. In case of LINE, it can be "text", "image", "audio", "video", "file", "location", "sticker", "imagemap", "buttons_template, "confirm_template" or "carousel_template". In case of Facebook, it can be "text", "image", "audio", "video", "file", "button_template", "generic_template", "list_template", "open_graph_template", "receipt_template", "airline_boardingpass_template", "airline_checkin_template", "airline_itinerary_template", "airline_update_template".
     */
@@ -552,6 +569,7 @@ class Bot {
 
     /**
     * Compile message format to the specified format.
+    * @method
     * @param {MessageObject} message - Message object to compile.
     * @param {String} format - Target format to compile. It can be "line" or "facebook".
     * @returns {Promise.<MessageObject>} - Compiled message object.

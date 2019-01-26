@@ -1,6 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:bot");
+const Parser = require("./parser");
 const log = require("./logger");
 
 /**
@@ -28,6 +29,7 @@ class Bot {
         this._event = event;
         this._context = context;
         this._messenger = messenger;
+        this._builtin_parser = new Parser(options.parser);
     }
 
     /**
@@ -324,9 +326,56 @@ class Bot {
      * @method
      * @async
      * @param {String} param_key - Name of the parameter to apply.
-     * @param {Any} value - Value to apply.
+     * @param {*} param_value - Value to apply.
+     * @param {Boolean} parse - Whether to run parser.
+     * @param {Boolean} react - Whether to run reaction.
+     */ 
+    async apply_parameter(param_key, param_value, parse = false, react = true){
+        const param_type = this.check_parameter_type(param_key);
+
+        // Parse parameter.
+        let parse_error;
+        if (parse){
+            try {
+                param_value = await this.parse_parameter(param_key, param_value);
+            } catch (e){
+                if (e.name === "Error"){
+                    // This should be intended exception in parser.
+                    parse_error = e;
+                    debug(`Parser rejected following value for parameter: "${param_key}".`);
+                    debug(param_value);
+                    if (e.message){
+                        debug(e.message);
+                    }
+                } else {
+                    // This should be unexpected exception so we just throw error.
+                    throw e;
+                }
+            }
+        }
+
+        // Add parameter to context.
+        this.add_parameter(param_key, param_value);
+
+        // Take reaction.
+        if (react){
+            await this.react(parse_error, param_key, param_value);
+        }
+    }
+
+    /**
+     * Run parser defined in skill.
+     * @method
+     * @async
+     * @param {String} param_key - Parameter name.
+     * @param {*} param_value - Value to validate.
+     * @param {Boolean} [strict=false] - If true, reject if parser does not exist. This option is for imternal use.
+     * @returns {*}
     */
-    async apply_parameter(param_key, value){
+    async parse_parameter(param_key, param_value, strict = false){
+        debug(`Parsing following value for parameter "${param_key}"`);
+        debug(JSON.stringify(param_value));
+
         const param_type = this.check_parameter_type(param_key);
 
         let param;
@@ -335,7 +384,75 @@ class Bot {
         } else {
             param = this._context.skill[param_type][param_key];
         }
-        
+
+        let parser;
+        if (param.parser){
+            debug("Parse method found in parameter definition.");
+            parser = param.parser;
+        } else if (this._context.skill["parse_" + param_key]){
+            debug("Parse method found in default parser function name.");
+            parser = this._context.skill["parse_" + param_key];
+        } else {
+            if (strict){
+                throw new Error("Parser not found.");
+            }
+            debug("Parse method NOT found. We use the value as it is as long as the value is set.");
+            if (param_value === undefined || param_value === null || param_value === ""){
+                throw new Error("Value is not set.");
+            }
+            debug(`Parser accepted the value.`);
+            return param_value;
+        }
+
+        // As parser, we support 3 types which are function, string and object.
+        // In case of function, we use it as it is.
+        // In case of string and object, we use builtin parser.
+        // As for the object, following is the format.
+        // @param {Object} parser
+        // @param {String} parser.type - Type of builtin parser. Supported value is dialogflow.
+        // @param {String} parser.policy - Policy configuration depending on the each parser implementation.
+        if (typeof parser === "function"){
+            // We use the defined function.
+            debug(`Parser is function so we use it as it is.`)
+            return parser(param_value, this, this.event, this._context);
+        } else if (typeof parser === "string"){
+            // We use builtin parser.
+            debug(`Parser is string so we use builtin parser: ${parser}.`);
+            return this._builtin_parser.parse(parser, {key: param_key, value: param_value}, {});
+        } else if (typeof parser === "object"){
+            // We use builtin parser.
+            if (!parser.type){
+                throw new Error(`Parser object is invalid. Required property: "type" not found.`);
+            }
+            debug(`Parser is object so we use builtin parser: ${parser.type}.`);
+            return this._builtin_parser.parse(parser.type, {key: param_key, value: param_value}, parser.policy);
+        } else {
+            // Invalid parser.
+            throw new Error(`Parser for the parameter: ${param_key} is invalid.`);
+        }
+    }
+
+
+    /**
+     * Add parameter to context as confirmed.
+     * @method
+     * @param {String} param_key 
+     * @param {*} param_value 
+     * @param {Boolean} is_change
+     */
+    add_parameter(param_key, param_value, is_change = false){
+        const param_type = this.check_parameter_type(param_key);
+
+        let param;
+        if (this._context.confirming_property){
+            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_key].property[param_key];
+        } else {
+            param = this._context.skill[param_type][param_key];
+        }
+
+        // Add the parameter to context.confirmed.
+        // If the parameter should be list, we add value to the list.
+        // IF the parameter should not be list, we just set the value.
         if (param.list){
             if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
@@ -345,41 +462,43 @@ class Bot {
                     this._context.confirming_property.confirmed[param_key] = [];
                 }
                 if (param.list === true){
-                    this._context.confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
                 } else if (param.list.order === "new"){
-                    this._context.confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
                 } else if (param.list.order === "old"){
-                    this._context.confirming_property.confirmed[param_key].push(value);
+                    this._context.confirming_property.confirmed[param_key].push(param_value);
                 } else {
-                    this._context.confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
                 }
             } else {
                 if (!Array.isArray(this._context.confirmed[param_key])){
                     this._context.confirmed[param_key] = [];
                 }
                 if (param.list === true){
-                    this._context.confirmed[param_key].unshift(value);
+                    this._context.confirmed[param_key].unshift(param_value);
                 } else if (param.list.order === "new"){
-                    this._context.confirmed[param_key].unshift(value);
+                    this._context.confirmed[param_key].unshift(param_value);
                 } else if (param.list.order === "old"){
-                    this._context.confirmed[param_key].push(value);
+                    this._context.confirmed[param_key].push(param_value);
                 } else {
-                    this._context.confirmed[param_key].unshift(value);
+                    this._context.confirmed[param_key].unshift(param_value);
                 }
             }
         } else {
             if (this._context.confirming_property){
-                this._context.confirming_property.confirmed[param_key] = value;
+                this._context.confirming_property.confirmed[param_key] = param_value;
             } else {
-                this._context.confirmed[param_key] = value;
+                this._context.confirmed[param_key] = param_value;
             }
         }
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
-        this._context.previous.confirmed.unshift(param_key);
-        this._context.previous.processed.unshift(param_key);
+        if (!is_change){
+            this._context.previous.confirmed.unshift(param_key);
+            this._context.previous.processed.unshift(param_key);
+        }
 
-        // Remove item from to_confirm if it exits.
+        // Remove item from to_confirm.
         let index_to_remove = this._context.to_confirm.indexOf(param_key);
         if (index_to_remove !== -1){
             debug(`Removing ${param_key} from to_confirm.`);
@@ -391,13 +510,38 @@ class Bot {
             debug(`Clearing confirming.`);
             this._context.confirming = null;
         }
+    }
+
+    /**
+     * Run reaction defined in skill.
+     * @method
+     * @async
+     * @param {Error} error
+     * @param {String} param_key
+     * @param {*} param_value
+     */
+    async react(error, param_key, param_value){
+        // If pause or exit flag found, we skip remaining process.
+        if (this._context._pause || this._context._exit || this._context._init){
+            debug(`Detected pause or exit or init flag so we skip reaction.`);
+            return;
+        }
+
+        const param_type = this.check_parameter_type(param_key);
+
+        let param;
+        if (this._context.confirming_property){
+            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_key].property[param_key];
+        } else {
+            param = this._context.skill[param_type][param_key];
+        }
 
         if (param.reaction){
             debug(`Reaction for ${param_key} found. Performing reaction...`);
-            return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context);
+            await param.reaction(error, param_value, this, this.event, this._context);
         } else if (this._context.skill["reaction_" + param_key]){
             debug(`Reaction for ${param_key} found. Performing reaction...`);
-            return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context);
+            await this._context.skill["reaction_" + param_key](error, param_value, this, this.event, this._context);
         } else {
             // This parameter does not have reaction so do nothing.
             debug(`Reaction for ${param_key} not found.`);

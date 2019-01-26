@@ -43,19 +43,9 @@ module.exports = class ReplyFlow extends Flow {
 
         debug("Going to perform super.apply_parameter().");
 
-        let applied_parameter;
-        let error;
-        try {
-            applied_parameter = await super.apply_parameter(this.context.confirming, param_value);
-        } catch (e) {
-            if (e.name === "Error"){
-                error = e;
-            } else {
-                throw e;
-            }
-        }
+        let applied_parameter = await super.apply_parameter(this.context.confirming, param_value);
 
-        if (error){
+        if (applied_parameter.error){
             // Language translation.
             let translated_param_value;
             if (typeof param_value == "string"){
@@ -80,9 +70,9 @@ module.exports = class ReplyFlow extends Flow {
             } else if (mind.result == "change_parameter"){
                 // Now there is no chance to run this case since detecting change parameter in reply flow is very likely to be false positive.
                 applied_parameter = await super.change_parameter(response.parameter.key, translated_param_value)
-                await super.react(error, this.context.confirming, param_value);
+                await this.bot.react(applied_parameter.error, this.context.confirming, param_value);
             } else if (mind.result == "no_idea"){
-                await super.react(error, this.context.confirming, param_value);
+                await this.bot.react(applied_parameter.error, this.context.confirming, param_value);
             } else {
                 throw new Error(`Mind is unknown.`);
             }
@@ -90,7 +80,7 @@ module.exports = class ReplyFlow extends Flow {
             if (applied_parameter == null){
                 debug("Parameter was not applicable. We skip reaction and go to finish.");
             } else {
-                await super.react(error, applied_parameter.key, applied_parameter.value);
+                await this.bot.react(applied_parameter.error, applied_parameter.param_key, applied_parameter.param_value);
             }
         }
         

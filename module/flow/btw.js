@@ -15,19 +15,10 @@ module.exports = class BtwFlow extends Flow {
     }
 
     async run(){
-        /*
-        ** ### Start Conversation Flow ###
-        ** -> Run event based handling.
-        ** -> Translate the message text.
-        ** -> Identify mind.
-        ** -> Run mind based flow.
-        ** -> Run finish().
-        */
+        debug("### This is BTW Flow. ###");
 
         let skip_translate, skip_identify_mind, skip_run_mind_based_flow;
         let mind;
-
-        debug("### This is BTW Flow. ###");
 
         // Check if this event type is supported in this flow.
         if (!this.messenger.check_supported_event_type(this.event, "btw")){
@@ -136,8 +127,8 @@ module.exports = class BtwFlow extends Flow {
             } else if (mind.result == "change_intent"){
                 await super.change_intent(mind.intent);
             } else if (mind.result == "change_parameter"){
-                let applied_parameter = await super.change_parameter(mind.parameter.key, mind.payload);
-                await super.react(null, applied_parameter.key, applied_parameter.value);
+                const applied_parameter = await super.change_parameter(mind.parameter.key, mind.payload);
+                await this.bot.react(null, applied_parameter.param_key, applied_parameter.param_value);
             } else if (mind.result == "no_idea"){
                 await super.change_intent(mind.intent);
             }

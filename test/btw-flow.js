@@ -10,137 +10,112 @@ const messenger_options = [{
     options: {
         line_channel_secret: process.env.LINE_CHANNEL_SECRET
     }
-},{
+}/*,{
     name: "facebook",
     options: {
         facebook_app_secret: process.env.FACEBOOK_APP_SECRET
     }
-}];
+}*/];
 
 chai.use(chaiAsPromised);
 const should = chai.should();
+const user_id = "dummy_user_id";
 
 for (let messenger_option of messenger_options){
     let emu = new Emulator(messenger_option.name, messenger_option.options);
 
-    describe("Test btw flow from " + emu.messenger_type, function(){
-        let user_id = "reply-flow";
+    describe("Test btw flow from " + emu.messenger_type, async function(){
+        beforeEach(async () => {
+            await emu.clear_context(user_id);
+        })
 
-        describe("Restart conversation", function(){
-            it("will trigger restart_conversation.", function(){
-                this.timeout(15000);
+        describe("Restart conversation", async function(){
+            it("will trigger restart_conversation.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ライトの色をかえたい"));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ライトの色をかえたい");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is asking what color user like to change to.
-                    context.should.have.property("confirming").and.deep.equal("color");
-                    let event = emu.create_message_event(user_id, "赤");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot has accepted the value and conversation completed.
-                    context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+                // Bot is asking what color user like to change to.
+                context.should.have.property("confirming").and.deep.equal("color");
 
-                    // Restart Conversation
-                    let event = emu.create_message_event(user_id, "ライトの色をかえたい");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is asking what color user like to change to.
-                    context.should.have.property("_flow").and.equal("btw");
-                    context.should.have.property("confirming").and.deep.equal("color");
-                });
+                context = await emu.send(emu.create_message_event(user_id, "赤"));
+
+                // Bot has accepted the value and conversation completed.
+                context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+
+                // Restart Conversation
+                context = await emu.send(emu.create_message_event(user_id, "ライトの色をかえたい"));
+
+                // Bot is asking what color user like to change to.
+                context.should.have.property("_flow").and.equal("btw");
+                context.should.have.property("confirming").and.deep.equal("color");
             });
         });
 
-        /*
-        describe("Change intent", function(){
-            it("will trigger change intent.", function(){
-                this.timeout(15000);
+        describe("Change intent", async function(){
+            it("will trigger change intent.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ライトの色をかえたい"));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ライトの色をかえたい");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is asking what color user like to change to.
-                    context.should.have.property("confirming").and.deep.equal("color");
-                    let event = emu.create_message_event(user_id, "赤");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot has accepted the value and conversation completed.
-                    context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+                // Bot is asking what color user like to change to.
+                context.should.have.property("confirming").and.deep.equal("color");
 
-                    // Change intent.
-                    let event = emu.create_message_event(user_id, "ピザを注文したい");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is asking pizza type while keeping parameter.
-                    context.should.have.property("_flow").and.equal("btw");
-                    context.should.have.property("confirming").and.deep.equal("pizza");
-                    context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
-                });
+                context = await emu.send(emu.create_message_event(user_id, "赤"));
+
+                // Bot has accepted the value and conversation completed.
+                context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+
+                // Change intent.
+                context = await emu.send(emu.create_message_event(user_id, "ピザを注文したい"));
+
+                // Bot is asking what color user like to change to.
+                context.should.have.property("_flow").and.equal("btw");
+                context.should.have.property("confirming").and.deep.equal("pizza");
+                context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
             });
         });
 
-        describe("Change parameter", function(){
-            it("will trigger change parameter.", function(){
-                this.timeout(15000);
+        describe("Change parameter", async function(){
+            it("will trigger change parameter.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ライトの色をかえたい"));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ライトの色をかえたい");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is asking what color user like to change to.
-                    context.should.have.property("confirming").and.deep.equal("color");
-                    let event = emu.create_message_event(user_id, "赤");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot has accepted the value and conversation completed.
-                    context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+                // Bot is asking what color user like to change to.
+                context.should.have.property("confirming").and.deep.equal("color");
 
-                    // Change parameter.
-                    let event = emu.create_message_event(user_id, "青");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot has accepted the value.
-                    context.should.have.property("_flow").and.equal("btw");
-                    context.should.have.property("confirmed").and.deep.equal({color: "5068FF"});
-                });
+                context = await emu.send(emu.create_message_event(user_id, "赤"));
+
+                // Bot has accepted the value and conversation completed.
+                context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+
+                // Change intent.
+                context = await emu.send(emu.create_message_event(user_id, "青"));
+
+                // Bot has accepted the value.
+                context.should.have.property("_flow").and.equal("btw");
+                context.should.have.property("confirmed").and.deep.equal({color: "5068FF"});
             });
         });
 
-        describe("Unidentifiable message", function(){
-            it("will trigger default skill.", function(){
-                this.timeout(15000);
+        describe("Unidentifiable message", async function(){
+            it("will trigger default skill.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ライトの色をかえたい"));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ライトの色をかえたい");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot is asking what color user like to change to.
-                    context.should.have.property("confirming").and.deep.equal("color");
-                    let event = emu.create_message_event(user_id, "赤");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot has accepted the value and conversation completed.
-                    context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+                // Bot is asking what color user like to change to.
+                context.should.have.property("confirming").and.deep.equal("color");
 
-                    // Unidentifiable message.
-                    let event = emu.create_message_event(user_id, "ほげほげ");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot replied using default skill while keeping parameter.
-                    context.should.have.property("_flow").and.equal("btw");
-                    context.intent.name.should.equal("input.unknown");
-                    context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
-                });
+                context = await emu.send(emu.create_message_event(user_id, "赤"));
+
+                // Bot has accepted the value and conversation completed.
+                context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+
+                context = await emu.send(emu.create_message_event(user_id, "ほげほげ"));
+
+                // Bot replied using default skill while keeping parameter.
+                context.should.have.property("_flow").and.equal("btw");
+                context.intent.name.should.equal("input.unknown");
+                context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
             });
         });
 
-        describe("Postback which contains intent object.", function(){
-            it("will trigger change intent.", function(){
-                this.timeout(15000);
-
+        describe("Postback which contains intent object.", async function(){
+            it("will trigger change intent.", async function(){
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "こんにちは");
                     return emu.send(event);
@@ -175,10 +150,8 @@ for (let messenger_option of messenger_options){
             });
         });
 
-        describe("Postback which contains intent object and parameters.", function(){
-            it("will trigger change intent and set parameters.", function(){
-                this.timeout(15000);
-
+        describe("Postback which contains intent object and parameters.", async function(){
+            it("will trigger change intent and set parameters.", async function(){
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "こんにちは");
                     return emu.send(event);
@@ -219,10 +192,8 @@ for (let messenger_option of messenger_options){
             });
         });
 
-        describe("Postback which contains intent object and parameters and some are not for now.", function(){
-            it("will trigger change intent and set parameters.", function(){
-                this.timeout(15000);
-
+        describe("Postback which contains intent object and parameters and some are not for now.", async function(){
+            it("will trigger change intent and set parameters.", async function(){
                 return emu.clear_context(user_id).then(function(){
                     let event = emu.create_message_event(user_id, "こんにちは");
                     return emu.send(event);
@@ -282,6 +253,5 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
-        */
     });
 }

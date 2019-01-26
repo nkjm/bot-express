@@ -19,130 +19,98 @@ const messenger_options = [{
 
 chai.use(chaiAsPromised);
 const should = chai.should();
+const user_id = "dummy_user_id";
 
 for (let messenger_option of messenger_options){
     let emu = new Emulator(messenger_option.name, messenger_option.options);
 
-    describe("Test reply flow from " + emu.messenger_type, function(){
-        let user_id = "reply-flow";
+    describe("Test reply flow from " + emu.messenger_type, async function(){
+        beforeEach(async () => {
+            await emu.clear_context(user_id);
+        })
 
-        /*
-        describe("Correct answer", function(){
-            it("will be accepted and fires reaction.", function(){
-                this.timeout(15000);
+        describe("Correct answer", async function(){
+            it("will be accepted and fires reaction.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
-                    return emu.send(event);
-                }).then(function(context){
-                    let event = emu.create_message_event(user_id, "マルゲリータで");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot has accepted the value for pizza.
-                    context.should.have.property("_flow").and.equal("reply");
-                    context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
-                    context.should.have.property("confirming").and.deep.equal("size");
-                    context.should.have.property("to_confirm").have.lengthOf(3);
+                context.intent.name.should.equal("handle-pizza-order");
+                context.confirming.should.equal("pizza");
 
-                    // Also fires reaction.
-                    context.previous.message.should.have.lengthOf(5);
-                    context.previous.message[1].message.text.should.equal("マルゲリータですね。ありがとうございます。");
-                });
+                context = await emu.send(emu.create_message_event(user_id, "マルゲリータで"));
+
+                context.should.have.property("_flow").and.equal("reply");
+                context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
+                context.should.have.property("confirming").and.deep.equal("size");
+                context.should.have.property("to_confirm").have.lengthOf(3);
+
+                // Also fires reaction.
+                context.previous.message.should.have.lengthOf(5);
+                context.previous.message[1].message.text.should.equal("マルゲリータですね。ありがとうございます。");
             });
         });
 
-        describe("Incorrect answer", function(){
-            it("will be rejected and bot asks same parameter.", function(){
-                this.timeout(15000);
+        describe("Incorrect answer", async function(){
+            it("will be rejected and bot asks same parameter.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));
+                context = await emu.send(emu.create_message_event(user_id, "ジェノベーゼで"));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
-                    return emu.send(event);
-                }).then(function(context){
-                    let event = emu.create_message_event(user_id, "ジェノベーゼで");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot should have rejected the value for pizza.
-                    context.should.have.property("_flow").and.equal("reply");
-                    context.should.have.property("confirmed").and.deep.equal({});
-                    context.should.have.property("confirming").and.deep.equal("pizza");
-                    context.should.have.property("to_confirm").have.lengthOf(4);
+                context.should.have.property("_flow").and.equal("reply");
+                context.should.have.property("confirmed").and.deep.equal({});
+                context.should.have.property("confirming").and.deep.equal("pizza");
+                context.should.have.property("to_confirm").have.lengthOf(4);
 
-                    // Bot asking for same parameter.
-                    context.previous.message.should.have.lengthOf(4);
-                    context.previous.message[0].message.text.should.equal("恐れ入りますが当店ではマルゲリータかマリナーラしかございません。どちらになさいますか？");
-                });
-            });
-        });
-        */
-
-        describe("Restart conversation in the middle of the conversation", function(){
-            it("will trigger restart conversation.", function(){
-                this.timeout(15000);
-
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
-                    return emu.send(event);
-                }).then(function(context){
-                    let event = emu.create_message_event(user_id, "マルゲリータで");
-                    return emu.send(event);
-                }).then(function(context){
-                    context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
-                    let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot restarted the conversation
-                    context.should.have.property("_flow").and.equal("reply");
-                    context.should.have.property("confirmed").and.deep.equal({});
-                    context.should.have.property("confirming").and.equal("pizza");
-                });
+                // Bot asking for same parameter.
+                context.previous.message.should.have.lengthOf(4);
+                context.previous.message[0].message.text.should.equal("恐れ入りますが当店ではマルゲリータかマリナーラしかございません。どちらになさいますか？");
             });
         });
 
-        /*
-        describe("Change intent in the middle of the conversation", function(){
-            it("will trigger change intent.", function(){
-                this.timeout(15000);
+        describe("Restart conversation in the middle of the conversation", async function(){
+            it("will trigger restart conversation.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
-                    return emu.send(event);
-                }).then(function(context){
-                    let event = emu.create_message_event(user_id, "マルゲリータで");
-                    return emu.send(event);
-                }).then(function(context){
-                    context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
-                    let event = emu.create_message_event(user_id, "やっぱりまた今度にします");
-                    return emu.send(event);
-                }).then(function(context){
-                    should.not.exist(context);
-                });
+                context = await emu.send(emu.create_message_event(user_id, "マルゲリータで"));
+
+                context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
+
+                context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));
+
+                // Bot restarted the conversation
+                context.should.have.property("_flow").and.equal("reply");
+                context.should.have.property("confirmed").and.deep.equal({});
+                context.should.have.property("confirming").and.equal("pizza");
             });
         });
 
-        describe("Change parameter in the middle of the conversation", function(){
-            it("will rejected and bot asks for same parameter. *Will be accepted in the futer.", function(){
-                this.timeout(15000);
+        describe("Change intent in the middle of the conversation", async function(){
+            it("will trigger change intent.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));
 
-                return emu.clear_context(user_id).then(function(){
-                    let event = emu.create_message_event(user_id, "ピザを注文したいのですが");
-                    return emu.send(event);
-                }).then(function(context){
-                    let event = emu.create_message_event(user_id, "マルゲリータで");
-                    return emu.send(event);
-                }).then(function(context){
-                    context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
-                    context.should.have.property("confirming").and.equal("size");
-                    let event = emu.create_message_event(user_id, "やっぱりマリナーラ");
-                    return emu.send(event);
-                }).then(function(context){
-                    // Bot rejected and asks for same parameter. *This will be accepted in the future.
-                    context.should.have.property("_flow").and.equal("reply");
-                    context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
-                    context.should.have.property("confirming").and.equal("size");
-                });
+                context = await emu.send(emu.create_message_event(user_id, "マルゲリータで"));
+
+                context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
+
+                context = await emu.send(emu.create_message_event(user_id, "やっぱりまた今度にします"));
+
+                should.not.exist(context.confirming);
             });
         });
-        */
+
+        describe("Change parameter in the middle of the conversation", async function(){
+            it("will rejected and bot asks for same parameter. *Will be accepted in the futer.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));
+
+                context = await emu.send(emu.create_message_event(user_id, "マルゲリータで"));
+
+                context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
+                context.should.have.property("confirming").and.equal("size");
+
+                context = await emu.send(emu.create_message_event(user_id, "やっぱりマリナーラ"));
+
+                context.should.have.property("_flow").and.equal("reply");
+                context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
+                context.should.have.property("confirming").and.equal("size");
+            });
+        });
     });
 }

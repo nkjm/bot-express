@@ -20,10 +20,10 @@ module.exports = class StartConversationFlow extends Flow {
      * @return {context}
      */
     async run(){
-        let skip_translate, skip_identify_intent, skip_instantiate_skill, skip_begin, skip_process_params;
-
         debug("### This is Start Conversation Flow. ###");
 
+        let skip_translate, skip_identify_intent, skip_instantiate_skill, skip_begin, skip_process_params;
+        
         // Check if this event type is supported in this flow.
         if (!this.messenger.check_supported_event_type(this.event, "start_conversation")){
             debug(`This is unsupported event type in this flow so skip processing.`);

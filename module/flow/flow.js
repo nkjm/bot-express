@@ -5,7 +5,6 @@ const log = require("../logger");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");
 const Translator = require("../translator");
-const Parser = require("../parser");
 
 module.exports = class Flow {
     constructor(options, messenger, event, context){
@@ -19,7 +18,6 @@ module.exports = class Flow {
             this.translator = new Translator(this.options.translator);
             this.bot.translator = this.translator;
         }
-        this.builtin_parser = new Parser(this.options.parser);
 
         if (this.context.intent && this.context.intent.name){
             debug(`Init and reviving skill instance.`);
@@ -164,11 +162,11 @@ module.exports = class Flow {
     /**
      * Process parameters with multiple input parameters.
      * @method
+     * @async
      * @param {Object} parameters
      */
     async process_parameters(parameters){
-        debug("Input parameters follow.");
-        debug(parameters);
+        debug("Processing parameters..");
 
         if (!(parameters && Object.keys(parameters).length)){
             debug("There is no parameters in input parameters. Exit process parameters.");
@@ -193,30 +191,15 @@ module.exports = class Flow {
             return;
         }
 
-        let applied_parameter;
-        try {
-            applied_parameter = await this.apply_parameter(param_key, parameters[param_key]);
-        } catch(e){
-            if (e.name === "Error"){
-                await this.react(e, param_key, parameters[param_key]);
-            } else {
-                throw e;
-            }
-        }
+        // Parse and add parameter.
+        const applied_parameter = await this.apply_parameter(param_key, parameters[param_key]);
 
-        if (applied_parameter){
-            // If parsing succeeded, take reaction.
-            await this.react(null, applied_parameter.key, applied_parameter.value);
-        }
-
-        let updated_parameters = JSON.parse(JSON.stringify(parameters));
+        // Take reaction.
+        await this.bot.react(applied_parameter.error, applied_parameter.param_key, applied_parameter.param_value);
 
         // Delete processed parameter.
-        if (applied_parameter){
-            delete updated_parameters[applied_parameter.key];
-        } else {
-            delete updated_parameters[param_key];
-        }
+        const updated_parameters = JSON.parse(JSON.stringify(parameters));
+        delete updated_parameters[applied_parameter.param_key];
 
         debug("Updated input parameters follow.");
         debug(updated_parameters);
@@ -224,235 +207,58 @@ module.exports = class Flow {
         await this.process_parameters(updated_parameters);
     }
 
-    change_parameter(key, value){
-        return this.apply_parameter(key, value, true);
+    async change_parameter(param_key, param_value){
+        return this.apply_parameter(param_key, param_value, true);
     }
 
     /**
-     * Apply parameter. Use _parse_parameter and _add_parameter inside.
+     * Parse and add parameter to context.
      * @method
      * @async
-     * @param {String} key
-     * @param {*} value
+     * @param {String} param_key
+     * @param {*} param_value
      * @param {Boolean} is_change
-     * @return {Object} key: {String}, value: {*}
+     * @return {Object}
      */
-    async apply_parameter(key, value, is_change = false){
+    async apply_parameter(param_key, param_value, is_change = false){
         debug(`Applying parameter.`);
 
-        let parameter_type = this.bot.check_parameter_type(key);
-        if (parameter_type == "not_applicable"){
-            debug("This is not the parameter we should care about. We just skip this.");
+        if (this.bot.check_parameter_type(param_key) === "not_applicable"){
+            debug("This is not the parameter we should care about. Skipping.");
             return;
         }
-        debug(`Parameter type is ${parameter_type}`);
 
-        let parsed_value;
+        // Parse parameter.
+        let parse_error;
         try {
-            parsed_value = await this._parse_parameter(parameter_type, key, value);
-        } catch (e) {
-            debug(`Parser rejected following value for parameter: "${key}".`);
-            debug(JSON.stringify(value));
-            if (e.message){
-                debug(e.message);
+            param_value = await this.bot.parse_parameter(param_key, param_value);
+        } catch (e){
+            if (e.name === "Error"){
+                // This should be intended exception in parser.
+                parse_error = e;
+                debug(`Parser rejected following value for parameter: "${param_key}".`);
+                debug(param_value);
+                if (e.message){
+                    debug(e.message);
+                }
+            } else {
+                // This should be unexpected exception so we just throw error.
+                throw e;
             }
-            throw(e);
         }
 
-        debug(`Parser accepted the value. Parsed value for parameter: "${key}" follows.`);
-        debug(parsed_value);
-
-        this._add_parameter(parameter_type, key, parsed_value, is_change);
-
-        debug(`We have now ${this.context.to_confirm.length} parameters to confirm.`);
+        if (parse_error === undefined){
+            debug(`Parser accepted the value. Parsed value for parameter: "${param_key}" follows.`);
+            debug(param_value);
+    
+            // Add parameter to context.
+            this.bot.add_parameter(param_key, param_value, is_change);
+        }
 
         return {
-            key: key,
-            value: parsed_value
-        }
-    }
-
-    /**
-     * Validate the value against the specified parameter.
-     * @method
-     * @async
-     * @private
-     * @param {String} type - Parameter type. Acceptable values are "required_parameter" or "optional_parameter".
-     * @param {String} key - Parameter name.
-     * @param {String|Object} value - Value to validate.
-     * @param {Boolean} strict - Flag to specify if parser has to exist. If set to true, this function reject the value when parser not found.
-     * @returns {String|Object}
-    */
-    async _parse_parameter(type, key, value, strict = false){
-        debug(`Parsing following value for parameter "${key}"`);
-        debug(JSON.stringify(value));
-
-        let param;
-        if (this.context.confirming_property){
-            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[key];
-        } else {
-            param = this.context.skill[type][key];
-        }
-
-        let parser;
-        if (param.parser){
-            debug("Parse method found in parameter definition.");
-            parser = param.parser;
-        } else if (this.context.skill["parse_" + key]){
-            debug("Parse method found in default parser function name.");
-            parser = this.context.skill["parse_" + key];
-        } else {
-            if (strict){
-                throw new Error("Parser not found.");
-            }
-            debug("Parse method NOT found. We use the value as it is as long as the value is set.");
-            if (value === undefined || value === null || value === ""){
-                throw new Error("Value is not set.");
-            } else {
-                return value;
-            }
-        }
-
-        // As parser, we support 3 types which are function, string and object.
-        // In case of function, we use it as it is.
-        // In case of string and object, we use builtin parser.
-        // As for the object, following is the format.
-        // @param {Object} parser
-        // @param {String} parser.type - Type of builtin parser. Supported value is dialogflow.
-        // @param {String} parser.policy - Policy configuration depending on the each parser implementation.
-        if (typeof parser === "function"){
-            // We use the defined function.
-            debug(`Parser is function so we use it as it is.`)
-            return parser(value, this.bot, this.event, this.context);
-        } else if (typeof parser === "string"){
-            // We use builtin parser.
-            debug(`Parser is string so we use builtin parser: ${parser}.`);
-            return this.builtin_parser.parse(parser, {key: key, value: value}, {});
-        } else if (typeof parser === "object"){
-            // We use builtin parser.
-            if (!parser.type){
-                throw new Error(`Parser object is invalid. Required property: "type" not found.`);
-            }
-            debug(`Parser is object so we use builtin parser: ${parser.type}.`);
-            return this.builtin_parser.parse(parser.type, {key: key, value: value}, parser.policy);
-        } else {
-            // Invalid parser.
-            throw new Error(`Parser for the parameter: ${key} is invalid.`);
-        }
-    }
-
-    /**
-     * Set value to confirmed and change context status.
-     * @method
-     * @param {String} type - required_parameter | optional_parameter | dynamic_parameter
-     * @param {String} key 
-     * @param {*} value 
-     * @param {Boolean} is_change 
-     */
-    _add_parameter(type, key, value, is_change = false){
-        let param;
-        if (this.context.confirming_property){
-            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[key];
-        } else {
-            param = this.context.skill[type][key];
-        }
-
-        // Add the parameter to context.confirmed.
-        // If the parameter should be list, we add value to the list.
-        // IF the parameter should not be list, we just set the value.
-        if (param.list){
-            if (!(typeof param.list === "boolean" || typeof param.list === "object")){
-                throw new Error("list property should be boolean or object.");
-            }
-            if (this.context.confirming_property){
-                if (!Array.isArray(this.context.confirming_property.confirmed[key])){
-                    this.context.confirming_property.confirmed[key] = [];
-                }
-                if (param.list === true){
-                    this.context.confirming_property.confirmed[key].unshift(value);
-                } else if (param.list.order === "new"){
-                    this.context.confirming_property.confirmed[key].unshift(value);
-                } else if (param.list.order === "old"){
-                    this.context.confirming_property.confirmed[key].push(value);
-                } else {
-                    this.context.confirming_property.confirmed[key].unshift(value);
-                }
-            } else {
-                if (!Array.isArray(this.context.confirmed[key])){
-                    this.context.confirmed[key] = [];
-                }
-                if (param.list === true){
-                    this.context.confirmed[key].unshift(value);
-                } else if (param.list.order === "new"){
-                    this.context.confirmed[key].unshift(value);
-                } else if (param.list.order === "old"){
-                    this.context.confirmed[key].push(value);
-                } else {
-                    this.context.confirmed[key].unshift(value);
-                }
-            }
-        } else {
-            if (this.context.confirming_property){
-                this.context.confirming_property.confirmed[key] = value;
-            } else {
-                this.context.confirmed[key] = value;
-            }
-        }
-
-        // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
-        if (!is_change){
-            this.context.previous.confirmed.unshift(key);
-            this.context.previous.processed.unshift(key);
-        }
-
-        // Remove item from to_confirm.
-        let index_to_remove = this.context.to_confirm.indexOf(key);
-        if (index_to_remove !== -1){
-            debug(`Removing ${key} from to_confirm.`);
-            this.context.to_confirm.splice(index_to_remove, 1);
-        }
-
-        // Clear confirming.
-        if (this.context.confirming == key){
-            debug(`Clearing confirming.`);
-            this.context.confirming = null;
-        }
-    }
-
-    /**
-     * Method to execute reaction.
-     * @method
-     * @async
-     * @param {Error} error
-     * @param {String} key
-     * @param {*} value
-     */
-    async react(error, key, value){
-        // If pause or exit flag found, we skip remaining process.
-        if (this.context._pause || this.context._exit || this.context._init){
-            debug(`Detected pause or exit or init flag so we skip reaction.`);
-            return;
-        }
-
-        let param_type = this.bot.check_parameter_type(key);
-
-        let param;
-        if (this.context.confirming_property){
-            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_key].property[key];
-        } else {
-            param = this.context.skill[param_type][key];
-        }
-
-        if (param.reaction){
-            debug(`Reaction for ${key} found. Performing reaction...`);
-            await param.reaction(error, value, this.bot, this.event, this.context);
-        } else if (this.context.skill["reaction_" + key]){
-            debug(`Reaction for ${key} found. Performing reaction...`);
-            await this.context.skill["reaction_" + key](error, value, this.bot, this.event, this.context);
-        } else {
-            // This parameter does not have reaction so do nothing.
-            debug(`Reaction for ${key} not found.`);
-            return;
+            error: parse_error,
+            param_key: param_key,
+            param_value: param_value
         }
     }
 
@@ -556,7 +362,7 @@ module.exports = class Flow {
 
             // Check if this is dig.
             if (this.context._flow == "reply" && this.context.confirming){
-                let param_type = this.bot.check_parameter_type(this.context.confirming);
+                const param_type = this.bot.check_parameter_type(this.context.confirming);
 
                 let param;
                 if (this.context.confirming_property){
@@ -627,7 +433,7 @@ module.exports = class Flow {
             }
             debug(`Check if "${payload}" is suitable for ${param_key}.`);
             parameters_parsed.push(
-                this._parse_parameter(this.bot.check_parameter_type(param_key), param_key, payload, true).then(
+                this.bot.parse_parameter(param_key, payload, true).then(
                     (response) => {
                         debug(`Value fits to ${param_key}.`);
                         return {
@@ -782,10 +588,11 @@ module.exports = class Flow {
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
-        delete this.context.confirming_property;
+        this.context.confirming_property = null;
         this.context.confirmed = {};
         this.context.heard = {};
         this.context.previous = {
+            event: null,
             confirmed: [],
             processed: [],
             message: []
@@ -836,7 +643,14 @@ module.exports = class Flow {
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
-        delete this.context.confirming_property;
+        this.context.confirming_property = null;
+        this.context.previous =  {
+            event: null,
+            confirmed: [],
+            processed: [],
+            message: []
+        }
+        this.context._message_queue = [];
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){

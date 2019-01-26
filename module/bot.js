@@ -283,7 +283,6 @@ class Bot {
     /**
      * Check parameter type.
      * @method
-     * @private
      * @param {String} key - Parameter name.
      * @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
      */
@@ -327,8 +326,8 @@ class Bot {
      * @async
      * @param {String} param_key - Name of the parameter to apply.
      * @param {*} param_value - Value to apply.
-     * @param {Boolean} parse - Whether to run parser.
-     * @param {Boolean} react - Whether to run reaction.
+     * @param {Boolean} [parse=false] - Whether to run parser.
+     * @param {Boolean} [react=true] - Whether to run reaction.
      */ 
     async apply_parameter(param_key, param_value, parse = false, react = true){
         const param_type = this.check_parameter_type(param_key);
@@ -438,7 +437,7 @@ class Bot {
      * @method
      * @param {String} param_key 
      * @param {*} param_value 
-     * @param {Boolean} is_change
+     * @param {Boolean} [is_change]
      */
     add_parameter(param_key, param_value, is_change = false){
         const param_type = this.check_parameter_type(param_key);
@@ -552,6 +551,7 @@ class Bot {
     /**
      * Function to record the change log to revive this change into skill instance in the next event.
      * @method
+     * @private
      * @param {String} param_type - required_parameter | optional_parameter | dynamic_parameter
      * @param {String} param_key - Name of the parameter.
      * @param {Skill#skill_parameter} param - Skill parameter object.

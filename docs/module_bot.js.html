@@ -29,6 +29,7 @@
             <pre class="prettyprint source linenums"><code>"use strict";
 
 const debug = require("debug")("bot-express:bot");
+const Parser = require("./parser");
 const log = require("./logger");
 
 /**
@@ -56,12 +57,15 @@ class Bot {
         this._event = event;
         this._context = context;
         this._messenger = messenger;
+        this._builtin_parser = new Parser(options.parser);
     }
 
     /**
     * Reply messages to sender to collect parameter
+    * @method
+    * @async
     * @param {Array.&lt;MessageObject>} messages - The array of message objects.
-    * @returns {Array.&lt;Promise>}
+    * @return {Object} - Response from Messenger API.
     */
     async reply_to_collect(messages){
         return this.reply(messages, true)
@@ -69,8 +73,10 @@ class Bot {
 
     /**
     * Reply message to sender. This function can be called just once in a flow. To send multiple messages, give multiple messages to this function or use queue(MESSAGES) function instead.
+    * @method
+    * @async
     * @param {MessageObject|Array.&lt;MessageObject>} messages - Message object[s] to reply.
-    * @returns {Promise.&lt;Object>} - Returns promise returning response from Messenger API.
+    * @return {Object} - Response from Messenger API.
     */
     async reply(messages, to_collect = false){
         if (messages){
@@ -133,10 +139,12 @@ class Bot {
 
     /**
     * Send(Push) message to specified user.
+    * @method
+    * @async
     * @param {String} recipient_id - Recipient user id.
     * @param {MessageObject|Array.&lt;MessageObject>} messages - Messages object[s] to send.
     * @param {String} language - ISO-639-1 based language code to translate to.
-    * @returns {Promise.&lt;Object>} - Returns promise returning response from Messenger API.
+    * @return {Object} - Response from Messenger API.
     */
     async send(recipient_id, messages, language){
         // If messages is not array, we make it array.
@@ -191,10 +199,12 @@ class Bot {
 
     /**
     * Send(Push) messages to multiple users.
+    * @method
+    * @async
     * @param {Array.&lt;String>} recipient_ids - Array of recipent user id.
     * @param {MessageObject|Array.&lt;MessageObject>} messages - Message object[s] to send.
     * @param {String} language - ISO-639-1 based language code to translate to.
-    * @returns {Promise.&lt;Object>} - Returns promise returning response from Messenger API.
+    * @return {Object} - Response from Messenger API.
     */
     async multicast(recipient_ids, messages, language){
         // If messages is not array, we make it array.
@@ -249,6 +259,7 @@ class Bot {
 
     /**
      * Switch skill using provided intent. If this method is called in the middle of flow, rest of the process is skipped.
+     * @method
      * @param {intent} intent 
      */
     switch_skill(intent){
@@ -262,10 +273,10 @@ class Bot {
     }
 
     /**
-    * Queue messages. The messages will be sent out when reply(MESSAGES) function is called.
-    * @param {MessageObject|Array.&lt;MessageObject>} messages - Message object[s] to queue.
-    * @returns {Null}
-    */
+     * Queue messages. The messages will be sent out when reply(MESSAGES) function is called.
+     * @method
+     * @param {MessageObject|Array.&lt;MessageObject>} messages - Message object[s] to queue.
+     */
     queue(messages){
         if (typeof this._context._message_queue == "undefined"){
             this._context._message_queue = [];
@@ -274,35 +285,36 @@ class Bot {
     }
 
     /**
-    * Stop processing all remaining actions and keep context.
-    * @returns {Null}
-    */
+     * Stop processing all remaining actions and keep context.
+     * @method
+     */
     pause(){
         this._context._pause = true;
     }
 
     /**
-    * Stop processing all remaining actions and keep context except for confirming.
-    * @returns {Null}
-    */
+     * Stop processing all remaining actions and keep context except for confirming.
+     * @method
+     */
     exit(){
         this._context._exit = true;
     }
 
     /**
-    * Stop processing all remaining actions and clear context completely.
-    * @returns {Null}
-    */
+     * Stop processing all remaining actions and clear context completely.
+     * @method
+     */
     init(){
         this._context._init = true;
     }
 
     /**
-    Check parameter type.
-    @private
-    @param {String} key - Parameter name.
-    @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
-    */
+     * Check parameter type.
+     * @method
+     * @private
+     * @param {String} key - Parameter name.
+     * @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
+     */
     check_parameter_type(key){
         if (this._context.skill.required_parameter &amp;&amp; this._context.skill.required_parameter[key]){
             return "required_parameter";
@@ -317,11 +329,11 @@ class Bot {
     }
 
     /**
-    * Change the message to collect specified parameter.
-    * @param {String} param_key - Name of the parameter to collect.
-    * @param {MessageObject} message - The message object.
-    * @returns {Null}
-    */
+     * Change the message to collect specified parameter.
+     * @method
+     * @param {String} param_key - Name of the parameter to collect.
+     * @param {MessageObject} message - The message object.
+     */
     change_message_to_confirm(param_key, message){
         let param_type = this.check_parameter_type(param_key);
 
@@ -338,12 +350,60 @@ class Bot {
     }
 
     /**
-    Manually apply value to the parameter. This will skip parser but still trigger reaction.
-    @param {String} param_key - Name of the parameter to apply.
-    @param {Any} value - Value to apply.
-    @return {Promise}
+     * Manually apply value to the parameter. This will skip parser but still trigger reaction.
+     * @method
+     * @async
+     * @param {String} param_key - Name of the parameter to apply.
+     * @param {*} param_value - Value to apply.
+     * @param {Boolean} parse - Whether to run parser.
+     * @param {Boolean} react - Whether to run reaction.
+     */ 
+    async apply_parameter(param_key, param_value, parse = false, react = true){
+        const param_type = this.check_parameter_type(param_key);
+
+        // Parse parameter.
+        let parse_error;
+        if (parse){
+            try {
+                param_value = await this.parse_parameter(param_key, param_value);
+            } catch (e){
+                if (e.name === "Error"){
+                    // This should be intended exception in parser.
+                    parse_error = e;
+                    debug(`Parser rejected following value for parameter: "${param_key}".`);
+                    debug(param_value);
+                    if (e.message){
+                        debug(e.message);
+                    }
+                } else {
+                    // This should be unexpected exception so we just throw error.
+                    throw e;
+                }
+            }
+        }
+
+        // Add parameter to context.
+        this.add_parameter(param_key, param_value);
+
+        // Take reaction.
+        if (react){
+            await this.react(parse_error, param_key, param_value);
+        }
+    }
+
+    /**
+     * Run parser defined in skill.
+     * @method
+     * @async
+     * @param {String} param_key - Parameter name.
+     * @param {*} param_value - Value to validate.
+     * @param {Boolean} [strict=false] - If true, reject if parser does not exist. This option is for imternal use.
+     * @returns {*}
     */
-    async apply_parameter(param_key, value){
+    async parse_parameter(param_key, param_value, strict = false){
+        debug(`Parsing following value for parameter "${param_key}"`);
+        debug(JSON.stringify(param_value));
+
         const param_type = this.check_parameter_type(param_key);
 
         let param;
@@ -352,7 +412,75 @@ class Bot {
         } else {
             param = this._context.skill[param_type][param_key];
         }
-        
+
+        let parser;
+        if (param.parser){
+            debug("Parse method found in parameter definition.");
+            parser = param.parser;
+        } else if (this._context.skill["parse_" + param_key]){
+            debug("Parse method found in default parser function name.");
+            parser = this._context.skill["parse_" + param_key];
+        } else {
+            if (strict){
+                throw new Error("Parser not found.");
+            }
+            debug("Parse method NOT found. We use the value as it is as long as the value is set.");
+            if (param_value === undefined || param_value === null || param_value === ""){
+                throw new Error("Value is not set.");
+            }
+            debug(`Parser accepted the value.`);
+            return param_value;
+        }
+
+        // As parser, we support 3 types which are function, string and object.
+        // In case of function, we use it as it is.
+        // In case of string and object, we use builtin parser.
+        // As for the object, following is the format.
+        // @param {Object} parser
+        // @param {String} parser.type - Type of builtin parser. Supported value is dialogflow.
+        // @param {String} parser.policy - Policy configuration depending on the each parser implementation.
+        if (typeof parser === "function"){
+            // We use the defined function.
+            debug(`Parser is function so we use it as it is.`)
+            return parser(param_value, this, this.event, this._context);
+        } else if (typeof parser === "string"){
+            // We use builtin parser.
+            debug(`Parser is string so we use builtin parser: ${parser}.`);
+            return this._builtin_parser.parse(parser, {key: param_key, value: param_value}, {});
+        } else if (typeof parser === "object"){
+            // We use builtin parser.
+            if (!parser.type){
+                throw new Error(`Parser object is invalid. Required property: "type" not found.`);
+            }
+            debug(`Parser is object so we use builtin parser: ${parser.type}.`);
+            return this._builtin_parser.parse(parser.type, {key: param_key, value: param_value}, parser.policy);
+        } else {
+            // Invalid parser.
+            throw new Error(`Parser for the parameter: ${param_key} is invalid.`);
+        }
+    }
+
+
+    /**
+     * Add parameter to context as confirmed.
+     * @method
+     * @param {String} param_key 
+     * @param {*} param_value 
+     * @param {Boolean} is_change
+     */
+    add_parameter(param_key, param_value, is_change = false){
+        const param_type = this.check_parameter_type(param_key);
+
+        let param;
+        if (this._context.confirming_property){
+            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_key].property[param_key];
+        } else {
+            param = this._context.skill[param_type][param_key];
+        }
+
+        // Add the parameter to context.confirmed.
+        // If the parameter should be list, we add value to the list.
+        // IF the parameter should not be list, we just set the value.
         if (param.list){
             if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
@@ -362,41 +490,43 @@ class Bot {
                     this._context.confirming_property.confirmed[param_key] = [];
                 }
                 if (param.list === true){
-                    this._context.confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
                 } else if (param.list.order === "new"){
-                    this._context.confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
                 } else if (param.list.order === "old"){
-                    this._context.confirming_property.confirmed[param_key].push(value);
+                    this._context.confirming_property.confirmed[param_key].push(param_value);
                 } else {
-                    this._context.confirming_property.confirmed[param_key].unshift(value);
+                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
                 }
             } else {
                 if (!Array.isArray(this._context.confirmed[param_key])){
                     this._context.confirmed[param_key] = [];
                 }
                 if (param.list === true){
-                    this._context.confirmed[param_key].unshift(value);
+                    this._context.confirmed[param_key].unshift(param_value);
                 } else if (param.list.order === "new"){
-                    this._context.confirmed[param_key].unshift(value);
+                    this._context.confirmed[param_key].unshift(param_value);
                 } else if (param.list.order === "old"){
-                    this._context.confirmed[param_key].push(value);
+                    this._context.confirmed[param_key].push(param_value);
                 } else {
-                    this._context.confirmed[param_key].unshift(value);
+                    this._context.confirmed[param_key].unshift(param_value);
                 }
             }
         } else {
             if (this._context.confirming_property){
-                this._context.confirming_property.confirmed[param_key] = value;
+                this._context.confirming_property.confirmed[param_key] = param_value;
             } else {
-                this._context.confirmed[param_key] = value;
+                this._context.confirmed[param_key] = param_value;
             }
         }
 
         // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
-        this._context.previous.confirmed.unshift(param_key);
-        this._context.previous.processed.unshift(param_key);
+        if (!is_change){
+            this._context.previous.confirmed.unshift(param_key);
+            this._context.previous.processed.unshift(param_key);
+        }
 
-        // Remove item from to_confirm if it exits.
+        // Remove item from to_confirm.
         let index_to_remove = this._context.to_confirm.indexOf(param_key);
         if (index_to_remove !== -1){
             debug(`Removing ${param_key} from to_confirm.`);
@@ -408,13 +538,38 @@ class Bot {
             debug(`Clearing confirming.`);
             this._context.confirming = null;
         }
+    }
+
+    /**
+     * Run reaction defined in skill.
+     * @method
+     * @async
+     * @param {Error} error
+     * @param {String} param_key
+     * @param {*} param_value
+     */
+    async react(error, param_key, param_value){
+        // If pause or exit flag found, we skip remaining process.
+        if (this._context._pause || this._context._exit || this._context._init){
+            debug(`Detected pause or exit or init flag so we skip reaction.`);
+            return;
+        }
+
+        const param_type = this.check_parameter_type(param_key);
+
+        let param;
+        if (this._context.confirming_property){
+            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_key].property[param_key];
+        } else {
+            param = this._context.skill[param_type][param_key];
+        }
 
         if (param.reaction){
             debug(`Reaction for ${param_key} found. Performing reaction...`);
-            return this._context.skill[param_type][param_key].reaction(false, value, this, this._event, this._context);
+            await param.reaction(error, param_value, this, this.event, this._context);
         } else if (this._context.skill["reaction_" + param_key]){
             debug(`Reaction for ${param_key} found. Performing reaction...`);
-            return this._context.skill["reaction_" + param_key](false, value, this, this._event, this._context);
+            await this._context.skill["reaction_" + param_key](error, param_value, this, this.event, this._context);
         } else {
             // This parameter does not have reaction so do nothing.
             debug(`Reaction for ${param_key} not found.`);
@@ -423,12 +578,12 @@ class Bot {
     }
 
     /**
-    * Function to record the change log to revive this change into skill instance in the next event.
-    @param {String} param_type - required_parameter | optional_parameter | dynamic_parameter
-    @param {String} param_key - Name of the parameter.
-    @param {Skill#skill_parameter} param - Skill parameter object.
-    @return {Null}
-    */
+     * Function to record the change log to revive this change into skill instance in the next event.
+     * @method
+     * @param {String} param_type - required_parameter | optional_parameter | dynamic_parameter
+     * @param {String} param_key - Name of the parameter.
+     * @param {Skill#skill_parameter} param - Skill parameter object.
+     */
     _save_param_change_log(param_type, param_key, param_orig){
         // We copy param_orig to param to prevent propagate the change in this function to original object.
         let param = Object.assign({}, param_orig);
@@ -464,12 +619,12 @@ class Bot {
     }
 
     /**
-    * Make the specified skill paramter being collected next.
-    * @param {String|Skill#skill_parameter_container} arg - Name of the skill parameter or skill_parameter_container object to collect.
-    * @param {Object} [options] - Option object.
-    * @param {Boolean} [options.dedup=true] - Set false to allow collecting same parameter multiple times.
-    * @returns {Null}
-    */
+     * Make the specified skill paramter being collected next.
+     * @method
+     * @param {String|Skill#skill_parameter_container} arg - Name of the skill parameter or skill_parameter_container object to collect.
+     * @param {Object} [options] - Option object.
+     * @param {Boolean} [options.dedup=true] - Set false to allow collecting same parameter multiple times.
+     */
     collect(arg, options = {}){
         if (options.dedup === undefined || options.dedup === null){
             options.dedup = true;
@@ -522,25 +677,28 @@ class Bot {
     }
 
     /**
-    * Extract message of the event.
-    * @param {EventObject} event - Event to extract message.
-    * @returns {MessageObject} - Extracted message.
-    */
+     * Extract message of the event.
+     * @method
+     * @param {EventObject} event - Event to extract message.
+     * @returns {MessageObject} - Extracted message.
+     */
     extract_message(event = this._event){
         return this._messenger.extract_message(event);
     }
 
     /**
-    * Extract message text.
-    * @param {EventObject} event - Event to extract message text.
-    * @returns {String} - Extracted message text.
-    */
+     * Extract message text.
+     * @method
+     * @param {EventObject} event - Event to extract message text.
+     * @returns {String} - Extracted message text.
+     */
     extract_message_text(event = this._event){
         return this._messenger.extract_message_text(event);
     }
 
     /**
     * Extract sender's user id.
+    * @method
     * @param {EventObject} event - Event to extract message text.
     * @returns {String} - Extracted sender's user id.
     */
@@ -550,6 +708,7 @@ class Bot {
 
     /**
     * Extract session id.
+    * @method
     * @param {EventObject} event - Event to extract message text.
     * @returns {String} - Extracted sender's user id.
     */
@@ -559,6 +718,7 @@ class Bot {
 
     /**
     * Identify the event type.
+    * @method
     * @param {EventObject} event - Event to identify event type.
     * @returns {String} - Event type. In case of LINE, it can be "message", "follow", "unfollow", "join", "leave", "postback", "beacon". In case of Facebook, it can be "echo", "message", "delivery", "read", "postback", "optin", "referral", "account_linking".
     */
@@ -568,6 +728,7 @@ class Bot {
 
     /**
     * Identify the message type.
+    * @method
     * @param {MessageObject} message - Message Object to identify message type.
     * @returns {String} - Message type. In case of LINE, it can be "text", "image", "audio", "video", "file", "location", "sticker", "imagemap", "buttons_template, "confirm_template" or "carousel_template". In case of Facebook, it can be "text", "image", "audio", "video", "file", "button_template", "generic_template", "list_template", "open_graph_template", "receipt_template", "airline_boardingpass_template", "airline_checkin_template", "airline_itinerary_template", "airline_update_template".
     */
@@ -580,6 +741,7 @@ class Bot {
 
     /**
     * Compile message format to the specified format.
+    * @method
     * @param {MessageObject} message - Message object to compile.
     * @param {String} format - Target format to compile. It can be "line" or "facebook".
     * @returns {Promise.&lt;MessageObject>} - Compiled message object.
@@ -605,7 +767,7 @@ module.exports = Bot;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Jan 25 2019 11:31:47 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Jan 26 2019 17:24:49 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

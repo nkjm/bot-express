@@ -363,188 +363,7 @@
     
 
     
-    <h4 class="name" id="_save_param_change_log"><span class="type-signature"></span>_save_param_change_log<span class="signature">(param_type, param_key, param)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Function to record the change log to revive this change into skill instance in the next event.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>param_type</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">required_parameter | optional_parameter | dynamic_parameter</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>param_key</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Name of the parameter.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>param</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="Skill.html#skill_parameter">Skill#skill_parameter</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Skill parameter object.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line559">line 559</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="add_parameter"><span class="type-signature"></span>add_parameter<span class="signature">(param_key, param_value, is_change)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="add_parameter"><span class="type-signature"></span>add_parameter<span class="signature">(param_key, param_value, is_change<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -576,6 +395,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
         <th>Default</th>
@@ -602,6 +423,14 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -630,6 +459,14 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
                 <td class="default">
@@ -656,6 +493,16 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -707,7 +554,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line443">line 443</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line442">line 442</a>
     </li></ul></dd>
     
 
@@ -741,7 +588,7 @@
     
 
     
-    <h4 class="name" id="apply_parameter"><span class="type-signature">(async) </span>apply_parameter<span class="signature">(param_key, param_value, parse, react)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="apply_parameter"><span class="type-signature">(async) </span>apply_parameter<span class="signature">(param_key, param_value, parse<span class="signature-attributes">opt</span>, react<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -773,6 +620,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
         <th>Default</th>
@@ -799,6 +648,14 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -827,6 +684,14 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
                 <td class="default">
@@ -853,6 +718,16 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -882,6 +757,16 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -933,7 +818,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line333">line 333</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line332">line 332</a>
     </li></ul></dd>
     
 
@@ -1091,7 +976,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line309">line 309</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line308">line 308</a>
     </li></ul></dd>
     
 
@@ -1114,6 +999,163 @@
 
 
 
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="check_parameter_type"><span class="type-signature"></span>check_parameter_type<span class="signature">(key)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Check parameter type.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>key</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Parameter name.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line289">line 289</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -3066,7 +3108,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line375">line 375</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line374">line 374</a>
     </li></ul></dd>
     
 
@@ -3489,7 +3531,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line523">line 523</a>
+        <a href="module_bot.js.html">module/bot.js</a>, <a href="module_bot.js.html#line522">line 522</a>
     </li></ul></dd>
     
 
@@ -4197,7 +4239,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Jan 26 2019 17:24:49 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Jan 31 2019 12:52:27 GMT+0900 (JST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -2,6 +2,7 @@
 
 const debug = require("debug")("bot-express:parser");
 const wanakana = require("wanakana");
+const sanitize = require("sanitize-html");
 
 module.exports = class ParserString {
     /**
@@ -30,60 +31,63 @@ module.exports = class ParserString {
      * @param {String} [policy.charactor] - Supported values are hiragana and katakana.
      * @param {Array.<String>} [policy.exclude] - List of values to be rejected.
      * @param {String} [policy.regex] - Regex expression to match value.
+     * @param {Boolean} [policy.sanitize] - Sanitize string if true.
      * @return {String} - Parsed value.
      */
     async parse(param, policy = {}){
-        if (typeof param.value != "string"){
+        let value = param.value;
+
+        if (typeof value != "string"){
             throw new Error("should_be_string");
         }
-        if (!param.value){
+        if (!value){
             throw new Error("value_is_empty");
         }
 
         if (policy.min){
-            if (param.value.length < policy.min){
+            if (value.length < policy.min){
                 throw new Error("violates_min");
             }
         }
 
         if (policy.max){
-            if (param.value.length > policy.max){
+            if (value.length > policy.max){
                 throw new Error("violates_max");
             }
         }
 
-        let parsed_value;
+        if (policy.sanitize){
+            value = sanitize(value);
+        }
 
         if (policy.charactor){
             if (policy.charactor === "katakana"){
-                parsed_value = wanakana.toKatakana(param.value);
-                if (!wanakana.isKatakana(parsed_value)){
+                value = wanakana.toKatakana(value);
+                if (!wanakana.isKatakana(value)){
                     throw new Error("should_be_katakana");
                 }
             }
 
             if (policy.charactor === "hiragana"){
-                parsed_value = wanakana.toHiragana(param.value);
-                if (!wanakana.isHiragana(parsed_value)){
+                value = wanakana.toHiragana(value);
+                if (!wanakana.isHiragana(value)){
                     throw new Error("should_be_hiragana");
                 }
             }
-        } else {
-            parsed_value = param.value;
         }
 
         if (Array.isArray(policy.exclude)){
-            if (policy.exclude.includes(parsed_value)){
+            if (policy.exclude.includes(value)){
                 throw new Error("violates_exclude");
             }
         }
 
         if (policy.regex){
-            if (!param.value.match(policy.regex)){
+            if (!value.match(policy.regex)){
                 throw new Error("should_follow_regex");
             }
         }
 
-        return parsed_value;
+        return value;
     }
 }

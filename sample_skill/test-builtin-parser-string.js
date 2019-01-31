@@ -98,6 +98,18 @@ module.exports = class SkillTestBuiltinParserString {
                         exclude: ["cancel"]
                     }
                 }
+            },
+            sanitize: {
+                message_to_confirm: {
+                    type: "text",
+                    text: "sanitize"
+                },
+                parser: {
+                    type: "string",
+                    policy: {
+                        sanitize: true
+                    }
+                }
             }
         }
     }

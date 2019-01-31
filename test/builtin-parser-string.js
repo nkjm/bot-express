@@ -393,4 +393,36 @@ describe("Test builtin string parser", async function(){
         });
     });
 
+    describe("If sanitize is true", async function(){
+        it("strips tags and scripts", async function(){
+            this.timeout(15000);
+
+            await emu.clear_context(user_id);
+            
+            let event = emu.create_postback_event(user_id, {data: JSON.stringify({
+                _type: "intent",
+                language: "ja",
+                intent: {
+                    name: "test-builtin-parser-string",
+                    parameters: {
+                        katakana: "マルゲリータ",
+                        hiragana: "まるげりいた",
+                        minmax: "マルゲ",
+                        regex: "abb",
+                        no_policy: "マルゲリータ",
+                        exclude: "マルゲリータ"
+                    }
+                }
+            })});
+            let context = await emu.send(event);
+
+            context.intent.name.should.equal("test-builtin-parser-string");
+            context.confirming.should.equal("sanitize");
+
+            context = await emu.send(emu.create_message_event(user_id, "<script>alert('abc')</script>マルゲリータ"));
+
+            context.confirmed.sanitize.should.equal("マルゲリータ");
+        });
+    });
+
 });

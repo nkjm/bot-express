@@ -717,8 +717,11 @@ module.exports = class Flow {
         const param_key = this.context.to_confirm[0];
         const param_type = this.bot.check_parameter_type(param_key);
 
+        if (param_type === "not_applicable"){
+            throw new Error(`Paramter: "${param_key}" not found in skill.`);
+        }
         if (!this.context.skill[param_type]){
-            throw new Error(`${param_type} parameter not found in skill.`);
+            throw new Error(`Paramter: "${param_key}" not found in skill.`);
         }
 
         let param;

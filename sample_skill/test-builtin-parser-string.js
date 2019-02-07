@@ -14,7 +14,7 @@ module.exports = class SkillTestBuiltinParserString {
                 parser: {
                     type: "string",
                     policy: {
-                        charactor: "katakana"
+                        character: "katakana"
                     }
                 },
                 reaction: async (error, value, bot, event, context) => {
@@ -31,7 +31,7 @@ module.exports = class SkillTestBuiltinParserString {
                 parser: {
                     type: "string",
                     policy: {
-                        charactor: "hiragana"
+                        character: "hiragana"
                     }
                 },
                 reaction: async (error, value, bot, event, context) => {

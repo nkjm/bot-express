@@ -28,7 +28,7 @@ module.exports = class ParserString {
      * @param {Object} [policy]
      * @param {Number} [policy.min]
      * @param {Number} [policy.max]
-     * @param {String} [policy.charactor] - Supported values are hiragana and katakana.
+     * @param {String} [policy.character] - Supported values are hiragana and katakana.
      * @param {Array.<String>} [policy.exclude] - List of values to be rejected.
      * @param {String} [policy.regex] - Regex expression to match value.
      * @param {Boolean} [policy.sanitize] - Sanitize string if true.
@@ -60,15 +60,15 @@ module.exports = class ParserString {
             value = sanitize(value);
         }
 
-        if (policy.charactor){
-            if (policy.charactor === "katakana"){
+        if (policy.character){
+            if (policy.character === "katakana"){
                 value = wanakana.toKatakana(value);
                 if (!wanakana.isKatakana(value)){
                     throw new Error("should_be_katakana");
                 }
             }
 
-            if (policy.charactor === "hiragana"){
+            if (policy.character === "hiragana"){
                 value = wanakana.toHiragana(value);
                 if (!wanakana.isHiragana(value)){
                     throw new Error("should_be_hiragana");

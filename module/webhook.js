@@ -180,6 +180,8 @@ class Webhook {
             // ### Follow | Unfollow | Join | Leave Flow ###
             if (!this.options.skill[event_type]){
                 debug(`This is ${event_type} flow but ${event_type}_skill not found so skip.`);
+                context._in_progress = false;
+                await this.memory.put(memory_id, context);
                 return;
             }
 
@@ -194,10 +196,14 @@ class Webhook {
 
             if (!beacon_event_type){
                 debug(`Unsupported beacon event so we skip this event.`);
+                context._in_progress = false;
+                await this.memory.put(memory_id, context);
                 return;
             }
             if (!this.options.skill.beacon || !this.options.skill.beacon[beacon_event_type]){
                 debug(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`);
+                context._in_progress = false;
+                await this.memory.put(memory_id, context);
                 return;
             }
             debug(`This is beacon flow and we use ${this.options.skill.beacon[beacon_event_type]} as skill`);

@@ -87,6 +87,45 @@ for (let messenger_option of messenger_options){
             })
         })
 
+        describe("If previously processed parameter has been confirmed before but not right before,", async function(){
+            it("rewinds one more processed parameter.", async function(){
+
+                let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-modify-previous-parameter"
+                    },
+                    language: "ja"
+                })}));
+
+                context.confirming.should.equal("a");
+
+                context = await emu.send(emu.create_message_event(user_id, "a"));
+
+                context.confirming.should.equal("b");
+
+                context = await emu.send(emu.create_message_event(user_id, "b"));
+
+                context.confirming.should.equal("c");
+
+                context = await emu.send(emu.create_message_event(user_id, "訂正"));
+
+                context.confirming.should.equal("b");
+
+                context = await emu.send(emu.create_message_event(user_id, "訂正"));
+
+                context.confirming.should.equal("a");
+
+                context = await emu.send(emu.create_message_event(user_id, "skip"));
+
+                context.confirming.should.equal("c");
+
+                context = await emu.send(emu.create_message_event(user_id, "訂正"));
+
+                context.confirming.should.equal("a");
+            })
+        })
+
         describe("Trigger modify_previous_parameter by intent postback", async function(){
             it("should ask previously confirmed parameter.", async function(){
                 let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({

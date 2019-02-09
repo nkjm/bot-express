@@ -511,7 +511,7 @@ module.exports = class Flow {
      */
     modify_previous_parameter(){
         // Check if there is previously processed parameter.
-        if (!(this.context.previous && this.context.previous.processed && this.context.previous.processed.length > 0)){
+        if (!(this.context.previous && Array.isArray(this.context.previous.processed) && this.context.previous.processed.length > 0)){
             debug(`There is no processed parameter.`);
             return;
         }
@@ -532,20 +532,12 @@ module.exports = class Flow {
         this.context.previous.processed.shift();
 
         // We remove this parameter from confirmed history.
-        if (this.context.previous && this.context.previous.confirmed && this.context.previous.confirmed.length > 0 && this.context.previous.confirmed[0] == param_key){
-            debug(`Removing ${param_key} from previous.confirmed.`);
-            this.context.previous.confirmed.shift();
-        }
-
-        // If this previous parameter has not been confirmed, we rewrind one more processed parameter.
-        if (this.context.confirming_property){
-            if (this.context.confirming_property.confirmed[param_key] === undefined){
+        if (Array.isArray(this.context.previous.confirmed) && this.context.previous.confirmed.length > 0){
+            if (this.context.previous.confirmed[0] === param_key){
+                debug(`Removing ${param_key} from previous.confirmed.`);
+                this.context.previous.confirmed.shift();
+            } else {
                 debug(`We rewrind one more processed parameter since previously processed parameter has not been confirmed.`);
-                return this.modify_previous_parameter();
-            }
-        } else {
-            if (this.context.confirmed[param_key] === undefined){
-                debug(`We rewrind one more processed parameter since previously processed parameter has not been confirmed.`)
                 return this.modify_previous_parameter();
             }
         }

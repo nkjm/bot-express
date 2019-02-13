@@ -104,6 +104,14 @@ module.exports = class StartConversationFlow extends Flow {
             });
         }
 
+        // If this is modify_previous_parameter, we make intent default_intent.
+        if (this.options.modify_previous_parameter_intent && this.context.intent.name === this.options.modify_previous_parameter_intent){
+            debug(`modify_previous_parameter in start_conversation flow is not supported so we set default intent.`);
+            this.context.intent = {
+                name: this.options.default_intent
+            }
+        }
+
         // Instantiate skill.
         if (!skip_instantiate_skill){
             this.context.skill = super.instantiate_skill(this.context.intent);

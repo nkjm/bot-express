@@ -330,5 +330,37 @@ for (let messenger_option of messenger_options){
                 });
             });
         });
+
+        describe("Postback which contains intent for modify_previous_parameter.", async function(){
+            it("triggers default skill.", async function(){
+                await emu.clear_context(user_id);
+                
+                let context;
+
+                let event;
+                if (emu.messenger_type === "line"){
+                    event = emu.create_postback_event(user_id, {
+                        data: JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "modify-previous-parameter"
+                            }
+                        })
+                    });
+                } else if (emu.messenger_type === "facebook"){
+                    event = emu.create_postback_event(user_id, {
+                        payload: JSON.stringify({
+                            _type: "intent",
+                            intent: {
+                                name: "modify-previous-parameter",
+                            }
+                        })
+                    });
+                }
+
+                context = await emu.send(event);
+                context.intent.name.should.equal("input.unknown");
+            });
+        });
     });
 }

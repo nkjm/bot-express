@@ -98,7 +98,11 @@ describe("Test switch skill", async function(){
 
             context.intent.name.should.equal("handle-pizza-order");
             context.confirming.should.equal("pizza");
-            context.confirmed.param_a.should.equal("a");
+            should.not.exist(context.confirmed.param_a);
+
+            context = await emu.send(emu.create_message_event(user_id, "マリナーラ"));
+
+            context.confirming.should.equal("size");
         });
     });
 });

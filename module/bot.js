@@ -9,7 +9,6 @@ const log = require("./logger");
  * @class
  * @prop {String} type - Type of messenger. The value can be "line","facebook" and "google".
  * @prop {String} language - ISO-639-1 based language code which is the mother language of this chatbot.
- * @prop {Object} translator - Translator instance.
  */
 class Bot {
     /**

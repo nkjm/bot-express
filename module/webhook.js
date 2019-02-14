@@ -254,6 +254,44 @@ class Webhook {
             throw e;
         }
 
+        // Switch skill if flag is on.
+        if (updated_context && updated_context._switch_intent) {
+            debug(`Switching skill corresponding to "${updated_context._switch_intent.name}" intent.`);
+
+            // Save intent to switch before clean up.
+            const intent = updated_context._switch_intent;
+
+            if (updated_context._clear){
+                debug("Clearing context");
+                await this.memory.del(memory_id);
+            } else {
+                // Turn off all flag to cleanup context for next skill.
+                debug("Turn off all flag to cleanup context for next skill.");
+                updated_context._pause = false;
+                updated_context._exit = false;
+                updated_context._init = false;
+                updated_context._clear = false;
+                updated_context._switch_intent = false;
+                updated_context._in_progress = false;
+
+                await this.memory.put(memory_id, updated_context);
+            }
+
+            updated_context = await this.process_event({
+                type: "postback",
+                replyToken: event.replyToken,
+                source: event.source,
+                timestamp: Date.now(),
+                postback: {
+                    data: JSON.stringify({
+                        _type: "intent",
+                        intent: intent,
+                        language: updated_context.sender_language
+                    })
+                }
+            })
+        }
+
         // Update memory.
         if (!updated_context || updated_context._clear){
             debug("Clearing context");
@@ -271,35 +309,6 @@ class Webhook {
 
             debug("Updating context");
             await this.memory.put(memory_id, updated_context);
-        }
-
-        // Switch skill.
-        if (updated_context && updated_context._switch_intent) {
-            debug(`Switching skill for intent "${updated_context._switch_intent.name}"..`);
-
-            // Turn off _switch_intent flag to prevent infinite loop.
-            const intent = updated_context._switch_intent;
-            delete updated_context._switch_intent;
-            // Turn off _exit flag to prevent exit once again.
-            updated_context._exit = false;
-            // Make _in_progress false so that another proceess will not be ignored.
-            updated_context._in_progress = false;
-
-            await this.memory.put(memory_id, updated_context);
-
-            updated_context = await this.process_event({
-                type: "postback",
-                replyToken: event.replyToken,
-                source: event.source,
-                timestamp: Date.now(),
-                postback: {
-                    data: JSON.stringify({
-                        _type: "intent",
-                        intent: intent,
-                        language: updated_context.sender_language
-                    })
-                }
-            })
         }
 
         return updated_context;

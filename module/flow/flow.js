@@ -880,7 +880,7 @@ module.exports = class Flow {
         // If exit flag has been set, we stop processing remaining actions and clear context completely.
         if (this.context._init){
             debug("Detected init flag. We stop processing finish().");
-            this.context = null;
+            this.context._clear = true;
 
             return this.context;
         }

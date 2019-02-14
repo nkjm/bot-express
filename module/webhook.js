@@ -111,7 +111,6 @@ class Webhook {
 
         // Process events
         let events = this.messenger.extract_events(this.options.req.body);
-
         let done_process_events = [];
         for (let e of events){
             done_process_events.push(this.process_event(e));
@@ -119,8 +118,10 @@ class Webhook {
         const context_list = await Promise.all(done_process_events);
 
         for (let context of context_list){
-            debug("Updated context follows.");
-            debug(context);
+            if (typeof context === "object"){
+                debug("Updated context follows.");
+                debug(JSON.stringify(context));
+            }
         }
 
         if (context_list && context_list.length === 1){
@@ -145,7 +146,7 @@ class Webhook {
             return;
         }
 
-        // Identify memory id
+        // Identify memory id.
         let memory_id;
         if (this.messenger.identify_event_type(event) === "bot-express:push"){
             memory_id = this.messenger.extract_to_id(event);
@@ -154,10 +155,15 @@ class Webhook {
         }
         debug(`memory id is ${memory_id}.`);
 
-
+        // Get context from memory.
         let context = await this.memory.get(memory_id);
 
-        if (context && context._in_progress && this.options.parallel_event == "ignore" && this.messenger.identify_event_type(event) != "bot-express:push"){
+        // Ignore parallel event to prevent unexpected behavior by double tap.
+        if (context && 
+            context._in_progress && 
+            this.options.parallel_event == "ignore" && 
+            this.messenger.identify_event_type(event) != "bot-express:push"
+        ){
             context._in_progress = false; // To avoid lock out, we ignore event only once.
             await this.memory.put(memory_id, context);
             debug(`Bot is currenlty processing another event from this user so ignore this event.`);
@@ -166,10 +172,10 @@ class Webhook {
 
         // Make in progress flag
         if (context){
-            context._in_progress = true;
+            context._in_progress = event;
             await this.memory.put(memory_id, context);
         } else {
-            await this.memory.put(memory_id, { _in_progress: true });
+            await this.memory.put(memory_id, { _in_progress: event });
         }
 
         let flow;
@@ -269,11 +275,17 @@ class Webhook {
 
         // Switch skill.
         if (updated_context && updated_context._switch_intent) {
+            debug(`Switching skill for intent "${updated_context._switch_intent.name}"..`);
+
             // Turn off _switch_intent flag to prevent infinite loop.
-            let intent = JSON.parse(JSON.stringify(updated_context._switch_intent));
+            const intent = updated_context._switch_intent;
             delete updated_context._switch_intent;
             // Turn off _exit flag to prevent exit once again.
             updated_context._exit = false;
+            // Make _in_progress false so that another proceess will not be ignored.
+            updated_context._in_progress = false;
+
+            await this.memory.put(memory_id, updated_context);
 
             updated_context = await this.process_event({
                 type: "postback",

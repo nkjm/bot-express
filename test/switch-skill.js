@@ -98,7 +98,7 @@ describe("Test switch skill", async function(){
 
             context.intent.name.should.equal("handle-pizza-order");
             context.confirming.should.equal("pizza");
-            should.not.exist(context.confirmed.param_a);
+            context.confirmed.param_a.should.equal("a");
         });
     });
 });

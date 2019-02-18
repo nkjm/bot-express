@@ -49,8 +49,8 @@ module.exports = class ReplyFlow extends Flow {
             // Language translation.
             let translated_param_value;
             if (typeof param_value == "string"){
-                if (this.translator && this.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
-                    translated_param_value = await this.translator.translate(param_value, this.options.language);
+                if (this.bot.translator && this.bot.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
+                    translated_param_value = await this.bot.translator.translate(param_value, this.options.language);
                 }
             }
             if (!translated_param_value){

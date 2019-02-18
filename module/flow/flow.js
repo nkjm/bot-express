@@ -4,7 +4,6 @@ const debug = require("debug")("bot-express:flow");
 const log = require("../logger");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");
-const Translator = require("../translator");
 
 module.exports = class Flow {
     constructor(options, messenger, event, context){
@@ -12,12 +11,7 @@ module.exports = class Flow {
         this.messenger = messenger;
         this.event = event;
         this.context = context;
-
         this.bot = new Bot(this.options, this.event, this.context, this.messenger);
-        if (this.options.translator){
-            this.translator = new Translator(this.options.translator);
-            this.bot.translator = this.translator;
-        }
 
         if (this.context.intent && this.context.intent.name){
             debug(`Init and reviving skill instance.`);
@@ -74,6 +68,18 @@ module.exports = class Flow {
         }
 
         skill.type = skill_name;
+
+        // Set message instance.
+        try {
+            debug(`${this.options.message_path}${skill.type}`);
+            require.resolve(`${this.options.message_path}${skill.type}`);
+        } catch (e){
+            debug(`Message "${skill.type}" not found in ${this.options.message_path}.`)
+            return skill;
+        }
+        debug(`Message "${skill.type}" found. Loading..`);
+        const Message = require(`${this.options.message_path}${skill.type}`);
+        this.bot.m = new Message(this.bot.translator);
 
         return skill;
     }
@@ -830,6 +836,11 @@ module.exports = class Flow {
         if (typeof message_to_confirm === "function"){
             debug("message_to_confirm is made of function. We generate message with it.");
             message = await message_to_confirm(this.bot, this.event, this.context);
+
+            // Make sure message has been set.
+            if (!message){
+                throw new Error(`message_to_confirm of ${this.context.confirming} did not return message object.`);
+            }
         } else if (typeof message_to_confirm === "object" || typeof message_to_confirm === "string"){
             debug("message_to_confirm is made of object|string. We use it as it is.");
             message = message_to_confirm;

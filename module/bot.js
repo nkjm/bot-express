@@ -3,6 +3,7 @@
 const debug = require("debug")("bot-express:bot");
 const Parser = require("./parser");
 const log = require("./logger");
+const Translator = require("./translator");
 
 /**
  * Toolkit to be used by skill.
@@ -29,6 +30,19 @@ class Bot {
         this._context = context;
         this._messenger = messenger;
         this._builtin_parser = new Parser(options.parser);
+        this.translator = new Translator(this._context, this._options.translator);
+    }
+
+    /**
+     * Alias to this.translator.t
+     * @method
+     * @async
+     * @param {String} key
+     * @param {Object} options
+     * @return {String} Translation label.
+     */
+    async t(key, options){
+        return this.translator.get_translation_label(key, options);
     }
 
     /**

@@ -77,8 +77,8 @@ module.exports = class StartConversationFlow extends Flow {
             let message_text = this.bot.extract_message_text();
 
             // Detect sender language.
-            if (this.translator && this.translator.enable_lang_detection){
-                this.context.sender_language = await this.translator.detect(message_text);
+            if (this.bot.translator && this.bot.translator.enable_lang_detection){
+                this.context.sender_language = await this.bot.translator.detect(message_text);
                 debug(`Bot language is ${this.options.language} and sender language is ${this.context.sender_language}`);
             } else {
                 this.context.sender_language = undefined;
@@ -86,8 +86,8 @@ module.exports = class StartConversationFlow extends Flow {
             }
 
             // Language translation.
-            if (this.translator && this.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
-                translated_message_text = await this.translator.translate(message_text, this.options.language);
+            if (this.bot.translator && this.bot.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
+                translated_message_text = await this.bot.translator.translate(message_text, this.options.language);
             }
         }
         if (!translated_message_text){

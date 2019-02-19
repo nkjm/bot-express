@@ -40,7 +40,7 @@ class MemoryRedis {
 
         return JSON.parse(response, (key, value) => {
             // if value is Buffer, we return its data only.
-            if (typeof value === "object" && value.type === "Buffer" && value.data){
+            if (value && typeof value === "object" && value.type === "Buffer" && value.data){
                 return Buffer.from(value.data);
             }
             return value;

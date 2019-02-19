@@ -4,6 +4,7 @@ const debug = require("debug")("bot-express:memory");
 const redis = require("redis");
 const log = require("../logger");
 const prefix = "botex_context_";
+const Promise = require("bluebird");
 Promise.promisifyAll(redis.RedisClient.prototype);
 Promise.promisifyAll(redis.Multi.prototype);
 
@@ -33,13 +34,18 @@ class MemoryRedis {
     }
 
     async get(key){
-        return this.client.getAsync(key).then((response) => {
-            if (response){
-                return JSON.parse(response);
-            } else {
-                return response;
+        const response = await this.client.getAsync(key);
+
+        if (!response) return;
+
+        return JSON.parse(response, (key, value) => {
+            // if value is Buffer, we return its data only.
+            if (typeof value === "object" && value.type === "Buffer" && value.data){
+                return Buffer.from(value.data);
             }
-        })
+            return value;
+        });
+
     }
 
     async put(key, value, retention){

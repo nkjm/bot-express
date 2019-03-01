@@ -59,12 +59,13 @@ module.exports = class MessengerLine {
 
         // Signature Validation. We try all credentials in this._option_list.
         for (let o of this._option_list){
-            let hash = crypto.createHmac('sha256', o.channel_secret).update(raw_body).digest('base64');
+            let hash = crypto.createHmac('sha256', o.switcher_secret || o.channel_secret).update(raw_body).digest('base64');
             debug(`Going to validate using channel "${o.channel_id}"..`);
             if (secure_compare(hash, signature)){
                 debug(`Channel is "${o.channel_id}".`);
                 this._channel_id = o.channel_id;
                 this._channel_secret = o.channel_secret;
+                this._switcher_secret = o.switcher_secret;
                 this._endpoint = o.endpoint || "api.line.me";
                 return;
             }

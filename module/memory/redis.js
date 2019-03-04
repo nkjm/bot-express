@@ -16,21 +16,26 @@ class MemoryRedis {
     @param {String} [options.host] - IP address of the Redis server. *Either url or host and port is required.
     @param {String} [options.port] - Port of the Redis server. *Either url or host and port is required.
     @param {String} [options.password] - If set, client will run Redis auth command on connect.
+    @param {boolean} [options.keyspace_notification=false] - If true, we duplicates context to detect skill abort and log it.
     */
     constructor(options){
         this.client = redis.createClient(options);
-        this.sub = redis.createClient(options);
+        this.keyspace_notification = options.keyspace_notification;
 
-        this.sub.on("pmessage", async (pattern, channel, key) => {
-            const value = await this.get(`${key}_cloned`);
-            if (value.confirming && value.skill){
-                log.skill_status(key.replace(prefix, ""), value.skill.type, "aborted", value.confirming);
-            }
+        if (this.keyspace_notification){
+            this.sub = redis.createClient(options);
 
-            await this.del(`${key}_cloned`);
-        })
+            this.sub.on("pmessage", async (pattern, channel, key) => {
+                const value = await this.get(`${key}_cloned`);
+                if (value.confirming && value.skill){
+                    log.skill_status(key.replace(prefix, ""), value.skill.type, "aborted", value.confirming);
+                }
 
-        this.sub.psubscribe("__key*__:expired");
+                await this.del(`${key}_cloned`);
+            })
+
+            this.sub.psubscribe("__key*__:expired");
+        }
     }
 
     async get(key){
@@ -54,7 +59,9 @@ class MemoryRedis {
         }
 
         // We clone this record for skill-status log.
-        await this.client.setAsync(`${key}_cloned`, value);
+        if (this.keyspace_notification){
+            await this.client.setAsync(`${key}_cloned`, value);
+        }
 
         return this.client.setAsync(key, value, 'EX', retention);
     }

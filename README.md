@@ -78,6 +78,18 @@ In production environment, setting "bot-express:skill-status" is recommended. To
 $ redis-cli config set notify-keyspace-events Ex
 ```
 
+Also need to enable keyspace_notification of memory option in index.js like follows.
+
+```javascript:index.js
+memory: {
+    type: "redis",
+    options: {
+        url: process.env.REDIS_URL,
+        keyspace_notification: true // default is false.
+    }
+}
+```
+
 # Limitation
 
 Webhook supports following event at present.

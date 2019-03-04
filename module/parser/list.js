@@ -20,22 +20,20 @@ module.exports = class ParserList {
 
     /**
      * @method
-     * @param {Object} param 
-     * @param {String} param.key
-     * @param {*} param.value
+     * @param {*} value
      * @param {Object} policy
      * @param {Number} policy.list
      * @return {*} - Parsed value.
      */
-    async parse(param, policy){
-        if (!(policy && policy.list && policy.list.length > 0)){
+    async parse(value, policy){
+        if (!(policy && Array.isArray(policy.list) && policy.list.length > 0)){
             throw new Error("policy_should_have_list");
         }
     
-        if (!policy.list.includes(param.value)){
+        if (!policy.list.includes(value)){
             throw new Error("value_not_found_in_list");
         }
 
-        return param.value;
+        return value;
     }
 }

@@ -13,52 +13,37 @@ class Parser {
      * @param {Array.<Object>} options_list
      */
     constructor(options_list = []){
-        this.parsers = [];
-
-        let scripts = fs.readdirSync(__dirname + "/parser");
+        const scripts = fs.readdirSync(__dirname + "/parser");
 
         for (let script of scripts){
+            // Skip directory or other non-js file.
             if (!script.match(/.js$/)){
-                // Skip directory or other non-js file.
                 continue;
             }
+
+            // Set parser name.
+            const parser = script.replace(".js", "");
             
+            // Import parser implementation and identify corresponding options.
             debug("Loading parser implementaion: " + script + "...");
             let Parser_implementation= require("./parser/" + script);
             let options = options_list.find(options => options.type === script.replace(".js", ""));
             if (!options){
                 options = {};
             }
-            
+           
+            // Instantiate parser implementation.
             try {
-                let parser = new Parser_implementation(options.options);
-                this.parsers.push(parser);
+                this[parser] = new Parser_implementation(options.options);
             } catch(e){
-                debug(`Failed to instanticate parser implementation: ${script} so we skip this parser.`);
+                debug(`Failed to instanticate parser implementation of "${parser}" so we skip this parser.`);
                 if (e && e.message){
                     debug(e.message);
                 }
                 continue;
             }
-            debug(`Builtin parser: ${script} loaded.`);
+            debug(`Builtin parser: ${parser} loaded.`);
         }
-    }
-
-    /**
-     * @method parse
-     * @param {String} parser_type - Name of the builtin parser. Need to exist ${parser}.js under module/parser directory.
-     * @param {Object} param
-     * @param {String} param.key
-     * @param {String} param.value
-     * @param {Object} policy - Policy configuration depending on the implementation of each parser.
-     */
-    async parse(parser_type, param, policy){
-        if (!param || !param.key){
-            throw new Error("param.key is required.");
-        }
-
-        let parser = this.parsers.find(parser => parser.type === parser_type);
-        return parser.parse(param, policy);
     }
 }
 

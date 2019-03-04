@@ -34,6 +34,8 @@ const REQUIRED_OPTIONS = {
     common: []
 }
 const DEFAULT_SKILL_PATH = "../../../../skill/";
+const DEFAULT_TRANSLATION_LABEL_PATH = "../../../translation/label.js";
+const DEFAULT_MESSAGE_PATH = "../../../../message/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
 const DEFAULT_LANGUAGE = "ja";
@@ -57,6 +59,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {Object | Array.&lt;Object>} [options.messenger.line] - Messenger configuration for LINE. You can support multiple channel by providing array of this object.
 @param {String} [options.messenger.line.channel_id] - Channel ID of Messaging API. Required when you use LINE as messenger.
 @param {String} [options.messenger.line.channel_secret] - Channel Secret of Messaging API. Required when you use LINE as messenger.
+@param {String} [options.messenger.line.switcher_secret] - Switcher Secret of Messaging API. Required when you use Switcher API.
 @param {String} [options.messenger.line.endpoint="api.line.me"] - Test purpose onlyl. Change Messaging API endpoint hostname.
 @param {Object} [options.messenger.facebook] - Messenger configuration of facebook.
 @param {String} [options.messenger.facebook.app_secret] - Facebook App Secret. Required when you use Facebook Messenger.
@@ -88,11 +91,13 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.default_intent="input.unknown"] - Intent name to be returned by NLP when it cannot identify the intent.
 @param {String} [options.modify_previous_parameter_intent] - Intent name to modify the previously collected parameter.
 @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
+@param {String} [options.message_path="./message/"] - Path to the directory which contains message scripts.
 @param {String} [options.parallel_event="ignore"] - Flag to decide the behavior in receiving parallel event. If set to "ignore", bot ignores the event during processing the event from same user. Supported value are "ignore" and "allow".
 @param {Object} [options.translator] - Option object for translator.
-@param {String} [options.translator.type="google"] - Translator type.
-@param {Boolean} [options.translator.enable_lang_detection=true] - Flag to enable language detection.
-@param {Boolean} [options.translator.enable_translation=false] - Flag to enable translation. The translation is used to detect intent.
+@param {String} [options.translator.label_path="./translation/label.js"] - Path to prepared translation label file.
+@param {String} [options.translator.type="google"] - Type of external translator.
+@param {Boolean} [options.translator.enable_lang_detection=true] - Flag to enable language detection using external translator.
+@param {Boolean} [options.translator.enable_translation=false] - Flag to enable translation using external translator. The translation is used to detect intent.
 @param {Object} [options.translator.options] - Option for the specified translator.
 */
 module.exports = (options) => {
@@ -104,7 +109,9 @@ module.exports = (options) => {
     options.skill = options.skill || {};
     options.skill.default = options.skill.default || DEFAULT_SKILL;
     options.parallel_event = options.parallel_event || DEFAULT_PARALLEL_EVENT;
-    if (!!options.skill_path){
+
+    // Skill will be required in flow. So path should be relative path from flow.
+    if (options.skill_path){
         options.skill_path = "../../../../" + options.skill_path;
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
@@ -112,6 +119,28 @@ module.exports = (options) => {
     } else {
         options.skill_path = DEFAULT_SKILL_PATH;
     }
+
+    // Message will be required in flow. So path should be relative path from flow.
+    if (options.message_path){
+        options.message_path = "../../../../" + options.message_path;
+    } else if (process.env.BOT_EXPRESS_ENV == "development"){
+        // This is for Bot Express development environment only.
+        options.message_path = "../../sample_message/";
+    } else {
+        options.message_path = DEFAULT_MESSAGE_PATH;
+    }
+
+    // Translator will be required in bot. So path should be relative path from bot.
+    options.translator = options.translator || {};
+    if (options.translator.label_path){
+        options.translator.label_path = "../../../" + options.translator.label_path;
+    } else if (process.env.BOT_EXPRESS_ENV == "development"){
+        // This is for Bot Express development environment only.
+        options.translator.label_path = "../sample_translation/label.js";
+    } else {
+        options.translator.label_path = DEFAULT_TRANSLATION_LABEL_PATH;
+    }
+
     options.facebook_verify_token = options.facebook_verify_token || options.facebook_app_secret;
 
     // Check if common required options are set.
@@ -196,7 +225,7 @@ module.exports = (options) => {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Jan 31 2019 12:52:27 GMT+0900 (JST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Mar 04 2019 15:45:18 GMT+0900 (GMT+09:00)
 </footer>
 
 <script> prettyPrint(); </script>

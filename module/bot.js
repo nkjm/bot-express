@@ -10,6 +10,7 @@ const Translator = require("./translator");
  * @class
  * @prop {String} type - Type of messenger. The value can be "line","facebook" and "google".
  * @prop {String} language - ISO-639-1 based language code which is the mother language of this chatbot.
+ * @prop {Object} builtin_parser - Instance of builtin parser. You can use builtin parser like follows. await bot.builtin_parser.PARSER_NAME(value, policy).
  */
 class Bot {
     /**
@@ -25,11 +26,11 @@ class Bot {
         for (let messenger_type of Object.keys(messenger.plugin)){
             this[messenger_type] = messenger.plugin[messenger_type];
         }
+        this.builtin_parser = new Parser(options.parser);
         this._options = options;
         this._event = event;
         this._context = context;
         this._messenger = messenger;
-        this._builtin_parser = new Parser(options.parser);
         this.translator = new Translator(this._context, this._options.translator);
     }
 
@@ -430,14 +431,19 @@ class Bot {
         } else if (typeof parser === "string"){
             // We use builtin parser.
             debug(`Parser is string so we use builtin parser: ${parser}.`);
-            return this._builtin_parser.parse(parser, {key: param_key, value: param_value}, {});
+            return this.builtin_parser[parser].parse(param_value, { parameter_name: param_key });
         } else if (typeof parser === "object"){
             // We use builtin parser.
             if (!parser.type){
                 throw new Error(`Parser object is invalid. Required property: "type" not found.`);
             }
             debug(`Parser is object so we use builtin parser: ${parser.type}.`);
-            return this._builtin_parser.parse(parser.type, {key: param_key, value: param_value}, parser.policy);
+
+            // Add parameter_name to policy if it is not set.
+            if (!parser.policy) parser.policy = {};
+            parser.policy.parameter_name = parser.policy.parameter_name || param_key;
+
+            return this.builtin_parser[parser.type].parse(param_value, parser.policy);
         } else {
             // Invalid parser.
             throw new Error(`Parser for the parameter: ${param_key} is invalid.`);

@@ -20,34 +20,25 @@ module.exports = class ParserNumber {
 
     /**
      * @method
-     * @param {Object} param
-     * @param {String} param.key
-     * @param {*} param.value
+     * @param {*} value
      * @param {Object} [policy]
      * @param {Number} [policy.min]
      * @param {Number} [policy.max]
      * @return {String} - Parsed value.
      */
-    async parse(param, policy = {}){
-        let parsed_value;
+    async parse(value, policy = {}){
+        let parsed_value = parseInt(value);
 
-        if (typeof param.value != "number"){
-            if (typeof param.value == "string"){
-                parsed_value = Number(param.value);
-
-                if (isNaN(parsed_value)){
-                    throw new Error("should_be_number");
-                }
-            } else if (typeof param.value == "object"){
-                let value = param.value.data;
-                if (typeof value == "number"){
-                    parsed_value = value;
-                } else {
-                    throw new Error("should_be_number");
-                }
+        if (isNaN(parsed_value)){
+            // Check if this is postback and numberable value is set in value.data.
+            if (typeof value == "object"){
+                parsed_value = parseInt(value.data);
             }
-        } else {
-            parsed_value = param.value;
+
+            // Check once again and throw error if it is still NaN.
+            if (isNaN(parsed_value)){
+                throw new Error("should_be_number");
+            }
         }
 
         if (policy.min){

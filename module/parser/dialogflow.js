@@ -48,17 +48,19 @@ module.exports = class ParserDialogflow {
 
     /**
      * @method
-     * @param {Object} param
-     * @param {String} param.key
-     * @param {String} param.value
-     * @param {Object} [policy]
-     * @param {String} [policy.parameter_name=param.key] - Parameter name which dialogflow looks up.
+     * @param {String} value
+     * @param {Object} policy
+     * @param {String} policy.parameter_name - Parameter name which dialogflow looks up.
      */
-    async parse(param, policy = {}){
-        if (typeof param.value != "string"){
+    async parse(value, policy){
+        if (!(policy && policy.parameter_name)){
+            throw new Error(`Required policy "parameter_name" not set.`)
+        }
+
+        if (typeof value != "string"){
             throw new Error("should_be_string");
         }
-        if (!param.value){
+        if (!value){
             throw new Error("value_is_empty");
         }
 
@@ -66,7 +68,7 @@ module.exports = class ParserDialogflow {
             session: this.session_path,
             queryInput: {
                 text: {
-                    text: param.value,
+                    text: value,
                     languageCode: this.language
                 }
             }
@@ -80,10 +82,6 @@ module.exports = class ParserDialogflow {
         const parameters = structjson.structProtoToJson(responses[0].queryResult.parameters);
         debug("Detected parameters are following.");
         debug(parameters);
-
-        if (!policy || !policy.parameter_name){
-            policy.parameter_name = param.key;
-        }
 
         if (!parameters[policy.parameter_name]){
             throw new Error("corresponding_parameter_not_found");

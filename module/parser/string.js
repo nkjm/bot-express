@@ -22,9 +22,8 @@ module.exports = class ParserString {
 
     /**
      * @method
-     * @param {Object} param
-     * @param {String} param.key
-     * @param {*} param.value
+     * @asnyc
+     * @param {*} value
      * @param {Object} [policy]
      * @param {Number} [policy.min]
      * @param {Number} [policy.max]
@@ -34,9 +33,7 @@ module.exports = class ParserString {
      * @param {Boolean} [policy.sanitize] - Sanitize string if true.
      * @return {String} - Parsed value.
      */
-    async parse(param, policy = {}){
-        let value = param.value;
-
+    async parse(value, policy = {}){
         if (typeof value != "string"){
             throw new Error("should_be_string");
         }

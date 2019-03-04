@@ -71,7 +71,6 @@ module.exports = class Flow {
 
         // Set message instance.
         try {
-            debug(`${this.options.message_path}${skill.type}`);
             require.resolve(`${this.options.message_path}${skill.type}`);
         } catch (e){
             debug(`Message "${skill.type}" not found in ${this.options.message_path}.`)

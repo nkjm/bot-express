@@ -64,6 +64,8 @@ describe("Test _collect", async function(){
 
             context.to_confirm.should.have.lengthOf(0);
             should.not.exist(context.confirming);
+
+            context.previous.message[0].message.text.should.equal("完了");
         });
     });
 

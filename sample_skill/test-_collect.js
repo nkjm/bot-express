@@ -59,6 +59,9 @@ module.exports = class SkillTest_Collect {
     }
 
     async finish(bot, event, context){
-
+        await bot.reply({
+            type: "text",
+            text: "完了"
+        })
     }
 }

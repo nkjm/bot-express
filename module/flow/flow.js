@@ -772,9 +772,9 @@ module.exports = class Flow {
         // Check condition. If condition is undefined or returns true, we collect this parameter.
         // If condition returns false, we skip this parameter.
         const param_key = await this._pop_parameter_key_to_collect();
-        // If there is no parameter to collect, we just return.
+        // If there is no parameter to collect, we recursively run finish() to evaluate corrent context.
         if (!param_key){
-            return;
+            return await this.finish();
         }
 
         // Set param to be used in this method since there is a chance that either parameter.key or property.key would be the param.

@@ -558,6 +558,7 @@ module.exports = class Flow {
             this.context._parent = [];
         }
         this.context._parent.push({
+            chat_id: this.context.chat_id,
             intent: this.context.intent,
             skill: {
                 name: this.context.skill.name
@@ -582,6 +583,7 @@ module.exports = class Flow {
      * @param {Object} intent
      */
     async restart_conversation(intent){
+        this.context.chat_id = crypto.randomBytes(10).toString('hex');
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
@@ -637,6 +639,7 @@ module.exports = class Flow {
      */
     async change_intent(intent){
         // We keep some inforamtion like context.confirmed, context.heard and context.previous.
+        this.context.chat_id = crypto.randomBytes(10).toString('hex');
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;

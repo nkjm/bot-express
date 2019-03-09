@@ -1,6 +1,6 @@
 "use strict";
 
-// Import NPM Packages
+const crypto = require("crypto");
 Promise = require("bluebird");
 
 // Debuggers
@@ -43,6 +43,7 @@ class Webhook {
      */
     init_context(flow, event){
         const context = {
+            chat_id: crypto.randomBytes(20).toString('hex'),
             intent: null,
             confirmed: {},
             to_confirm: [],

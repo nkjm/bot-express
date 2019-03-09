@@ -1,0 +1,11 @@
+.profile
+.env
+node_modules
+npm-debug.log
+credential
+credentials
+out
+deprecated
+deploy.sh
+bot-express-*.tgz
+*.key

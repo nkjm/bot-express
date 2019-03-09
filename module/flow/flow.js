@@ -1,6 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:flow");
+const crypto = require("crypto");
 const log = require("../logger");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");

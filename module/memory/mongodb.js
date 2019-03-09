@@ -3,6 +3,9 @@
 const MongoClient = require("mongodb").MongoClient;
 const debug = require("debug")("bot-express:memory");
 
+/**
+ * @deprecated
+ */
 class MemoryMongodb {
     constructor(options){
         this.url = options.url;

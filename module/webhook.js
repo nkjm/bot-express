@@ -5,7 +5,6 @@ Promise = require("bluebird");
 
 // Debuggers
 const debug = require("debug")("bot-express:webhook");
-const log = require("./logger");
 
 // Import Flows
 const flows = {
@@ -28,9 +27,10 @@ Webhook to receive all request from messenger.
 @class
 */
 class Webhook {
-    constructor(options){
+    constructor(logger, memory, options){
+        this.logger = logger;
+        this.memory = memory;
         this.options = options;
-        this.memory = options.memory;
         this.messenger;
     }
 
@@ -44,6 +44,7 @@ class Webhook {
     init_context(flow, event){
         const context = {
             chat_id: crypto.randomBytes(20).toString('hex'),
+            launched_at: new Date().getTime(),
             intent: null,
             confirmed: {},
             to_confirm: [],
@@ -192,11 +193,11 @@ class Webhook {
                 return;
             }
 
-            const context = this.init_context(event_type, event);
+            context = this.init_context(event_type, event);
             context.intent = {
                 name: this.options.skill[event_type]
             }
-            flow = new flows[event_type](this.options, this.messenger, event, context);
+            flow = new flows[event_type](this.options, this.logger, this.messenger, event, context);
         } else if (event_type == "beacon"){
             // ### Beacon Flow ###
             let beacon_event_type = this.messenger.extract_beacon_event_type(event);
@@ -215,28 +216,28 @@ class Webhook {
             }
             debug(`This is beacon flow and we use ${this.options.skill.beacon[beacon_event_type]} as skill`);
 
-            const context = this.init_context("beacon", event);
+            context = this.init_context("beacon", event);
             context.intent = {
                 name: this.options.skill.beacon[beacon_event_type]
             }
-            flow = new flows[event_type](this.options, this.messenger, event, context);
+            flow = new flows[event_type](this.options, this.logger, this.messenger, event, context);
         } else if (event_type == "bot-express:push"){
             // ### Push Flow ###
-            const context = this.init_context("push", event);
-            flow = new flows["push"](this.options, this.messenger, event, context);
+            context = this.init_context("push", event);
+            flow = new flows["push"](this.options, this.logger, this.messenger, event, context);
         } else if (!context || !context.intent){
             // ### Start Conversation Flow ###
-            const context = this.init_context("start_conversation", event);
-            flow = new flows["start_conversation"](this.options, this.messenger, event, context);
+            context = this.init_context("start_conversation", event);
+            flow = new flows["start_conversation"](this.options, this.logger, this.messenger, event, context);
         } else {
             if (context.confirming){
                 // ### Reply flow ###
                 context._flow = "reply";
-                flow = new flows["reply"](this.options, this.messenger, event, context);
+                flow = new flows["reply"](this.options, this.logger, this.messenger, event, context);
             } else {
                 // ### BTW Flow ###
                 context._flow = "btw";
-                flow = new flows["btw"](this.options, this.messenger, event, context);
+                flow = new flows["btw"](this.options, this.logger, this.messenger, event, context);
             }
         }
 
@@ -244,9 +245,12 @@ class Webhook {
         try {
             updated_context = await flow.run();
         } catch (e){
-            if (context && context.skill){
-                log.skill_status(memory_id, context.skill.type, "abend", context.confirming);
-            }
+            const chat_id = (context && context.chat_id) ? context.chat_id : "unknown_chat_id";
+            const skill_type = (context && context.skill && context.skill.type) ? context.skill.type : "unknown_skill";
+            await this.logger.skill_status(memory_id, chat_id, skill_type, "abended", {
+                error: e,
+                context: context
+            });
 
             // Clear memory.
             debug("Clearing context");

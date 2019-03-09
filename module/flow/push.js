@@ -1,18 +1,14 @@
 "use strict";
 
-/*
-** Import Packages
-*/
 Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
 const Flow = require("./flow");
 const Nlu = require("../nlu");
-const log = require("../logger");
 
 module.exports = class PushFlow extends Flow {
 
-    constructor(options, messenger, event, context) {
-        super(options, messenger, event, context);
+    constructor(options, logger, messenger, event, context) {
+        super(options, logger, messenger, event, context);
     }
 
     async run(){
@@ -58,7 +54,9 @@ module.exports = class PushFlow extends Flow {
         });
 
         // Log skill status.
-        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "launched");
+        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+            context: this.context
+        });
 
         // Run begin().
         if (!skip_begin){

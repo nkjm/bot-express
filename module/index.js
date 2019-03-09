@@ -19,6 +19,7 @@ const body_parser = require("body-parser");
 const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
 const Memory = require("./memory");
+const Logger = require("./logger");
 
 router.use(body_parser.json());
 
@@ -51,6 +52,9 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.memory.type="memory-cache"] - Store type of context. Supported store type is memory-cache and redis.
 @param {Number} [options.memory.retention="600"] - Lifetime of the context in seconds.
 @param {Object} [options.memory.options] - Options depending on the specific store type.
+@param {Object} [options.logger] - Option object for logger.
+@param {String} [options.logger.type] - Logger type. Supported logger is located under logger directory.
+@param {String} [options.logger.options] - Options depending on the specific logger.
 @param {Object} [options.skill] - Options to set skill corresponding to certain event.
 @param {String} [options.skill.default] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.
 @param {Object} [options.skill.beacon] - Skill to be used when bot receives beacon event.
@@ -123,7 +127,8 @@ module.exports = (options) => {
     }
     debug("Common required options all set.");
 
-    const memory = new Memory(options.memory);
+    const logger = new Logger(options.logger);
+    const memory = new Memory(logger, options.memory);
 
     // Webhook Process
     router.post('/', async (req, res, next) => {
@@ -135,9 +140,8 @@ module.exports = (options) => {
 
         options.req = req;
         options.res = res;
-        options.memory = memory;
 
-        let webhook = new Webhook(options);
+        let webhook = new Webhook(logger, memory, options);
 
         let context;
         try {

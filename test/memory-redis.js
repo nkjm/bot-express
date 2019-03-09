@@ -9,8 +9,9 @@ const should = chai.should();
 chai.use(chaiAsPromised);
 
 const key = "dummy_user_id";
+const Logger = require(`../module/logger`);
 const Memory = require(`../module/memory/redis`);
-const memory = new Memory({
+const memory = new Memory(new Logger(), {
     url: process.env.REDIS_URL
 })
 

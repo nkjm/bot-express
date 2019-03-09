@@ -2,17 +2,17 @@
 
 const debug = require("debug")("bot-express:flow");
 const crypto = require("crypto");
-const log = require("../logger");
 const Bot = require("../bot"); // Libraries to be exposed to skill.
 const Nlu = require("../nlu");
 
 module.exports = class Flow {
-    constructor(options, messenger, event, context){
+    constructor(options, logger, messenger, event, context){
+        this.logger = logger;
         this.options = options;
         this.messenger = messenger;
         this.event = event;
         this.context = context;
-        this.bot = new Bot(this.options, this.event, this.context, this.messenger);
+        this.bot = new Bot(this.options, this.logger, this.event, this.context, this.messenger);
 
         if (this.context.intent && this.context.intent.name){
             debug(`Init and reviving skill instance.`);
@@ -560,6 +560,7 @@ module.exports = class Flow {
         }
         this.context._parent.push({
             chat_id: this.context.chat_id,
+            launched_at: this.context.launched_at,
             intent: this.context.intent,
             skill: {
                 name: this.context.skill.name
@@ -584,7 +585,13 @@ module.exports = class Flow {
      * @param {Object} intent
      */
     async restart_conversation(intent){
+        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "restarted", {
+            context: this.context, 
+            intent: intent
+        });
+
         this.context.chat_id = crypto.randomBytes(10).toString('hex');
+        this.context.launched_at = new Date().getTime(),
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
@@ -619,7 +626,9 @@ module.exports = class Flow {
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
         // Log skill status.
-        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "launched");
+        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+            context: this.context
+        });
 
         await this.begin();
 
@@ -639,8 +648,14 @@ module.exports = class Flow {
      * @param {Object} intent 
      */
     async change_intent(intent){
+        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "switched", {
+            context: this.context, 
+            intent: intent
+        });
+
         // We keep some inforamtion like context.confirmed, context.heard and context.previous.
         this.context.chat_id = crypto.randomBytes(10).toString('hex');
+        this.context.launched_at = new Date().getTime(),
         this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
@@ -673,7 +688,9 @@ module.exports = class Flow {
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
         // Log skill status.
-        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "launched");
+        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+            context: this.context
+        });
 
         await this.begin();
 
@@ -951,7 +968,9 @@ module.exports = class Flow {
         }
 
         // Log skill status.
-        log.skill_status(this.bot.extract_sender_id(), this.context.skill.type, "completed");
+        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "completed", {
+            context: this.context
+        });
 
         // If this is sub skill, we concat previous message and get parent context back.
         if (this.context._digging){

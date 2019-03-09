@@ -10,15 +10,15 @@ const prefix = "botex_context_";
 * @class
 */
 class Memory {
-
     /**
-    * @constructor
-    * @param {Object} options
-    * @param {String} options.type - Store type. Supported stores are located in memory directory.
-    * @param {Number} options.retention - Lifetime of the context in seconds.
-    * @param {Object} options.options - Options depending on the memory store.
-    */
-    constructor(options = {}){
+     * @constructor
+     * @param {Object} logger
+     * @param {Object} options
+     * @param {String} options.type - Store type. Supported stores are located in memory directory.
+     * @param {Number} options.retention - Lifetime of the context in seconds.
+     * @param {Object} options.options - Options depending on the memory store.
+     */
+    constructor(logger, options = {}){
         this.retention = options.retention || 600;
 
         if (!options.type) options.type = default_store;
@@ -26,14 +26,14 @@ class Memory {
         let store_scripts = fs.readdirSync(__dirname + "/memory");
         for (let store_script of store_scripts){
             if (store_script.replace(".js", "") == options.type){
-                debug("Found plugin for specified memory store. Loading " + store_script + "...");
+                debug(`Found plugin for specified memory store. Loading ${options.type}..`);
                 let Store = require("./memory/" + options.type);
-                this.store = new Store(options.options);
+                this.store = new Store(logger, options.options);
             }
         }
 
         if (!this.store){
-            throw new Error("Specified store type is not supported for Memory.");
+            throw new Error(`Specified store type "${options.type}" is not supported for Memory.`);
         }
     }
 

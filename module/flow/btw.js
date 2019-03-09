@@ -1,17 +1,13 @@
 "use strict";
 
-/*
-** Import Packages
-*/
 Promise = require('bluebird');
 const debug = require("debug")("bot-express:flow");
 const Flow = require("./flow");
-const log = require("../logger");
 
 module.exports = class BtwFlow extends Flow {
 
-    constructor(options, messenger, event, context) {
-        super(options, messenger, event, context);
+    constructor(options, logger, messenger, event, context) {
+        super(options, logger, messenger, event, context);
     }
 
     async run(){
@@ -116,7 +112,7 @@ module.exports = class BtwFlow extends Flow {
         });
 
         // Log chat.
-        log.chat(this.bot.extract_sender_id(), this.context.skill.type, "user", this.bot.extract_message());
+        await this.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
 
         // Run mind based flow.
         if (!skip_run_mind_based_flow){

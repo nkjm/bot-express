@@ -1,42 +1,55 @@
 "use strict";
 
-const _skill_status = require("debug")("bot-express:skill-status");
-const _chat = require("debug")("bot-express:chat");
+const debug = require("debug")("bot-express:logger");
+const fs = require("fs");
+const default_logger = "stdout";
 
 module.exports = class Logger {
     /**
-     * @method
-     * @param {String} user_id
-     * @param {String} skill
-     * @param {String} status - "launched" | "aborted" | "completed" | "abend"
-     * @param {String} [confirming] - Only valid in case of "aborted" or "abend" status
+     * @constructor
+     * @param {Object} options
+     * @param {String} options.type - Logger type. Supported stores are located in logger directory.
+     * @param {Object} options.options - Options depending on the logger.
      */
-    static skill_status(user_id, skill, status, confirming = null){
-        if ((status === "aborted" || status === "abend") && confirming){
-            _skill_status(`${user_id} ${skill} - ${status} in confirming ${confirming}`);
-        } else {
-            _skill_status(`${user_id} ${skill} - ${status}`);
+    constructor(options = {}){
+        options.type = options.type || default_logger;
+
+        let script_list = fs.readdirSync(__dirname + "/logger");
+        for (let script of script_list){
+            if (script.replace(".js", "") == options.type){
+                debug(`Found plugin for specified logger. Loading ${options.type}..`);
+                const Logger = require("./logger/" + options.type);
+                this.logger = new Logger(options.options);
+            }
+        }
+
+        if (!this.logger){
+            throw new Error(`Specified logger "${options.type}" is not supported.`);
         }
     }
 
     /**
      * @method
+     * @async
      * @param {String} user_id
+     * @param {String} chat_id
+     * @param {String} skill
+     * @param {String} status - "launched" | "aborted" | "switched" | "restarted" | "completed" | "abended"
+     * @param {Object} [payload]
+     */
+    async skill_status(user_id, chat_id, skill, status, payload = {}){
+        await this.logger.skill_status(user_id, chat_id, skill, status, payload);
+    }
+
+    /**
+     * @method
+     * @param {String} user_id
+     * @param {String} chat_id
      * @param {String} skill
      * @param {String} who
      * @param {Object} message
      */
-    static chat(user_id, skill, who, message){
-        let message_text
-
-        if (message.text){
-            message_text = message.text;
-        } else if (message.altText){
-            message_text = message.altText;
-        } else {
-            message_text = JSON.stringify(message);
-        }
-        
-        _chat(`${user_id} ${skill} - ${who} says ${message_text}`);
+    async chat(user_id, chat_id, skill, who, message){
+        await this.logger.chat(user_id, chat_id, skill, who, message);
     }
 }

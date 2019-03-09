@@ -2,7 +2,6 @@
 
 const debug = require("debug")("bot-express:bot");
 const Parser = require("./parser");
-const log = require("./logger");
 const Translator = require("./translator");
 
 /**
@@ -16,11 +15,13 @@ class Bot {
     /**
      * @constructor
      * @param {*} options 
+     * @param {*} logger
      * @param {*} event 
      * @param {*} context 
      * @param {*} messenger 
      */
-    constructor(options, event, context, messenger){
+    constructor(options, logger, event, context, messenger){
+        this.logger = logger;
         this.type = messenger.type;
         this.language = options.language;
         for (let messenger_type of Object.keys(messenger.plugin)){
@@ -71,56 +72,31 @@ class Bot {
 
         let done_compile_messages = [];
         for (let message of this._context._message_queue){
-            done_compile_messages.push(
-                // Compiling message.
-                this._messenger.compile_message(message)
-                /**
-                @deprecated
-                this._messenger.compile_message(message).then((compiled_message) => {
-                    if (!this._messenger.translater){
-                        // Auto translation is disabled so we won't translate.
-                        debug("Translater is disabled so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    if (!this._context.sender_language || this._context.sender_language === this._options.language){
-                        // Auto tranlsation is enabled but sender's language is identical to bot's language so we don't have to tranaslate.
-                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    debug(`Translating following message...`);
-                    debug(compiled_message);
-
-                    let message_type = this._messenger.Messenger_classes[this.type].identify_message_type(compiled_message);
-                    return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, this._context.sender_language);
-                })
-                */
-            );
+            done_compile_messages.push(this._messenger.compile_message(message));
         }
 
-        let compiled_messages;
-        return Promise.all(done_compile_messages).then((response) => {
-            compiled_messages = response;
-            if (this._event.type == "bot-express:push"){
-                return this._messenger.send(this._event, this._event.to[`${this._event.to.type}Id`], compiled_messages);
-            }
-            if (to_collect || this._context._digging){
-                return this._messenger.reply_to_collect(this._event, compiled_messages);
-            }
-            return this._messenger.reply(this._event, compiled_messages);
-        }).then((response) => {
-            for (let compiled_message of compiled_messages){
-                this._context.previous.message.unshift({
-                    from: "bot",
-                    message: compiled_message
-                });
+        const compiled_messages = await Promise.all(done_compile_messages);
 
-                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
-            }
-            this._context._message_queue = [];
-            return response;
-        });
+        let response;
+        if (this._event.type == "bot-express:push"){
+            response = await this._messenger.send(this._event, this._event.to[`${this._event.to.type}Id`], compiled_messages);
+        } else if (to_collect || this._context._digging){
+            response = await this._messenger.reply_to_collect(this._event, compiled_messages);
+        } else {
+            response = await this._messenger.reply(this._event, compiled_messages);
+        }
+
+        for (let compiled_message of compiled_messages){
+            this._context.previous.message.unshift({
+                from: "bot",
+                message: compiled_message
+            });
+
+            await this.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+        }
+        this._context._message_queue = [];
+
+        return response;
     }
 
     /**
@@ -140,47 +116,22 @@ class Bot {
 
         let done_compile_messages = [];
         for (let message of messages){
-            done_compile_messages.push(
-                this.compile_message(message)
-                /**
-                @deprecated
-                this.compile_message(message).then((compiled_message) => {
-                    if (!this._messenger.translater){
-                        // Auto translation is disabled so we won't translate.
-                        debug("Translater is disabled so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    if (!language || language === this._options.language){
-                        // Auto tranlsation is enabled but reciever's language is identical to bot's language so we don't have to tranaslate.
-                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    debug(`Translating following message...`);
-                    debug(compiled_message);
-
-                    let message_type = this._messenger.Messenger_classes[this.type].identify_message_type(compiled_message);
-                    return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, language);
-                })
-                */
-            );
+            done_compile_messages.push(this.compile_message(message));
         }
-        let compiled_messages;
-        return Promise.all(done_compile_messages).then((response) => {
-            compiled_messages = response;
-            return this._messenger.send(this._event, recipient_id, compiled_messages);
-        }).then((response) => {
-            for (let compiled_message of compiled_messages){
-                this._context.previous.message.unshift({
-                    from: "bot",
-                    message: compiled_message
-                });
 
-                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
-            }
-            return response;
-        });
+        const compiled_messages = await Promise.all(done_compile_messages);
+        const response = await this._messenger.send(this._event, recipient_id, compiled_messages);
+
+        for (let compiled_message of compiled_messages){
+            this._context.previous.message.unshift({
+                from: "bot",
+                message: compiled_message
+            });
+
+            await this.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+        }
+
+        return response;
     }
 
     /**
@@ -200,47 +151,22 @@ class Bot {
 
         let done_compile_messages = [];
         for (let message of messages){
-            done_compile_messages.push(
-                this.compile_message(message)
-                /**
-                @deprecated
-                this.compile_message(message).then((compiled_message) => {
-                    if (!this._messenger.translater){
-                        // Auto translation is disabled so we won't translate.
-                        debug("Translater is disabled so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    if (!language || language === this.options.language){
-                        // Auto tranlsation is enabled but reciever's language is identical to bot's language so we don't have to tranaslate.
-                        debug("Reciever's language is undefined or same as bot's language so we won't translate.");
-                        return compiled_message;
-                    }
-
-                    debug(`Translating following message...`);
-                    debug(compiled_message);
-
-                    let message_type = this._messegner.Messenger_classes[this.type].identify_message_type(compiled_message);
-                    return this._messenger.Messenger_classes[this.type].translate_message(this._messenger.translater, message_type, compiled_message, language);
-                })
-                */
-            );
+            done_compile_messages.push(this.compile_message(message));
         }
-        let compiled_messages;
-        return Promise.all(done_compile_messages).then((response) => {
-            compiled_messages = response;
-            return this._messenger.multicast(this._event, recipient_ids, compiled_messages);
-        }).then((response) => {
-            for (let compiled_message of compiled_messages){
-                this._context.previous.message.unshift({
-                    from: "bot",
-                    message: compiled_message
-                });
 
-                log.chat(this.extract_sender_id(), this._context.skill.type, "bot", compiled_message);
-            }
-            return response;
-        });
+        const compiled_messages = await Promise.all(done_compile_messages);
+        const response = await this._messenger.multicast(this._event, recipient_ids, compiled_messages);
+
+        for (let compiled_message of compiled_messages){
+            this._context.previous.message.unshift({
+                from: "bot",
+                message: compiled_message
+            });
+
+            await this.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+        }
+
+        return response;
     }
 
     /**

@@ -2,7 +2,6 @@
 
 const debug = require("debug")("bot-express:memory");
 const redis = require("redis");
-const log = require("../logger");
 const prefix = "botex_context_";
 const Promise = require("bluebird");
 Promise.promisifyAll(redis.RedisClient.prototype);
@@ -10,15 +9,17 @@ Promise.promisifyAll(redis.Multi.prototype);
 
 class MemoryRedis {
     /**
-    @constructor
-    @param {Object} options
-    @param {String} [options.url] - The URL of the Redis server. Format: [redis[s]:]//[[user][:password@]][host][:port][/db-number][?db=db-number[&password=bar[&option=value]]] *Either url or host and port is required.
-    @param {String} [options.host] - IP address of the Redis server. *Either url or host and port is required.
-    @param {String} [options.port] - Port of the Redis server. *Either url or host and port is required.
-    @param {String} [options.password] - If set, client will run Redis auth command on connect.
-    @param {boolean} [options.keyspace_notification=false] - If true, we duplicates context to detect skill abort and log it.
-    */
-    constructor(options){
+     * @constructor
+     * @param {Object} logger
+     * @param {Object} options
+     * @param {String} [options.url] - The URL of the Redis server. Format: [redis[s]:]//[[user][:password@]][host][:port][/db-number][?db=db-number[&password=bar[&option=value]]] *Either url or host and port is required.
+     * @param {String} [options.host] - IP address of the Redis server. *Either url or host and port is required.
+     * @param {String} [options.port] - Port of the Redis server. *Either url or host and port is required.
+     * @param {String} [options.password] - If set, client will run Redis auth command on connect.
+     * @param {boolean} [options.keyspace_notification=false] - If true, we duplicates context to detect skill abort and log it.
+     */
+    constructor(logger, options){
+        this.logger = logger;
         this.client = redis.createClient(options);
         this.keyspace_notification = options.keyspace_notification;
 
@@ -28,7 +29,9 @@ class MemoryRedis {
             this.sub.on("pmessage", async (pattern, channel, key) => {
                 const value = await this.get(`${key}_cloned`);
                 if (value.confirming && value.skill){
-                    log.skill_status(key.replace(prefix, ""), value.skill.type, "aborted", value.confirming);
+                    await this.logger.skill_status(key.replace(prefix, ""), value.chat_id, value.skill.type, "aborted", {
+                        context: value
+                    });
                 }
 
                 await this.del(`${key}_cloned`);

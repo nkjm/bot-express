@@ -2,11 +2,16 @@
 
 const memory_cache = require("memory-cache");
 const debug = require("debug")("bot-express:memory");
-const log = require("../logger");
 const prefix = "botex_context_";
 
 class MemoryMemoryCache {
-    constructor(options){
+    /**
+     * @constructor
+     * @param {Object} logger
+     * @param {Object} options
+     */
+    constructor(logger, options){
+        this.logger = logger;
         this.client = memory_cache;
     }
 
@@ -15,10 +20,12 @@ class MemoryMemoryCache {
     }
 
     async put(key, value, retention){
-        return this.client.put(key, value, retention * 1000, (key, value) => {
+        return this.client.put(key, value, retention * 1000, async (key, value) => {
             if (value.confirming && value.skill){
                 // Log skill status.
-                log.skill_status(key.replace(prefix, ""), value.skill.type, "aborted", value.confirming);
+                await this.logger.skill_status(key.replace(prefix, ""), value.chat_id, value.skill.type, "aborted", {
+                    context: value
+                });
             }
         });
     }

@@ -1,21 +1,21 @@
 "use strict";
 
-/*
-** Import Packages
-*/
+/** 
+ * Import Packages
+ */
 const server = require("express")();
 const bot_express = require("bot-express");
 
-/*
-** Middleware Configuration
-*/
+/** 
+ * Middleware Configuration
+ */
 server.listen(process.env.PORT || 5000, () => {
     console.log("server is running...");
 });
 
-/*
-** Mount bot-express
-*/
+/** 
+ * Mount bot-express
+ */
 server.use("/bot/webhook", bot_express({
     language: "ja",
     messenger: {
@@ -43,7 +43,7 @@ server.use("/bot/webhook", bot_express({
         }
     }],
     memory: {
-        type: "memory-cache",
+        type: "memory-cache", // memory-cache | redis
         retention: Number(process.env.MEMORY_RETENTION)
     },
     translator: {
@@ -54,6 +54,14 @@ server.use("/bot/webhook", bot_express({
             project_id: process.env.GOOGLE_PROJECT_ID,
             client_email: process.env.GOOGLE_CLIENT_EMAIL,
             private_key: process.env.GOOGLE_PRIVATE_KEY
+        }
+    },
+    logger: {
+        type: "stdout", // stdout | firestore
+        options: { // Options for firestore.
+            project_id: process.env.FIREBASE_PROJECT_ID,
+            client_email: process.env.FIREBASE_CLIENT_EMAIL,
+            private_key: process.env.FIREBASE_PRIVATE_KEY,
         }
     },
     skill: {

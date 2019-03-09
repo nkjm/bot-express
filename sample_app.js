@@ -2,15 +2,16 @@
 
 require("dotenv").config();
 
-/*
-** Import Packages
-*/
+/** 
+ * Import Packages
+ */
 const server = require("express")();
 const bot_express = require("./index.js");
+const firebase_admin = require("firebase-admin");
 
-/*
-** Middleware Configuration
-*/
+/** 
+ * Middleware Configuration
+ */
 server.listen(process.env.PORT || 5000, () => {
     console.log("server is running...");
 });
@@ -51,18 +52,20 @@ server.use('/bot/webhook', bot_express({
         }
     }],
     memory: {
-        type: process.env.MEMORY_TYPE, // memory-cache | redis | mongodb
+        type: process.env.MEMORY_TYPE, // memory-cache | redis 
         retention: Number(process.env.MEMORY_RETENTION),
-        // redis
-        options: {
+        options: { // Options for redis
             url: process.env.REDIS_URL
         }
-        // mongodb
-        /*
-        options: {
-            url: process.env.MONGODB_URL
+    },
+    logger: {
+        type: "stdout", // stdout | firestore
+        options: { // Options for firestore.
+            // instance: firestore
+            project_id: process.env.GOOGLE_PROJECT_ID,
+            client_email: process.env.FIREBASE_CLIENT_EMAIL,
+            private_key: process.env.FIREBASE_PRIVATE_KEY,
         }
-        */
     },
     translator: {
         type: "google",

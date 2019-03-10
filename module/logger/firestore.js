@@ -105,6 +105,10 @@ module.exports = class LoggerFirestore {
             who: who,
             message: message
         }
+
+        // Add timestamp.
+        chat.created_at = new Date();
+
         await this._create("botex_chat", chat, `${user_id}_${String(new Date().getTime())}`);
     }
 

@@ -65,7 +65,7 @@ module.exports = class ReplyFlow extends Flow {
                 // Log skill_status.
                 await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "restarted", {
                     context: this.context, 
-                    intent: intent
+                    intent: mind.intent
                 });
 
                 await super.restart_conversation(mind.intent);
@@ -73,7 +73,7 @@ module.exports = class ReplyFlow extends Flow {
                 // Log skill_status.
                 await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "switched", {
                     context: this.context, 
-                    intent: intent
+                    intent: mind.intent
                 });
 
                 await super.change_intent(mind.intent);

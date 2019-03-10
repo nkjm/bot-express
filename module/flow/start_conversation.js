@@ -2,7 +2,7 @@
 
 Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
-const Flow = require("./flow");
+const Flow = require("../flow");
 const Nlu = require("../nlu");
 
 module.exports = class StartConversationFlow extends Flow {

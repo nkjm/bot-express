@@ -2,7 +2,7 @@
 
 const Promise = require('bluebird');
 const debug = require("debug")("bot-express:flow");
-const Flow = require("./flow");
+const Flow = require("../flow");
 
 module.exports = class ReplyFlow extends Flow {
 
@@ -28,7 +28,9 @@ module.exports = class ReplyFlow extends Flow {
             if (this.event.postback) is_postback = true;
         }
 
-        // Add user's message to history
+        // Check if this is intent postback.
+
+        // Add user's message to history.
         this.context.previous.message.unshift({
             from: "user",
             message: this.bot.extract_message()
@@ -60,8 +62,20 @@ module.exports = class ReplyFlow extends Flow {
             } else if (mind.result == "dig"){
                 await super.dig(mind.intent);
             } else if (mind.result == "restart_conversation"){
+                // Log skill_status.
+                await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "restarted", {
+                    context: this.context, 
+                    intent: intent
+                });
+
                 await super.restart_conversation(mind.intent);
             } else if (mind.result == "change_intent"){
+                // Log skill_status.
+                await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "switched", {
+                    context: this.context, 
+                    intent: intent
+                });
+
                 await super.change_intent(mind.intent);
             } else if (mind.result == "change_parameter"){
                 // Now there is no chance to run this case since detecting change parameter in reply flow is very likely to be false positive.

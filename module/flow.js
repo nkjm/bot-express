@@ -2,8 +2,8 @@
 
 const debug = require("debug")("bot-express:flow");
 const crypto = require("crypto");
-const Bot = require("../bot"); // Libraries to be exposed to skill.
-const Nlu = require("../nlu");
+const Bot = require("./bot"); // Libraries to be exposed to skill.
+const Nlu = require("./nlu");
 
 module.exports = class Flow {
     constructor(options, logger, messenger, event, context){
@@ -52,7 +52,7 @@ module.exports = class Flow {
 
         if (skill_name == "builtin_default"){
             debug("Use built-in default skill.");
-            let Skill = require("../skill/default");
+            let Skill = require("./skill/default");
             skill = new Skill(intent.config);
         } else {
             debug(`Look for ${skill_name} skill.`);
@@ -585,11 +585,6 @@ module.exports = class Flow {
      * @param {Object} intent
      */
     async restart_conversation(intent){
-        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "restarted", {
-            context: this.context, 
-            intent: intent
-        });
-
         this.context.chat_id = crypto.randomBytes(10).toString('hex');
         this.context.launched_at = new Date().getTime(),
         this.context.intent = intent;
@@ -648,11 +643,6 @@ module.exports = class Flow {
      * @param {Object} intent 
      */
     async change_intent(intent){
-        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "switched", {
-            context: this.context, 
-            intent: intent
-        });
-
         // We keep some inforamtion like context.confirmed, context.heard and context.previous.
         this.context.chat_id = crypto.randomBytes(10).toString('hex');
         this.context.launched_at = new Date().getTime(),

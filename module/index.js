@@ -5,9 +5,9 @@ require("dotenv").config();
 const REQUIRED_OPTIONS = {
     common: []
 }
-const DEFAULT_SKILL_PATH = "../../../../skill/";
+const DEFAULT_SKILL_PATH = "../../../skill/";
 const DEFAULT_TRANSLATION_LABEL_PATH = "../../../translation/label.js";
-const DEFAULT_MESSAGE_PATH = "../../../../message/";
+const DEFAULT_MESSAGE_PATH = "../../../message/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
 const DEFAULT_LANGUAGE = "ja";
@@ -88,20 +88,20 @@ module.exports = (options) => {
 
     // Skill will be required in flow. So path should be relative path from flow.
     if (options.skill_path){
-        options.skill_path = "../../../../" + options.skill_path;
+        options.skill_path = "../../../" + options.skill_path;
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
-        options.skill_path = "../../sample_skill/";
+        options.skill_path = "../sample_skill/";
     } else {
         options.skill_path = DEFAULT_SKILL_PATH;
     }
 
     // Message will be required in flow. So path should be relative path from flow.
     if (options.message_path){
-        options.message_path = "../../../../" + options.message_path;
+        options.message_path = "../../../" + options.message_path;
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
-        options.message_path = "../../sample_message/";
+        options.message_path = "../sample_message/";
     } else {
         options.message_path = DEFAULT_MESSAGE_PATH;
     }

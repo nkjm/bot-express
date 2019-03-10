@@ -96,6 +96,25 @@ for (let messenger_option of messenger_options){
             });
         });
 
+        describe("Change intent in the middle of the conversation using intent postback", async function(){
+            it("will trigger change intent without parsing value.", async function(){
+                let context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));
+
+                context = await emu.send(emu.create_message_event(user_id, "マルゲリータで"));
+
+                context.should.have.property("confirmed").and.deep.equal({pizza: "マルゲリータ"});
+
+                context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "simple-response"
+                    }
+                })}));
+
+                should.not.exist(context.confirming);
+            });
+        });
+
         describe("Change parameter in the middle of the conversation", async function(){
             it("will rejected and bot asks for same parameter. *Will be accepted in the futer.", async function(){
                 let context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));

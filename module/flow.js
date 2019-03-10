@@ -29,6 +29,37 @@ module.exports = class Flow {
     }
 
     /**
+     * @method 
+     * @param {Object} event
+     * @return {Boolean}
+     */
+    is_intent_postback(event){
+        const payload = this.messenger.extract_param_value(event);
+
+        if (typeof payload === "object"){
+            if (payload.data){
+                let postback_data;
+                try {
+                    postback_data = JSON.parse(payload.data);
+                } catch(e) {
+                    debug(`Postback payload.data is not JSON format so this is not intent postback.`);
+                    return false;
+                }
+
+                if (typeof postback_data === "object" && postback_data._type == "intent"){
+                    debug(`This is intent postback.`);
+                    if (!(postback_data.intent && postback_data.intent.name)){
+                        throw new Error(`It seems this is intent postback but intent is not set or invalid.`);
+                    }
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Instantiate skill.
      * @param {intent} intent - Intent object.
      * @return {Object} Skill instance.

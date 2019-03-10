@@ -19,16 +19,15 @@ module.exports = class ReplyFlow extends Flow {
             return this.context;
         }
 
-        let param_value = this.messenger.extract_param_value(this.event);
-
-        let is_postback = false;
-        if (this.bot.type == "line"){
-            if (this.event.type == "postback") is_postback = true;
-        } else if (this.bot.type == "facebook"){
-            if (this.event.postback) is_postback = true;
+        // Check if this is intent postback.
+        let skip_apply_parameter = false;
+        let skip_translation = false;
+        if (super.is_intent_postback(this.event)){
+            skip_apply_parameter = true;
+            skip_translation = true;
         }
 
-        // Check if this is intent postback.
+        let param_value = this.messenger.extract_param_value(this.event);
 
         // Add user's message to history.
         this.context.previous.message.unshift({
@@ -39,20 +38,31 @@ module.exports = class ReplyFlow extends Flow {
         // Log chat.
         await this.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
 
-        debug("Going to perform super.apply_parameter().");
 
-        let applied_parameter = await super.apply_parameter(this.context.confirming, param_value);
+        // Try to apply parameter.
+        let applied_parameter;
+        if (skip_apply_parameter){
+            debug("Skipping apply_parameter().");
+        } else {
+            debug("Going to perform apply_parameter().");
+            applied_parameter = await super.apply_parameter(this.context.confirming, param_value);
+        }
 
-        if (applied_parameter.error){
+        // If parser rejected the value, we try to identify other intention.
+        if (skip_apply_parameter || applied_parameter.error){
             // Language translation.
             let translated_param_value;
-            if (typeof param_value == "string"){
-                if (this.bot.translator && this.bot.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
-                    translated_param_value = await this.bot.translator.translate(param_value, this.options.language);
-                }
-            }
-            if (!translated_param_value){
+            if (skip_translation){
                 translated_param_value = param_value;
+            } else {
+                if (typeof param_value == "string"){
+                    if (this.bot.translator && this.bot.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
+                        translated_param_value = await this.bot.translator.translate(param_value, this.options.language);
+                    }
+                }
+                if (!translated_param_value){
+                    translated_param_value = param_value;
+                }
             }
 
             let mind = await super.identify_mind(translated_param_value);

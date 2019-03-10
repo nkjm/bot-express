@@ -4,14 +4,14 @@ Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
 const Flow = require("../flow");
 
-module.exports = class JoinFlow extends Flow {
+module.exports = class ActiveEventFlow extends Flow {
 
     constructor(options, logger, messenger, event, context) {
         super(options, logger, messenger, event, context);
     }
 
     async run(){
-        debug("### This is Join Flow. ###");
+        debug("### This is Active Event Flow. ###");
 
         // Add user's message to history
         this.context.previous.message.unshift({

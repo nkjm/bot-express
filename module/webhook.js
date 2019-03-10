@@ -9,10 +9,7 @@ const debug = require("debug")("bot-express:webhook");
 // Import Flows
 const flows = {
     beacon: require('./flow/beacon'),
-    follow: require('./flow/follow'),
-    unfollow: require('./flow/unfollow'),
-    join: require('./flow/join'),
-    leave: require('./flow/leave'),
+    active_event: require('./flow/active_event'),
     start_conversation: require('./flow/start_conversation'),
     reply: require('./flow/reply'),
     btw: require('./flow/btw'),
@@ -185,9 +182,9 @@ class Webhook {
         debug(`event type is ${event_type}.`);
 
         if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
-            // ### Follow | Unfollow | Join | Leave Flow ###
+            // Active Event Flow
             if (!this.options.skill[event_type]){
-                debug(`This is ${event_type} flow but ${event_type}_skill not found so skip.`);
+                debug(`This is active event flow for ${event_type} event but ${event_type}_skill not found so skip.`);
                 context._in_progress = false;
                 await this.memory.put(memory_id, context);
                 return;
@@ -197,9 +194,9 @@ class Webhook {
             context.intent = {
                 name: this.options.skill[event_type]
             }
-            flow = new flows[event_type](this.options, this.logger, this.messenger, event, context);
+            flow = new flows["active_event"](this.options, this.logger, this.messenger, event, context);
         } else if (event_type == "beacon"){
-            // ### Beacon Flow ###
+            // Beacon Flow
             let beacon_event_type = this.messenger.extract_beacon_event_type(event);
 
             if (!beacon_event_type){
@@ -222,20 +219,20 @@ class Webhook {
             }
             flow = new flows[event_type](this.options, this.logger, this.messenger, event, context);
         } else if (event_type == "bot-express:push"){
-            // ### Push Flow ###
+            // Push Flow
             context = this.init_context("push", event);
             flow = new flows["push"](this.options, this.logger, this.messenger, event, context);
         } else if (!context || !context.intent){
-            // ### Start Conversation Flow ###
+            // Start Conversation Flow
             context = this.init_context("start_conversation", event);
             flow = new flows["start_conversation"](this.options, this.logger, this.messenger, event, context);
         } else {
             if (context.confirming){
-                // ### Reply flow ###
+                // Reply flow
                 context._flow = "reply";
                 flow = new flows["reply"](this.options, this.logger, this.messenger, event, context);
             } else {
-                // ### BTW Flow ###
+                // BTW Flow
                 context._flow = "btw";
                 flow = new flows["btw"](this.options, this.logger, this.messenger, event, context);
             }

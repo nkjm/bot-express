@@ -59,8 +59,7 @@ module.exports = class LoggerFirestore {
         }
 
         if (status === "launched"){
-            // Add launched_at.
-            if (payload.context && payload.context.launched_at) skill_status.launched_at = new Date(payload.context.launched_at);
+            // No additional information.
         } else if (status === "aborted" || status === "abended"){
             // Add error and context.
             if (payload.error) skill_status.error = {
@@ -79,10 +78,13 @@ module.exports = class LoggerFirestore {
             // Add confirming.
             if (payload.context && payload.context.confirming) skill_status.confirming = payload.context.confirming;
         } else if (status === "completed"){
-            // Add completed_at and ttc (Time to complete).
-            skill_status.completed_at = new Date();
+            // Add ttc (Time to complete).
             if (payload.context && payload.context.launched_at) skill_status.ttc = new Date().getTime() - payload.context.launched_at;
         }
+
+        // Add timestamp.
+        skill_status.created_at = new Date();
+
         await this._create("botex_skill_status", skill_status, `${user_id}_${String(new Date().getTime())}`);
     }
 

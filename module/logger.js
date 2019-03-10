@@ -9,9 +9,11 @@ module.exports = class Logger {
      * @constructor
      * @param {Object} options
      * @param {String} options.type - Logger type. Supported stores are located in logger directory.
-     * @param {Object} options.options - Options depending on the logger.
+     * @param {Array.<String>} [options.exclude] - Log to exclude. Supported values are "skill-status" and "chat".
+     * @param {Object} [options.options] - Options depending on the logger.
      */
     constructor(options = {}){
+        this.exclude = options.exclude || [];
         options.type = options.type || default_logger;
 
         let script_list = fs.readdirSync(__dirname + "/logger");
@@ -38,6 +40,9 @@ module.exports = class Logger {
      * @param {Object} [payload]
      */
     async skill_status(user_id, chat_id, skill, status, payload = {}){
+        // Disable logging if skill-status is exlucded by option.
+        if (this.exclude.includes("skill-status")) return;
+
         await this.logger.skill_status(user_id, chat_id, skill, status, payload);
     }
 
@@ -50,6 +55,9 @@ module.exports = class Logger {
      * @param {Object} message
      */
     async chat(user_id, chat_id, skill, who, message){
+        // Disable logging if chat is exlucded by option.
+        if (this.exclude.includes("chat")) return;
+
         await this.logger.chat(user_id, chat_id, skill, who, message);
     }
 }

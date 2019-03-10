@@ -7,7 +7,6 @@ require("dotenv").config();
  */
 const server = require("express")();
 const bot_express = require("./index.js");
-const firebase_admin = require("firebase-admin");
 
 /** 
  * Middleware Configuration
@@ -59,7 +58,7 @@ server.use('/bot/webhook', bot_express({
         }
     },
     logger: {
-        type: "stdout", // stdout | firestore
+        type: "firestore", // stdout | firestore
         options: { // Options for firestore.
             // instance: firestore
             project_id: process.env.GOOGLE_PROJECT_ID,

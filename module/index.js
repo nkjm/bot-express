@@ -54,6 +54,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {Object} [options.memory.options] - Options depending on the specific store type.
 @param {Object} [options.logger] - Option object for logger.
 @param {String} [options.logger.type] - Logger type. Supported logger is located under logger directory.
+@param {Array.<String>} [options.logger.exclude] - List to disable logging. Supported values are "skill-status" and "chat".
 @param {String} [options.logger.options] - Options depending on the specific logger.
 @param {Object} [options.skill] - Options to set skill corresponding to certain event.
 @param {String} [options.skill.default] - Skill name to be used when we cannot identify the intent. Default is builtin echo-back skill which simply reply text response from NLP.

@@ -18,7 +18,7 @@ module.exports = class LoggerStdout {
      * @param {Object} payload
      */
     async skill_status(user_id, chat_id, skill, status, payload){
-        if (status === "aborted" || status === "abended"){
+        if (status === "aborted"){
             if (!(payload.context && payload.context.confirming)){
                 payload.context = {
                     confirming: `unknown_parameter`
@@ -27,6 +27,11 @@ module.exports = class LoggerStdout {
 
             let log = `${user_id} ${chat_id} ${skill} - ${status} in confirming ${payload.context.confirming}`;
 
+            _skill_status(log);
+        } else if (status === "abended"){
+            let log = `${user_id} ${chat_id} ${skill} - ${status}`;
+
+            // Add error detail.
             if (payload.error) log += " Error:" + JSON.stringify({
                 line_number: payload.error.lineNumber || null,
                 file_name: payload.error.fileName || null,
@@ -34,6 +39,9 @@ module.exports = class LoggerStdout {
                 name: payload.error.name || null,
                 stack: payload.error.stack || null
             })
+
+            // Add context.
+            if (payload.context) log += " Context:" + JSON.stringify(payload.context);
 
             _skill_status(log);
         } else if (status === "switched"){

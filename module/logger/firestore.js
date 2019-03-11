@@ -60,7 +60,10 @@ module.exports = class LoggerFirestore {
 
         if (status === "launched"){
             // No additional information.
-        } else if (status === "aborted" || status === "abended"){
+        } else if (status === "aborted"){
+            // Add error and context.
+            if (payload.context) skill_status.context = JSON.parse(JSON.stringify(payload.context));
+        } else if (status === "abended"){
             // Add error and context.
             if (payload.error) skill_status.error = {
                 line_number: payload.error.lineNumber || null,

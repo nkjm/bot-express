@@ -24,7 +24,18 @@ module.exports = class LoggerStdout {
                     confirming: `unknown_parameter`
                 }
             }
-            _skill_status(`${user_id} ${chat_id} ${skill} - ${status} in confirming ${payload.context.confirming}`);
+
+            let log = `${user_id} ${chat_id} ${skill} - ${status} in confirming ${payload.context.confirming}`;
+
+            if (payload.error) log += " Error:" + JSON.stringify({
+                line_number: payload.error.lineNumber || null,
+                file_name: payload.error.fileName || null,
+                message: payload.error.message || null,
+                name: payload.error.name || null,
+                stack: payload.error.stack || null
+            })
+
+            _skill_status(log);
         } else if (status === "switched"){
             if (!(payload.context && payload.context.confirming)){
                 payload.context = {

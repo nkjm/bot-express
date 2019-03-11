@@ -65,7 +65,7 @@ module.exports = class LoggerFirestore {
             if (payload.error) skill_status.error = {
                 line_number: payload.error.lineNumber || null,
                 file_name: payload.error.fileName || null,
-                message: payload.error.message || null,
+                message: (payload.error.message) ? JSON.stringify(payload.error.message) : null,
                 name: payload.error.name || null,
                 stack: payload.error.stack || null
             }

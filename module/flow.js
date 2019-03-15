@@ -594,7 +594,7 @@ module.exports = class Flow {
             launched_at: this.context.launched_at,
             intent: this.context.intent,
             skill: {
-                name: this.context.skill.name
+                type: this.context.skill.type
             },
             to_confirm: this.context.to_confirm,
             confirming: this.context.confirming,

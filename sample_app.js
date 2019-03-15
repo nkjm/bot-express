@@ -58,7 +58,7 @@ server.use('/bot/webhook', bot_express({
         }
     },
     logger: {
-        type: "firestore", // stdout | firestore
+        type: "stdout", // stdout | firestore
         options: { // Options for firestore.
             // instance: firestore
             project_id: process.env.GOOGLE_PROJECT_ID,

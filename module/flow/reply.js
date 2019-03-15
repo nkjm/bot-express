@@ -32,7 +32,8 @@ module.exports = class ReplyFlow extends Flow {
         // Add user's message to history.
         this.context.previous.message.unshift({
             from: "user",
-            message: this.bot.extract_message()
+            message: this.bot.extract_message(),
+            skill: this.context.skill.type
         });
 
         // Log chat.

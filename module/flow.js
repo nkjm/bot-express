@@ -616,7 +616,7 @@ module.exports = class Flow {
      * @param {Object} intent
      */
     async restart_conversation(intent){
-        this.context.chat_id = crypto.randomBytes(10).toString('hex');
+        this.context.chat_id = crypto.randomBytes(20).toString('hex');
         this.context.launched_at = new Date().getTime(),
         this.context.intent = intent;
         this.context.to_confirm = [];
@@ -675,7 +675,7 @@ module.exports = class Flow {
      */
     async change_intent(intent){
         // We keep some inforamtion like context.confirmed, context.heard and context.previous.
-        this.context.chat_id = crypto.randomBytes(10).toString('hex');
+        this.context.chat_id = crypto.randomBytes(20).toString('hex');
         this.context.launched_at = new Date().getTime(),
         this.context.intent = intent;
         this.context.to_confirm = [];

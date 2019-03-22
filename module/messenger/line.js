@@ -43,11 +43,12 @@ module.exports = class MessengerLine {
             this._option_list = [options.messenger.line];
         }
 
-        /* Since we now support multi-channel, these will be set in validate_signature().
-        this._channel_id = options.messenger.line.channel_id;
-        this._channel_secret = options.messenger.line.channel_secret;
-        this._endpoint = options.messenger.line.endpoint || "api.line.me";
-        */
+        // Since we now support multi-channel, these should be set in validate_signature() but in case there is just 1 option, we set it now.
+        if (this._option_list.length === 1){
+            this._channel_id = this._option_list[0].channel_id;
+            this._channel_secret = this._option_list[0].channel_secret;
+            this._endpoint = this._option_list[0].endpoint || "api.line.me";
+        }
 
         this._access_token = null; // Will be set when this.refresh_token is called.
         this.sdk = null; // Will be set when this.refresh_token is called.

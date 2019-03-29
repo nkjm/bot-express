@@ -677,17 +677,16 @@ module.exports = class Flow {
         // We keep some inforamtion like context.confirmed, context.heard and context.previous.
         this.context.chat_id = crypto.randomBytes(20).toString('hex');
         this.context.launched_at = new Date().getTime(),
-        this.context.intent = intent;
         this.context.to_confirm = [];
         this.context.confirming = null;
         this.context.confirming_property = null;
-        this.context.previous =  {
-            event: null,
-            confirmed: [],
-            processed: [],
-            message: []
-        }
+        this.context.previous.intent.unshift(JSON.parse(JSON.stringify(this.context.intent)));
+        this.context.previous.event = null;
+        this.context.previous.confirmed = [];
+        this.context.previous.processed = [];
+        this.context.previous.message = [];
         this.context._message_queue = [];
+        this.context.intent = intent;
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){

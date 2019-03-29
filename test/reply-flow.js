@@ -93,6 +93,7 @@ for (let messenger_option of messenger_options){
                 context = await emu.send(emu.create_message_event(user_id, "やっぱりまた今度にします"));
 
                 should.not.exist(context.confirming);
+                context.previous.intent[0].name.should.equal("handle-pizza-order");
             });
         });
 

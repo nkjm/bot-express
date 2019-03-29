@@ -51,6 +51,7 @@ class Webhook {
             event: event,
             previous: {
                 event: null,
+                intent: [],
                 confirmed: [],
                 processed: [],
                 message: []

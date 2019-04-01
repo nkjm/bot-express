@@ -1,5 +1,6 @@
 "use strict";
 
+const Context = require("./context");
 const crypto = require("crypto");
 Promise = require("bluebird");
 
@@ -29,46 +30,6 @@ class Webhook {
         this.memory = memory;
         this.options = options;
         this.messenger;
-    }
-
-    /**
-     * Initialize context.
-     * @method
-     * @param {String} flow
-     * @param {Object} event
-     * @return {context}
-     */
-    init_context(flow, event){
-        const context = {
-            chat_id: crypto.randomBytes(20).toString('hex'),
-            launched_at: new Date().getTime(),
-            intent: null,
-            confirmed: {},
-            to_confirm: [],
-            confirming: null,
-            confirming_property: null,
-            heard: {},
-            event: event,
-            previous: {
-                event: null,
-                intent: [],
-                confirmed: [],
-                processed: [],
-                message: []
-            },
-            sender_language: null,
-            skill: null,
-            translation: null,
-            _flow: flow,
-            _message_queue: [],
-            _in_progress: false,
-            _pause: false,
-            _exit: false,
-            _init: false,
-            _digging: false,
-            _switch_intent: null
-        }
-        return context;
     }
 
     /**
@@ -191,7 +152,8 @@ class Webhook {
                 return;
             }
 
-            context = this.init_context(event_type, event);
+            context = new Context({ flow: event_type, event: event });
+
             context.intent = {
                 name: this.options.skill[event_type]
             }
@@ -214,18 +176,18 @@ class Webhook {
             }
             debug(`This is beacon flow and we use ${this.options.skill.beacon[beacon_event_type]} as skill`);
 
-            context = this.init_context("beacon", event);
+            context = new Context({ flow: "beacon", event: event });
             context.intent = {
                 name: this.options.skill.beacon[beacon_event_type]
             }
             flow = new flows[event_type](this.options, this.logger, this.messenger, event, context);
         } else if (event_type == "bot-express:push"){
             // Push Flow
-            context = this.init_context("push", event);
+            context = new Context({ flow: "push", event: event });
             flow = new flows["push"](this.options, this.logger, this.messenger, event, context);
         } else if (!context || !context.intent){
             // Start Conversation Flow
-            context = this.init_context("start_conversation", event);
+            context = new Context({ flow: "start_conversation", event: event });
             flow = new flows["start_conversation"](this.options, this.logger, this.messenger, event, context);
         } else {
             if (context.confirming){

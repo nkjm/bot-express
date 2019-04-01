@@ -4,6 +4,7 @@ const debug = require("debug")("bot-express:flow");
 const crypto = require("crypto");
 const Bot = require("./bot"); // Libraries to be exposed to skill.
 const Nlu = require("./nlu");
+const Context = require("./context");
 
 module.exports = class Flow {
     constructor(options, logger, messenger, event, context){
@@ -589,6 +590,8 @@ module.exports = class Flow {
         if (!Array.isArray(this.context._parent)){
             this.context._parent = [];
         }
+
+        /*
         this.context._parent.push({
             chat_id: this.context.chat_id,
             launched_at: this.context.launched_at,
@@ -606,7 +609,12 @@ module.exports = class Flow {
             sender_language: this.context.sender_language,
             translation: this.context.translation
         })
+        */
+
+        const parent_context = Object.assign({}, this.context)
+        this.context._parent.push(parent_context);
         this.context._digging = true;
+
         return this.change_intent(intent);
     }
 
@@ -616,6 +624,15 @@ module.exports = class Flow {
      * @param {Object} intent
      */
     async restart_conversation(intent){
+        const context = new Context({
+            intent: intent,
+            flow: this.context._flow,
+            event: this.context.event,
+        })
+        // Using Object.assign for updating context to keep original reference.
+        this.context = Object.assign(this.context, context);
+
+        /*
         this.context.chat_id = crypto.randomBytes(20).toString('hex');
         this.context.launched_at = new Date().getTime(),
         this.context.intent = intent;
@@ -631,6 +648,7 @@ module.exports = class Flow {
             message: []
         }
         this.context._message_queue = [];
+        */
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
@@ -674,19 +692,38 @@ module.exports = class Flow {
      * @param {Object} intent 
      */
     async change_intent(intent){
-        // We keep some inforamtion like context.confirmed, context.heard and context.previous.
+        // Get archive of current context.
+        const archive = Context.get_archive(this.context);
+
+        // We keep following properties.
+        const context = new Context({
+            intent: intent,
+            flow: this.context._flow,
+            event: this.context.event,
+            confirmed: this.context.confirmed,
+            heard: this.context.heard,
+            sender_language: this.context.sender_language,
+            _parent: this.context._parent,
+            _digging: this.context._digging
+        })
+        context.archive = archive;
+
+        // Using Object.assign for updating context to keep original reference. Otherwise, reference of context between flow and bot or other script become different.
+        this.context = Object.assign(this.context, context);
+        
+        /*
         this.context.chat_id = crypto.randomBytes(20).toString('hex');
         this.context.launched_at = new Date().getTime(),
         this.context.to_confirm = [];
         this.context.confirming = null;
         this.context.confirming_property = null;
-        this.context.previous.intent.unshift(JSON.parse(JSON.stringify(this.context.intent)));
         this.context.previous.event = null;
         this.context.previous.confirmed = [];
         this.context.previous.processed = [];
         this.context.previous.message = [];
         this.context._message_queue = [];
         this.context.intent = intent;
+        */
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){

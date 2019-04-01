@@ -6,6 +6,7 @@ Object which contains context information.
 @prop {Object} confirmed - Object which contains confirmed parameters. If you want to retrieve confirmed value of "date" parameter, access confirmed.date.
 @prop {Object} heard - Object which contains heard parameters which are waiting for beging applied.
 @prop {Object} previous - Object which contains conversation history in the current context.
+@prop {Array.<Object>} archive - Array of previous context.
 @prop {Array.<String>} previous.confirmed - Previously confirmed parameter key. It does not include skipped parameter due to condition.
 @prop {Array.<String>} previous.processed - Previously processed parameter key. It includes skipped parameter due to condition.
 @prop {Array.<Object>} previous.message - Array of message object exchanged so far.

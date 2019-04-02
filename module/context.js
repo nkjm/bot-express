@@ -19,7 +19,7 @@ module.exports = class Context {
         this.to_confirm = []
         this.confirming_property = null
         this.heard = o.heard || {}
-        this.sender_language = o.sender_language || {}
+        this.sender_language = o.sender_language || null
         this.translation = null
         this.previous = { // To save history of current context.
             event: null,

@@ -13,11 +13,14 @@ class MemoryMemoryCache {
     }
 
     async get(key){
-        return this.client.get(key);
+        const context = this.client.get(key);
+        const copy = JSON.parse(JSON.stringify(context));
+        return copy;
     }
 
     async put(key, context){
-        return this.client.put(key, context);
+        const copy = JSON.parse(JSON.stringify(context));
+        return this.client.put(key, copy);
     }
 
     /*

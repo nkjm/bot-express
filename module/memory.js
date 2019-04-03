@@ -76,6 +76,10 @@ class Memory {
             if (context && context.updated_at === timer_value.updated_at){
                 debug("Confirmed this context is own by this node. Running expiration process..");
 
+                // Delete context.
+                debug("Deleting context..");
+                await this.del(timer_value.key);
+
                 // If context indicates the conversation is not finished, we log aborted and run on_abort function.
                 if (context.confirming && context.skill && context.skill.type != "builtin_default"){
                     debug("It seems this conversation is aborted. Running on abort process..");
@@ -102,10 +106,6 @@ class Memory {
                         }
                     }
                 }
-
-                // Delete context.
-                debug("Deleting context..");
-                await this.del(timer_value.key);
             } else {
                 debug("It seems this context is owned by another node. We do nothing here.")
             }

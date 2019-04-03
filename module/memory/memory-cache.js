@@ -19,13 +19,18 @@ class MemoryMemoryCache {
         return this.client.get(key);
     }
 
-    async put(key, value, retention){
-        return this.client.put(key, value, retention * 1000, async (key, value) => {
-            if (value.confirming && value.skill){
+    async put(key, context, retention){
+        return this.client.put(key, context, retention * 1000, async (key, context) => {
+            if (context.confirming && context.skill){
                 // Log skill status.
-                await this.logger.skill_status(key.replace(prefix, ""), value.chat_id, value.skill.type, "aborted", {
-                    context: value
+                await this.logger.skill_status(key.replace(prefix, ""), context.chat_id, context.skill.type, "aborted", {
+                    context:context 
                 });
+
+                // Run on_abort function.
+                if (typeof context.skill.on_abort == "function"){
+                    await context.skill.on_abort(context);
+                }
             }
         });
     }

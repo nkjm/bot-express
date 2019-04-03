@@ -27,11 +27,14 @@ class MemoryRedis {
             this.sub = redis.createClient(options);
 
             this.sub.on("pmessage", async (pattern, channel, key) => {
-                const value = await this.get(`${key}_cloned`);
-                if (value.confirming && value.skill){
-                    await this.logger.skill_status(key.replace(prefix, ""), value.chat_id, value.skill.type, "aborted", {
-                        context: value
+                const context = await this.get(`${key}_cloned`);
+                if (context.confirming && context.skill){
+                    // Log skill-status
+                    await this.logger.skill_status(key.replace(prefix, ""), context.chat_id, context.skill.type, "aborted", {
+                        context:context 
                     });
+
+                    // Run on_abort function.
                 }
 
                 await this.del(`${key}_cloned`);
@@ -56,21 +59,26 @@ class MemoryRedis {
 
     }
 
-    async put(key, value, retention){
-        if (value){
-            value = JSON.stringify(value);
+    async put(key, context, retention){
+        if (context){
+            context = JSON.stringify(context);
         }
 
         // We clone this record for skill-status log.
         if (this.keyspace_notification){
-            await this.client.setAsync(`${key}_cloned`, value);
+            await this.client.setAsync(`${key}_cloned`, context);
         }
 
-        return this.client.setAsync(key, value, 'EX', retention);
+        return this.client.setAsync(key, context, 'EX', retention);
     }
 
     async del(key){
-        return this.client.delAsync(key);
+        await this.client.delAsync(key);
+
+        // Delete clone as well if keyspace notification is set.
+        if (this.keyspace_notification){
+            await this.client.delAsync(`${key}_cloned`);
+        }
     }
 
     /**

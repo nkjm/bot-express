@@ -591,26 +591,6 @@ module.exports = class Flow {
             this.context._parent = [];
         }
 
-        /*
-        this.context._parent.push({
-            chat_id: this.context.chat_id,
-            launched_at: this.context.launched_at,
-            intent: this.context.intent,
-            skill: {
-                type: this.context.skill.type
-            },
-            to_confirm: this.context.to_confirm,
-            confirming: this.context.confirming,
-            confirming_property: this.context.confirming_property,
-            confirmed: this.context.confirmed,
-            heard: this.context.heard,
-            previous: this.context.previous,
-            param_change_history: this.context.param_change_history,
-            sender_language: this.context.sender_language,
-            translation: this.context.translation
-        })
-        */
-
         const parent_context = Object.assign({}, this.context)
         this.context._parent.push(parent_context);
         this.context._digging = true;
@@ -631,24 +611,6 @@ module.exports = class Flow {
         })
         // Using Object.assign for updating context to keep original reference.
         this.context = Object.assign(this.context, context);
-
-        /*
-        this.context.chat_id = crypto.randomBytes(20).toString('hex');
-        this.context.launched_at = new Date().getTime(),
-        this.context.intent = intent;
-        this.context.to_confirm = [];
-        this.context.confirming = null;
-        this.context.confirming_property = null;
-        this.context.confirmed = {};
-        this.context.heard = {};
-        this.context.previous = {
-            event: null,
-            confirmed: [],
-            processed: [],
-            message: []
-        }
-        this.context._message_queue = [];
-        */
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
@@ -711,20 +673,6 @@ module.exports = class Flow {
         // Using Object.assign for updating context to keep original reference. Otherwise, reference of context between flow and bot or other script become different.
         this.context = Object.assign(this.context, context);
         
-        /*
-        this.context.chat_id = crypto.randomBytes(20).toString('hex');
-        this.context.launched_at = new Date().getTime(),
-        this.context.to_confirm = [];
-        this.context.confirming = null;
-        this.context.confirming_property = null;
-        this.context.previous.event = null;
-        this.context.previous.confirmed = [];
-        this.context.previous.processed = [];
-        this.context.previous.message = [];
-        this.context._message_queue = [];
-        this.context.intent = intent;
-        */
-
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
             let skill = this.instantiate_skill(this.context.intent);

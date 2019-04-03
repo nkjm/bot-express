@@ -6,15 +6,15 @@ const Flow = require("../flow");
 
 module.exports = class ReplyFlow extends Flow {
 
-    constructor(options, logger, messenger, event, context) {
-        super(options, logger, messenger, event, context);
+    constructor(options, slib, event, context) {
+        super(options, slib, event, context);
     }
 
     async run(){
         debug("### This is Reply Flow. ###");
 
         // Check if this event type is supported in this flow.
-        if (!this.messenger.check_supported_event_type(this.event, "reply")){
+        if (!this.slib.messenger.check_supported_event_type(this.event, "reply")){
             debug(`This is unsupported event type in this flow so skip processing.`);
             return this.context;
         }
@@ -27,7 +27,7 @@ module.exports = class ReplyFlow extends Flow {
             skip_translation = true;
         }
 
-        let param_value = this.messenger.extract_param_value(this.event);
+        let param_value = this.slib.messenger.extract_param_value(this.event);
 
         // Add user's message to history.
         this.context.previous.message.unshift({
@@ -37,7 +37,7 @@ module.exports = class ReplyFlow extends Flow {
         });
 
         // Log chat.
-        await this.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
+        await this.slib.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
 
 
         // Try to apply parameter.
@@ -74,7 +74,7 @@ module.exports = class ReplyFlow extends Flow {
                 await super.dig(mind.intent);
             } else if (mind.result == "restart_conversation"){
                 // Log skill_status.
-                await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "restarted", {
+                await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "restarted", {
                     context: this.context, 
                     intent: mind.intent
                 });
@@ -82,7 +82,7 @@ module.exports = class ReplyFlow extends Flow {
                 await super.restart_conversation(mind.intent);
             } else if (mind.result == "change_intent"){
                 // Log skill_status.
-                await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "switched", {
+                await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "switched", {
                     context: this.context, 
                     intent: mind.intent
                 });

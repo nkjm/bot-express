@@ -12,12 +12,12 @@ module.exports = class MessengerGoogle {
 
     constructor(options){
         for (let p of REQUIRED_PARAMETERS){
-            if (!options.messenger.google[p]){
+            if (!options[p]){
                 throw new Error(`Required parameter: "${p}" for Google Assistant configuration not set.`);
             }
         }
 
-        this.project_id = options.messenger.google.project_id;
+        this.project_id = options.project_id;
         this.sdk = new ActionsSdkApp({
             request: options.req,
             response: options.res

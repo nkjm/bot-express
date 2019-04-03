@@ -4,9 +4,9 @@ const debug = require("debug")("bot-express:parser");
 const fs = require("fs");
 
 /**
-* Parser abstraction class
-* @class
-*/
+ * Parser abstraction class. *Context free.
+ * @class
+ */
 class Parser {
     /**
      * @constructor
@@ -42,7 +42,6 @@ class Parser {
                 }
                 continue;
             }
-            debug(`Builtin parser: ${parser} loaded.`);
         }
     }
 }

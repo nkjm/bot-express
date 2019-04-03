@@ -14,22 +14,22 @@ Promise.promisifyAll(request);
 module.exports = class MessengerLine {
 
     constructor(options){
-        if (!options.messenger.line){
+        if (!options){
             throw new Error(`Required parameter for LINE not set.`);
         }
 
         // Check if option is properly set.
-        if (Array.isArray(options.messenger.line)){
-            for (let option_for_line of options.messenger.line){
+        if (Array.isArray(options)){
+            for (let option_for_line of options){
                 for (let p of REQUIRED_PARAMETERS){
                     if (!option_for_line[p]){
                         throw new Error(`Required parameter: "${p}" for LINE configuration not set.`);
                     }
                 }
             }
-        } else if (typeof options.messenger.line == "object"){
+        } else if (typeof options == "object"){
             for (let p of REQUIRED_PARAMETERS){
-                if (!options.messenger.line[p]){
+                if (!options[p]){
                     throw new Error(`Required parameter: "${p}" for LINE configuration not set.`);
                 }
             }
@@ -37,10 +37,10 @@ module.exports = class MessengerLine {
             throw new Error(`Required parameter for LINE is invalid.`);
         }
 
-        if (Array.isArray(options.messenger.line)){
-            this._option_list = options.messenger.line;
+        if (Array.isArray(options)){
+            this._option_list = options;
         } else {
-            this._option_list = [options.messenger.line];
+            this._option_list = [options];
         }
 
         // Since we now support multi-channel, these should be set in validate_signature() but in case there is just 1 option, we set it now.

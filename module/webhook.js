@@ -1,7 +1,6 @@
 "use strict";
 
 const Context = require("./context");
-const crypto = require("crypto");
 Promise = require("bluebird");
 
 // Debuggers
@@ -17,61 +16,38 @@ const flows = {
     push: require('./flow/push')
 }
 
-// Import Messenger Abstraction.
-const Messenger = require("./messenger");
-
 /**
-Webhook to receive all request from messenger.
-@class
-*/
+ * Webhook to receive all request from messenger.
+ * @class
+ */
 class Webhook {
-    constructor(logger, memory, options){
-        this.logger = logger;
-        this.memory = memory;
+    /**
+     * @constructor
+     * @param {Object} options - Configurations. 
+     * @param {Object} slib - Context free libraries.
+     */
+    constructor(options, slib){
         this.options = options;
-        this.messenger;
+        this.slib = slib;
     }
 
     /**
-    Main function.
-    @returns {Promise.<context>}
-    */
+     * Main function.
+     * @returns {Promise.<context>}
+     */
     async run(){
         debug("Webhook runs.");
 
-        // Identify messenger.
-        if (this.options.req.get("X-Line-Signature") && this.options.req.body.events){
-            this.options.messenger_type = "line";
-        } else if (this.options.req.get("X-Hub-Signature") && this.options.req.body.object == "page"){
-            this.options.messenger_type = "facebook";
-        } else if (this.options.req.get("google-actions-api-version")){
-            this.options.messenger_type = "google";
-        } else {
-            debug(`This event comes from unsupported message platform. Skip processing.`);
-            return;
-        }
-        debug(`Messenger is ${this.options.messenger_type}`);
-
-        // Check if required configuration has been set for this messenger.
-        if (!this.options.messenger[this.options.messenger_type]){
-            debug(`bot-express has not been configured to handle message from ${this.options.messenger_type} so we skip this event.`);
-            return;
-        }
-
-        // Instantiate messenger instance.
-        this.messenger = new Messenger(this.options);
-        debug("Messenger instantiated.");
-
         // Validate Signature
-        await this.messenger.validate_signature(this.options.req);
+        await this.slib.messenger.validate_signature(this.options.req);
         debug("Signature validation succeeded.");
 
         // Refresh token.
-        await this.messenger.refresh_token();
+        await this.slib.messenger.refresh_token();
         debug("Refresh token succeeded.");
 
         // Process events
-        let events = this.messenger.extract_events(this.options.req.body);
+        let events = this.slib.messenger.extract_events(this.options.req.body);
         let done_process_events = [];
         for (let e of events){
             done_process_events.push(this.process_event(e));
@@ -102,31 +78,31 @@ class Webhook {
         debug(JSON.stringify(event));
 
         // If this is for webhook validation, we skip processing this.
-        if (this.messenger.type === "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
+        if (this.slib.messenger.type === "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
             debug(`This is webhook validation so skip processing.`);
             return;
         }
 
         // Identify memory id.
         let memory_id;
-        if (this.messenger.identify_event_type(event) === "bot-express:push"){
-            memory_id = this.messenger.extract_to_id(event);
+        if (this.slib.messenger.identify_event_type(event) === "bot-express:push"){
+            memory_id = this.slib.messenger.extract_to_id(event);
         } else {
-            memory_id = this.messenger.extract_sender_id(event);
+            memory_id = this.slib.messenger.extract_sender_id(event);
         }
         debug(`memory id is ${memory_id}.`);
 
         // Get context from memory.
-        let context = await this.memory.get(memory_id);
+        let context = await this.slib.memory.get(memory_id);
 
         // Ignore parallel event to prevent unexpected behavior by double tap.
         if (context && 
             context._in_progress && 
             this.options.parallel_event == "ignore" && 
-            this.messenger.identify_event_type(event) != "bot-express:push"
+            this.slib.messenger.identify_event_type(event) != "bot-express:push"
         ){
             context._in_progress = false; // To avoid lock out, we ignore event only once.
-            await this.memory.put(memory_id, context);
+            await this.slib.memory.put(memory_id, context);
             debug(`Bot is currenlty processing another event from this user so ignore this event.`);
             return;
         }
@@ -134,13 +110,13 @@ class Webhook {
         // Make in progress flag
         if (context){
             context._in_progress = event;
-            await this.memory.put(memory_id, context);
+            await this.slib.memory.put(memory_id, context);
         } else {
-            await this.memory.put(memory_id, { _in_progress: event });
+            await this.slib.memory.put(memory_id, { _in_progress: event });
         }
 
         let flow;
-        let event_type = this.messenger.identify_event_type(event);
+        let event_type = this.slib.messenger.identify_event_type(event);
         debug(`event type is ${event_type}.`);
 
         if (["follow", "unfollow", "join", "leave"].includes(event_type)) {
@@ -148,7 +124,7 @@ class Webhook {
             if (!this.options.skill[event_type]){
                 debug(`This is active event flow for ${event_type} event but ${event_type}_skill not found so skip.`);
                 context._in_progress = false;
-                await this.memory.put(memory_id, context);
+                await this.slib.memory.put(memory_id, context);
                 return;
             }
 
@@ -157,21 +133,21 @@ class Webhook {
             context.intent = {
                 name: this.options.skill[event_type]
             }
-            flow = new flows["active_event"](this.options, this.logger, this.messenger, event, context);
+            flow = new flows["active_event"](this.options, this.slib, event, context);
         } else if (event_type == "beacon"){
             // Beacon Flow
-            let beacon_event_type = this.messenger.extract_beacon_event_type(event);
+            let beacon_event_type = this.slib.messenger.extract_beacon_event_type(event);
 
             if (!beacon_event_type){
                 debug(`Unsupported beacon event so we skip this event.`);
                 context._in_progress = false;
-                await this.memory.put(memory_id, context);
+                await this.slib.memory.put(memory_id, context);
                 return;
             }
             if (!this.options.skill.beacon || !this.options.skill.beacon[beacon_event_type]){
                 debug(`This is beacon flow but beacon_skill["${beacon_event_type}"] not found so skip.`);
                 context._in_progress = false;
-                await this.memory.put(memory_id, context);
+                await this.slib.memory.put(memory_id, context);
                 return;
             }
             debug(`This is beacon flow and we use ${this.options.skill.beacon[beacon_event_type]} as skill`);
@@ -180,24 +156,24 @@ class Webhook {
             context.intent = {
                 name: this.options.skill.beacon[beacon_event_type]
             }
-            flow = new flows[event_type](this.options, this.logger, this.messenger, event, context);
+            flow = new flows[event_type](this.options, this.slib, event, context);
         } else if (event_type == "bot-express:push"){
             // Push Flow
             context = new Context({ flow: "push", event: event });
-            flow = new flows["push"](this.options, this.logger, this.messenger, event, context);
+            flow = new flows["push"](this.options, this.slib, event, context);
         } else if (!context || !context.intent){
             // Start Conversation Flow
             context = new Context({ flow: "start_conversation", event: event });
-            flow = new flows["start_conversation"](this.options, this.logger, this.messenger, event, context);
+            flow = new flows["start_conversation"](this.options, this.slib, event, context);
         } else {
             if (context.confirming){
                 // Reply flow
                 context._flow = "reply";
-                flow = new flows["reply"](this.options, this.logger, this.messenger, event, context);
+                flow = new flows["reply"](this.options, this.slib, event, context);
             } else {
                 // BTW Flow
                 context._flow = "btw";
-                flow = new flows["btw"](this.options, this.logger, this.messenger, event, context);
+                flow = new flows["btw"](this.options, this.slib, event, context);
             }
         }
 
@@ -207,14 +183,14 @@ class Webhook {
         } catch (e){
             const chat_id = (context && context.chat_id) ? context.chat_id : "unknown_chat_id";
             const skill_type = (context && context.skill && context.skill.type) ? context.skill.type : "unknown_skill";
-            await this.logger.skill_status(memory_id, chat_id, skill_type, "abended", {
+            await this.slib.logger.skill_status(memory_id, chat_id, skill_type, "abended", {
                 error: e,
                 context: context
             });
 
             // Clear memory.
             debug("Clearing context");
-            await this.memory.del(memory_id);
+            await this.slib.memory.del(memory_id);
             
             throw e;
         }
@@ -228,7 +204,7 @@ class Webhook {
 
             if (updated_context._clear){
                 debug("Clearing context");
-                await this.memory.del(memory_id);
+                await this.slib.memory.del(memory_id);
             } else {
                 // Turn off all flag to cleanup context for next skill.
                 debug("Turn off all flag to cleanup context for next skill.");
@@ -239,7 +215,7 @@ class Webhook {
                 updated_context._switch_intent = false;
                 updated_context._in_progress = false;
 
-                await this.memory.put(memory_id, updated_context);
+                await this.slib.memory.put(memory_id, updated_context);
             }
 
             updated_context = await this.process_event({
@@ -260,20 +236,22 @@ class Webhook {
         // Update memory.
         if (!updated_context || updated_context._clear){
             debug("Clearing context");
-            await this.memory.del(memory_id);
+            await this.slib.memory.del(memory_id);
         } else {
             // Delete skill from context except for skill name since we need this in skill-status logging.
+            /*
             const skill_type = updated_context.skill.type;
             delete updated_context.skill;
             updated_context.skill = {
                 type: skill_type
             }
+            */
 
             updated_context._in_progress = false;
             updated_context.previous.event = event;
 
             debug("Updating context");
-            await this.memory.put(memory_id, updated_context);
+            await this.slib.memory.put(memory_id, updated_context);
         }
 
         return updated_context;

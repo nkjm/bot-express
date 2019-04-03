@@ -4,13 +4,17 @@ const debug = require("debug")("bot-express:messenger");
 const fs = require("fs");
 
 /**
-Messenger abstraction.
-@class
-*/
+ * Messenger abstraction. *Context free
+ * @class
+ */
 class Messenger {
-    constructor(options){
-        this.type = options.messenger_type;
-        this.options = options;
+    /**
+     * @constructor 
+     * @param {Object} options 
+     * @param {String} messenger_type - line | facebook | google
+     */
+    constructor(options, messenger_type){
+        this.type = messenger_type;
         this.Messenger_classes = {};
         this.plugin = {};
 
@@ -20,14 +24,14 @@ class Messenger {
             let messenger_type = messenger_script.replace(".js", "");
 
             // Even if there is messenger implementation, we won't load it if corresponding messenger option is not configured.
-            if (!options.messenger[messenger_type]){
+            if (!options[messenger_type]){
                 continue;
             }
 
             debug("Loading " + messenger_script + "...");
 
             this.Messenger_classes[messenger_type] = require("./messenger/" + messenger_script);
-            this.plugin[messenger_type] = new this.Messenger_classes[messenger_type](options);
+            this.plugin[messenger_type] = new this.Messenger_classes[messenger_type](options[messenger_type]);
             if (messenger_type === this.type){
                 this.service = this.plugin[messenger_type];
             }

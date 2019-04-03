@@ -5,9 +5,9 @@ const default_service = "dialogflow";
 const fs = require("fs");
 
 /**
-* Natural Language Processing Abstraction Class
-* @class
-*/
+ * Natural Language Processing Abstraction Class. *Context free
+ * @class
+ */
 class Nlu {
 
     /**

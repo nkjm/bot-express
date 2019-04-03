@@ -1,7 +1,6 @@
 "use strict";
 
 const debug = require("debug")("bot-express:bot");
-const Parser = require("./parser");
 const Translator = require("./translator");
 
 /**
@@ -14,24 +13,22 @@ const Translator = require("./translator");
 class Bot {
     /**
      * @constructor
-     * @param {*} options 
-     * @param {*} logger
-     * @param {*} event 
-     * @param {*} context 
-     * @param {*} messenger{"chat_id":"7f78c6f3efd905f01f6b680ede4f069fc81a8a20","launched_at":1552622929931,"intent":{"id":"projects/ichikawa-fb8d3/agent/intents/28a4fab9-09b1-4ac5-93ff-7b926090ca47","name":"before-apply-juminhyo","parameters":{"juminhyo":"住民票"},"text_response":"","fulfillment":[],"dialogflow":{"responseId":"90bee398-170e-48b6-8ca3-6d9fa536019c","queryResult":{"fulfillmentMessages":[{"platform":"PLATFORM_UNSPECIFIED","text":{"text":[""]},"message":"text"}],"outputContexts":[],"queryText":"住民票を申請します","speechRecognitionConfidence":0,"action":"before-apply-juminhyo","parameters":{"fields":{"juminhyo":{"stringValue":"住民票","kind":"stringValue"}}},"allRequiredParamsPresent":true,"fulfillmentText":"","webhookSource":"","webhookPayload":null,"intent":{"inputContextNames":[],"events":[],"trainingPhrases":[],"outputContexts":[],"parameters":[],"messages":[],"defaultResponsePlatforms":[],"followupIntentInfo":[],"name":"projects/ichikawa-fb8d3/agent/intents/28a4fab9-09b1-4ac5-93ff-7b926090ca47","displayName":"juminhyo","priority":0,"isFallback":false,"webhookState":"WEBHOOK_STATE_UNSPECIFIED","action":"","resetContexts":false,"rootFollowupIntentName":"","parentFollowupIntentName":"","mlDisabled":false},"intentDetectionConfidence":1,"diagnosticInfo":null,"languageCode":"ja"},"webhookStatus":null}},"to_confirm":["proceed"],"confirming":"proceed","confirming_property":null,"confirmed":{},"heard":{"juminhyo":"住民票","line_pay":"LINE Pay"},"previous":{"event":{"type":"message","replyToken":"eff01c5fb78741e1a57dff647171dd07","source":{"userId":"U2e250c5c3b8d3af3aa7dd9ad34ed15f9","type":"user"},"timestamp":1552622936043,"message":{"type":"text","id":"9516795270439","text":"LINE Payの使い方"}},"confirmed":[],"processed":[],"message":[{"from":"bot","message":{"type":"text","text":"LINE PayはLINEアプリの中で規約に同意するだけで利用開始できます。利用開始したらまず残高をチャージ（入金）する必要があります。チャージはコンビ二の店頭でおこなうこともできますし、銀行口座を登録してオンラインでおこなうこともできます。\nhttps://youtu.be/0fchyGHtg60","quickReply":{"items":[{"type":"action","action":{"type":"message","text":"LINE Payの銀行口座でのチャージ方法","label":"銀行口座でのチャージ方法"}},{"type":"action","action":{"type":"message","label":"中止","text":"中止"}},{"type":"action","action":{"type":"message","label":"続行","text":"続行"}}]}}},{"from":"user","message":{"type":"text","id":"9516795270439","text":"LINE Payの使い方"}},{"from":"bot","message":{"type":"flex","altText":"住民票の申請はこちらのトークで申請内容をすべておうかがいし、費用（手数料・郵送料）はLINE Payで決済、最長で4開庁日以内に郵送で発送致します。よろしければ続行ボタンをタップしてお進みください。","contents":{"type":"bubble","body":{"type":"box","layout":"vertical","spacing":"xl","contents":[{"type":"text","text":"住民票の申請はこちらのトークで申請内容をすべておうかがいし、費用（手数料・郵送料）はLINE Payで決済、最長で4開庁日以内に郵送で発送致します。よろしければ続行ボタンをタップしてお進みください。","wrap":true},{"type":"box","layout":"vertical","contents":[{"type":"button","style":"link","height":"sm","action":{"type":"message","label":"申請できる住民票","text":"申請できる住民票"}},{"type":"button","style":"link","height":"sm","action":{"type":"message","label":"住民票を申請できる人","text":"住民票を申請できる人"}},{"type":"button","style":"link","height":"sm","action":{"type":"message","label":"住民票申請の料金","text":"住民票申請の料金"}},{"type":"button","style":"link","height":"sm","action":{"type":"message","label":"お問い合わせ先","text":"お問い合わせ先"}},{"type":"button","style":"link","height":"sm","action":{"type":"message","label":"LINE Payの使い方","text":"LINE Payの使い方"}}]}]}},"quickReply":{"items":[{"type":"action","action":{"type":"message","label":"中止","text":"中止"}},{"type":"action","action":{"type":"message","label":"続行","text":"続���"}}]}}},{"from":"user","message":{"type":"text","id":"9516794765660","text":"住民票を申請します"}}]},"sender_language":"ja","translation":null,"_digging":false,"skill":{},"_in_progress":false} 
+     * @param {Object} options 
+     * @param {Object} slib
+     * @param {Object} event 
+     * @param {Object} context 
      */
-    constructor(options, logger, event, context, messenger){
-        this.logger = logger;
-        this.type = messenger.type;
+    constructor(options, slib, event, context){
+        this.type = slib.messenger.type;
         this.language = options.language;
-        for (let messenger_type of Object.keys(messenger.plugin)){
-            this[messenger_type] = messenger.plugin[messenger_type];
+        for (let messenger_type of Object.keys(slib.messenger.plugin)){
+            this[messenger_type] = slib.messenger.plugin[messenger_type];
         }
-        this.builtin_parser = new Parser(options.parser);
+        this.builtin_parser = slib.parser;
         this._options = options;
+        this._slib = slib;
         this._event = event;
         this._context = context;
-        this._messenger = messenger;
         this.translator = new Translator(this._context, this._options.translator);
     }
 
@@ -72,18 +69,18 @@ class Bot {
 
         let done_compile_messages = [];
         for (let message of this._context._message_queue){
-            done_compile_messages.push(this._messenger.compile_message(message));
+            done_compile_messages.push(this._slib.messenger.compile_message(message));
         }
 
         const compiled_messages = await Promise.all(done_compile_messages);
 
         let response;
         if (this._event.type == "bot-express:push"){
-            response = await this._messenger.send(this._event, this._event.to[`${this._event.to.type}Id`], compiled_messages);
+            response = await this._slib.messenger.send(this._event, this._event.to[`${this._event.to.type}Id`], compiled_messages);
         } else if (to_collect || this._context._digging){
-            response = await this._messenger.reply_to_collect(this._event, compiled_messages);
+            response = await this._slib.messenger.reply_to_collect(this._event, compiled_messages);
         } else {
-            response = await this._messenger.reply(this._event, compiled_messages);
+            response = await this._slib.messenger.reply(this._event, compiled_messages);
         }
 
         for (let compiled_message of compiled_messages){
@@ -93,7 +90,7 @@ class Bot {
                 skill: this._context.skill.type
             });
 
-            await this.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+            await this._slib.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
         }
         this._context._message_queue = [];
 
@@ -121,7 +118,7 @@ class Bot {
         }
 
         const compiled_messages = await Promise.all(done_compile_messages);
-        const response = await this._messenger.send(this._event, recipient_id, compiled_messages);
+        const response = await this._slib.messenger.send(this._event, recipient_id, compiled_messages);
 
         for (let compiled_message of compiled_messages){
             this._context.previous.message.unshift({
@@ -130,7 +127,7 @@ class Bot {
                 skill: this._context.skill.type
             });
 
-            await this.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+            await this._slib.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
         }
 
         return response;
@@ -157,7 +154,7 @@ class Bot {
         }
 
         const compiled_messages = await Promise.all(done_compile_messages);
-        const response = await this._messenger.multicast(this._event, recipient_ids, compiled_messages);
+        const response = await this._slib.messenger.multicast(this._event, recipient_ids, compiled_messages);
 
         for (let compiled_message of compiled_messages){
             this._context.previous.message.unshift({
@@ -166,7 +163,7 @@ class Bot {
                 skill: this._context.skill.type
             });
 
-            await this.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+            await this._slib.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
         }
 
         return response;
@@ -603,7 +600,7 @@ class Bot {
      * @returns {MessageObject} - Extracted message.
      */
     extract_message(event = this._event){
-        return this._messenger.extract_message(event);
+        return this._slib.messenger.extract_message(event);
     }
 
     /**
@@ -613,7 +610,7 @@ class Bot {
      * @returns {String} - Extracted message text.
      */
     extract_message_text(event = this._event){
-        return this._messenger.extract_message_text(event);
+        return this._slib.messenger.extract_message_text(event);
     }
 
     /**
@@ -623,7 +620,7 @@ class Bot {
     * @returns {String} - Extracted sender's user id.
     */
     extract_sender_id(event = this._event){
-        return this._messenger.extract_sender_id(event);
+        return this._slib.messenger.extract_sender_id(event);
     }
 
     /**
@@ -633,7 +630,7 @@ class Bot {
     * @returns {String} - Extracted sender's user id.
     */
     extract_session_id(event = this._event){
-        return this._messenger.extract_session_id(event);
+        return this._slib.messenger.extract_session_id(event);
     }
 
     /**
@@ -643,7 +640,7 @@ class Bot {
     * @returns {String} - Event type. In case of LINE, it can be "message", "follow", "unfollow", "join", "leave", "postback", "beacon". In case of Facebook, it can be "echo", "message", "delivery", "read", "postback", "optin", "referral", "account_linking".
     */
     identify_event_type(event = this._event){
-        return this._messenger.identify_event_type(event);
+        return this._slib.messenger.identify_event_type(event);
     }
 
     /**
@@ -656,7 +653,7 @@ class Bot {
         if (!message){
             message = this.extract_message();
         }
-        return this._messenger.identify_message_type(message);
+        return this._slib.messenger.identify_message_type(message);
     }
 
     /**
@@ -667,7 +664,7 @@ class Bot {
     * @returns {Promise.<MessageObject>} - Compiled message object.
     */
     compile_message(message, format = this.type){
-        return this._messenger.compile_message(message, format);
+        return this._slib.messenger.compile_message(message, format);
     }
 }
 module.exports = Bot;

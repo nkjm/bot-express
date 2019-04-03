@@ -20,7 +20,7 @@ class MemoryMongodb {
         });
     }
 
-    async put(key, value, retention){
+    async put(key, value){
         return this.connected.then((response) => {
             value._id = key;
             return this.db.collection('bot-express').updateOne({_id:key}, value, {upsert:true});

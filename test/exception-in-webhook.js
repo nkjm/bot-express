@@ -27,12 +27,11 @@ describe("Test exception in webhook", function(){
         let emu = new Emulator("unsupported");
 
         it("should be skipped", function(){
-            this.timeout(15000);
             return emu.clear_context(user_id).then(function(){
                 let event = emu.create_unsupported_event(user_id);
                 return emu.send(event);
             }).then(function(context){
-                should.not.exist(context);
+                context.should.equal("OK");
             });
         });
     });

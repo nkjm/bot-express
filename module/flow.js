@@ -1,19 +1,16 @@
 "use strict";
 
 const debug = require("debug")("bot-express:flow");
-const crypto = require("crypto");
 const Bot = require("./bot"); // Libraries to be exposed to skill.
-const Nlu = require("./nlu");
 const Context = require("./context");
 
 module.exports = class Flow {
-    constructor(options, logger, messenger, event, context){
-        this.logger = logger;
+    constructor(options, slib, event, context){
         this.options = options;
-        this.messenger = messenger;
+        this.slib = slib;
         this.event = event;
         this.context = context;
-        this.bot = new Bot(this.options, this.logger, this.event, this.context, this.messenger);
+        this.bot = new Bot(this.options, this.slib, this.event, this.context);
 
         if (this.context.intent && this.context.intent.name){
             debug(`Init and reviving skill instance.`);
@@ -35,7 +32,7 @@ module.exports = class Flow {
      * @return {Boolean}
      */
     is_intent_postback(event){
-        const payload = this.messenger.extract_param_value(event);
+        const payload = this.slib.messenger.extract_param_value(event);
 
         if (typeof payload === "object"){
             if (payload.data){
@@ -98,6 +95,7 @@ module.exports = class Flow {
             debug(`Found skill: "${skill_name}".`);
             let Skill = require(`${this.options.skill_path}${skill_name}`);
             skill = new Skill(intent.config);
+            skill.path = this.options.skill_path;
         }
 
         skill.type = skill_name;
@@ -370,8 +368,7 @@ module.exports = class Flow {
         }
 
         debug("Going to check if we can identify the intent.");
-        let nlu = new Nlu(this.options.nlu);
-        intent = await nlu.identify_intent(payload, {
+        intent = await this.slib.nlu.identify_intent(payload, {
             session_id: this.bot.extract_session_id(),
             language: this.context.sender_language
         });
@@ -632,7 +629,7 @@ module.exports = class Flow {
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
         // Log skill status.
-        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
             context: this.context
         });
 
@@ -693,7 +690,7 @@ module.exports = class Flow {
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
         // Log skill status.
-        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
             context: this.context
         });
 
@@ -973,7 +970,7 @@ module.exports = class Flow {
         }
 
         // Log skill status.
-        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "completed", {
+        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "completed", {
             context: this.context
         });
 

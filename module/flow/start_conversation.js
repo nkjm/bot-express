@@ -3,12 +3,11 @@
 Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
 const Flow = require("../flow");
-const Nlu = require("../nlu");
 
 module.exports = class StartConversationFlow extends Flow {
 
-    constructor(options, logger, messenger, event, context) {
-        super(options, logger, messenger, event, context);
+    constructor(options, slib, event, context) {
+        super(options, slib, event, context);
     }
 
     /**
@@ -21,7 +20,7 @@ module.exports = class StartConversationFlow extends Flow {
         let skip_translate, skip_identify_intent, skip_instantiate_skill, skip_begin, skip_process_params;
         
         // Check if this event type is supported in this flow.
-        if (!this.messenger.check_supported_event_type(this.event, "start_conversation")){
+        if (!this.slib.messenger.check_supported_event_type(this.event, "start_conversation")){
             debug(`This is unsupported event type in this flow so skip processing.`);
             return;
         }
@@ -40,7 +39,7 @@ module.exports = class StartConversationFlow extends Flow {
             // - payload is JSON and contains intent.
             // - payload is JSON.
             // - payload is not JSON (just a string).
-            let postback_payload = this.messenger.extract_postback_payload(this.event);
+            let postback_payload = this.slib.messenger.extract_postback_payload(this.event);
             try {
                 postback_payload = JSON.parse(postback_payload);
                 debug(`Postback payload is JSON format.`);
@@ -92,9 +91,8 @@ module.exports = class StartConversationFlow extends Flow {
 
         // Identify intent.
         if (!skip_identify_intent){
-            let nlu = new Nlu(this.options.nlu);
             debug(`Going to identify intent of ${translated_message_text}...`);
-            this.context.intent = await nlu.identify_intent(translated_message_text, {
+            this.context.intent = await this.slib.nlu.identify_intent(translated_message_text, {
                 session_id: this.bot.extract_session_id(),
                 language: this.context.sender_language
             });
@@ -126,7 +124,7 @@ module.exports = class StartConversationFlow extends Flow {
         }
 
         // Log skill status.
-        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
             context: this.context
         });
 
@@ -138,7 +136,7 @@ module.exports = class StartConversationFlow extends Flow {
         });
 
         // Log chat.
-        await this.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
+        await this.slib.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
 
         // Run begin().
         if (!skip_begin){

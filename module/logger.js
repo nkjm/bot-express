@@ -4,6 +4,9 @@ const debug = require("debug")("bot-express:logger");
 const fs = require("fs");
 const default_logger = "stdout";
 
+/**
+ * Logger class. *Context free
+ */
 module.exports = class Logger {
     /**
      * @constructor

@@ -10,3 +10,4 @@ deploy.sh
 bot-express-*.tgz
 *.key
 .DS_Store
+*.rdb

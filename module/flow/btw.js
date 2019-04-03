@@ -6,8 +6,8 @@ const Flow = require("../flow");
 
 module.exports = class BtwFlow extends Flow {
 
-    constructor(options, logger, messenger, event, context) {
-        super(options, logger, messenger, event, context);
+    constructor(options, slib, event, context) {
+        super(options, slib, event, context);
     }
 
     async run(){
@@ -17,7 +17,7 @@ module.exports = class BtwFlow extends Flow {
         let mind;
 
         // Check if this event type is supported in this flow.
-        if (!this.messenger.check_supported_event_type(this.event, "btw")){
+        if (!this.slib.messenger.check_supported_event_type(this.event, "btw")){
             debug(`This is unsupported event type in this flow so skip processing.`);
             return this.context;
         }
@@ -34,10 +34,10 @@ module.exports = class BtwFlow extends Flow {
         } else if (this.bot.identify_event_type(this.event) == "postback"){
             let postback_payload;
             try {
-                postback_payload = JSON.parse(this.messenger.extract_postback_payload(this.event));
+                postback_payload = JSON.parse(this.slib.messenger.extract_postback_payload(this.event));
                 debug(`Postback payload is JSON format.`);
             } catch(e) {
-                postback_payload = this.messenger.extract_postback_payload(this.event);
+                postback_payload = this.slib.messenger.extract_postback_payload(this.event);
                 debug(`Postback payload is not JSON format. We use as it is.`);
             }
 
@@ -113,7 +113,7 @@ module.exports = class BtwFlow extends Flow {
         });
 
         // Log chat.
-        await this.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
+        await this.slib.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
 
         // Run mind based flow.
         if (!skip_run_mind_based_flow){

@@ -12,13 +12,13 @@ module.exports = class MessengerFacebook {
 
     constructor(options){
         for (let p of REQUIRED_PARAMETERS){
-            if (!options.messenger.facebook[p]){
+            if (!options[p]){
                 throw new Error(`Required parameter: "${p}" for Facebook configuration not set.`);
             }
         }
 
-        this._app_secret = options.messenger.facebook.app_secret;
-        this._page_access_token = options.messenger.facebook.page_access_token;
+        this._app_secret = options.app_secret;
+        this._page_access_token = options.page_access_token;
         this.sdk = null; // TBC
     }
 

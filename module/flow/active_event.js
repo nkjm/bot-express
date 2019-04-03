@@ -6,8 +6,8 @@ const Flow = require("../flow");
 
 module.exports = class ActiveEventFlow extends Flow {
 
-    constructor(options, logger, messenger, event, context) {
-        super(options, logger, messenger, event, context);
+    constructor(options, slib, event, context) {
+        super(options, slib, event, context);
     }
 
     async run(){
@@ -21,7 +21,7 @@ module.exports = class ActiveEventFlow extends Flow {
         });
 
         // Log skill status.
-        await this.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
             context: this.context
         });
 

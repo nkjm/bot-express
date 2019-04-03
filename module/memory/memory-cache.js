@@ -2,16 +2,13 @@
 
 const memory_cache = require("memory-cache");
 const debug = require("debug")("bot-express:memory");
-const prefix = "botex_context_";
 
 class MemoryMemoryCache {
     /**
      * @constructor
-     * @param {Object} logger
      * @param {Object} options
      */
-    constructor(logger, options){
-        this.logger = logger;
+    constructor(options){
         this.client = memory_cache;
     }
 
@@ -19,6 +16,11 @@ class MemoryMemoryCache {
         return this.client.get(key);
     }
 
+    async put(key, context){
+        return this.client.put(key, context);
+    }
+
+    /*
     async put(key, context, retention){
         return this.client.put(key, context, retention * 1000, async (key, context) => {
             if (context.confirming && context.skill){
@@ -34,6 +36,7 @@ class MemoryMemoryCache {
             }
         });
     }
+    */
 
     async del(key){
         return this.client.del(key);

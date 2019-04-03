@@ -55,23 +55,25 @@ class Memory {
     @function
     @param {String} key - Key of the context.
     @param {context} context - Context object to store.
+    @param {*} bot - bot instance.
     @param {Number} retention - Lifetime of the context in seconds.
     @returns {Promise.<null>}
     */
-    async put(key, context, retention = this.retention){
+    async put(key, context, bot, retention = this.retention){
         context.updated_at = new Date().getTime();
 
         // Set timer.
         memory_cache.put(`${prefix_timer}${key}`, { 
             updated_at: context.updated_at, 
-            key: key
+            key: key,
+            bot: bot
         }, retention * 1000, async (timer_key, timer_value) => {
             debug("Context timer launching.");
 
             const context = await this.get(timer_value.key);
 
             // Check if the context is updated by other nodes. If updated, we do nothing.
-            if (context.updated_at === timer_value.updated_at){
+            if (context && context.updated_at === timer_value.updated_at){
                 debug("Confirmed this context is own by this node. Running expiration process..");
 
                 // If context indicates the conversation is not finished, we log aborted and run on_abort function.
@@ -96,7 +98,7 @@ class Memory {
                         const Skill = require(`${context.skill.path}${context.skill.type}`);
                         const skill = new Skill();
                         if (typeof skill.on_abort === "function"){
-                            await skill.on_abort(context);
+                            await skill.on_abort(timer_value.bot, context.event, context);
                         }
                     }
                 }
@@ -120,6 +122,10 @@ class Memory {
     @returns {Promise.<null>}
     */
     async del(key){
+        // Delete timer.
+        memory_cache.del(`${prefix_timer}${key}`);
+        
+        // Delete context.
         return this.store.del(`${prefix_context}${key}`);
     }
 

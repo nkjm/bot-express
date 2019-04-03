@@ -215,7 +215,7 @@ class Webhook {
                 updated_context._switch_intent = false;
                 updated_context._in_progress = false;
 
-                await this.slib.memory.put(memory_id, updated_context);
+                await this.slib.memory.put(memory_id, updated_context, flow.bot);
             }
 
             updated_context = await this.process_event({
@@ -251,7 +251,7 @@ class Webhook {
             updated_context.previous.event = event;
 
             debug("Updating context");
-            await this.slib.memory.put(memory_id, updated_context);
+            await this.slib.memory.put(memory_id, updated_context, flow.bot);
         }
 
         return updated_context;

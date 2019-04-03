@@ -17,3 +17,4 @@ sample_skill
 sample_service
 sample_translation
 sample_message
+*.rdb

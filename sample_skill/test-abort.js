@@ -13,8 +13,8 @@ module.exports = class SkillTestOnAbort {
 
     }
     
-    async on_abort(context){
-        console.log("on_abort!!")
+    async on_abort(bot, event, context){
+        console.log(`${bot.extract_sender_id()} left in confirming ${context.confirming}!`)
     }
 
     async finish(bot, event, context){

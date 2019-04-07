@@ -26,6 +26,6 @@ module.exports = class ActiveEventFlow extends Flow {
         });
 
         await super.begin();
-        return super.finish();
+        return super.respond();
     }
 };

@@ -153,6 +153,6 @@ module.exports = class StartConversationFlow extends Flow {
             }
         }
 
-        return super.finish();
+        return super.respond();
     } // End of run()
 };

@@ -57,6 +57,6 @@ module.exports = class PushFlow extends Flow {
         }
 
         // Finish.
-        return super.finish();
+        return super.respond();
     } // End of run()
 };

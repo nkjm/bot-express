@@ -105,6 +105,6 @@ module.exports = class ReplyFlow extends Flow {
             }
         }
         
-        return super.finish();
+        return super.respond();
     }
 }

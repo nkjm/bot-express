@@ -795,9 +795,9 @@ module.exports = class Flow {
         // Check condition. If condition is undefined or returns true, we collect this parameter.
         // If condition returns false, we skip this parameter.
         const param_key = await this._pop_parameter_key_to_collect();
-        // If there is no parameter to collect, we recursively run finish() to evaluate corrent context.
+        // If there is no parameter to collect, we recursively run respond() to evaluate corrent context.
         if (!param_key){
-            return await this.finish();
+            return await this.respond();
         }
 
         // Set param to be used in this method since there is a chance that either parameter.key or property.key would be the param.
@@ -812,8 +812,8 @@ module.exports = class Flow {
         // Check if this parameter has property.
         // If has, we collect them.
         if (param.property){
-            // parameter_key will be used in finish() to identify which parameter we should save properties to.
-            // to_confrim will be used in finish() to identify which confirmed parameter we should aggregate.
+            // parameter_key will be used in respond() to identify which parameter we should save properties to.
+            // to_confrim will be used in respond() to identify which confirmed parameter we should aggregate.
             // confirmed will be used to apply to parent parameter when all properties set.
             this.context.confirming_property = {
                 parameter_key: param_key,
@@ -892,10 +892,12 @@ module.exports = class Flow {
      * @async
      * @return {context}
      */
-    async finish(){
+    async respond(){
+        debug("Running respond()..");
+
         // If pause flag has been set, we stop processing remaining actions while keeping context.
         if (this.context._pause){
-            debug("Detected pause flag. We stop processing finish().");
+            debug("Detected pause flag. We stop processing.");
             this.context._pause = false;
             
             return this.context;
@@ -903,7 +905,7 @@ module.exports = class Flow {
 
         // If exit flag has been set, we stop processing remaining actions while keeping context except for confirming.
         if (this.context._exit){
-            debug("Detected exit flag. We stop processing finish().");
+            debug("Detected exit flag. We stop processing.");
             this.context.confirming = null;
             this.context._exit = false;
 
@@ -912,7 +914,7 @@ module.exports = class Flow {
 
         // If exit flag has been set, we stop processing remaining actions and clear context completely.
         if (this.context._init){
-            debug("Detected init flag. We stop processing finish().");
+            debug("Detected init flag. We stop processing.");
             this.context._clear = true;
 
             return this.context;
@@ -936,7 +938,7 @@ module.exports = class Flow {
                 // Apply aggregated property to parameter.
                 await this.bot.apply_parameter(param_key, confirmed_property);
 
-                return await this.finish();
+                return await this.respond();
             }
         }
 
@@ -955,18 +957,18 @@ module.exports = class Flow {
         }
 
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
-        debug("We have no parameters to confirm anymore. Going to perform final action.");
+        debug("We have no parameters to confirm anymore. Going to perform skill.finish().");
 
         // Execute finish method in skill.
         await this.context.skill.finish(this.bot, this.event, this.context);
 
-        // Double check if we have no parameters to confirm since developers can execute collect() method inside finish().
-        // If there is to_confirm param at this moment, we recursively execute finish().
+        // Double check if we have no parameters to confirm since developers can execute collect() method inside skill.finish().
+        // If there is to_confirm param at this moment, we recursively execute respond().
         if (this.context.to_confirm.length){
-            debug("Found parameters to confirm. Going run finish() recursively.");
+            debug("Found parameters to confirm. Going run respond() recursively.");
 
-            // Re-run finish().
-            return await this.finish();
+            // Re-run respond().
+            return await this.respond();
         }
 
         // Log skill status.

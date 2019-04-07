@@ -238,15 +238,6 @@ class Webhook {
             debug("Clearing context");
             await this.slib.memory.del(memory_id);
         } else {
-            // Delete skill from context except for skill name since we need this in skill-status logging.
-            /*
-            const skill_type = updated_context.skill.type;
-            delete updated_context.skill;
-            updated_context.skill = {
-                type: skill_type
-            }
-            */
-
             updated_context._in_progress = false;
             updated_context.previous.event = event;
 

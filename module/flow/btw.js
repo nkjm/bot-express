@@ -132,6 +132,6 @@ module.exports = class BtwFlow extends Flow {
         }
 
         // Finish.
-        return super.finish();
+        return super.respond();
     }
 }

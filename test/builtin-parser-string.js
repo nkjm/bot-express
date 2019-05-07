@@ -382,7 +382,7 @@ describe("Test builtin string parser", async function(){
             context.intent.name.should.equal("test-builtin-parser-string");
             context.confirming.should.equal("exclude");
 
-            context = await emu.send(emu.create_message_event(user_id, "cancel"));
+            context = await emu.send(emu.create_message_event(user_id, "hoge"));
 
             // Test
             context.confirming.should.equal("exclude");

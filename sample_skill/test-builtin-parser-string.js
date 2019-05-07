@@ -95,7 +95,7 @@ module.exports = class SkillTestBuiltinParserString {
                 parser: {
                     type: "string",
                     policy: {
-                        exclude: ["cancel"]
+                        exclude: ["hoge"]
                     }
                 }
             },

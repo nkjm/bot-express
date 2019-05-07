@@ -1,10 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:memory");
-const redis = require("redis");
-const Promise = require("bluebird");
-Promise.promisifyAll(redis.RedisClient.prototype);
-Promise.promisifyAll(redis.Multi.prototype);
+const Redis = require("ioredis");
 
 class MemoryRedis {
     /**
@@ -14,14 +11,22 @@ class MemoryRedis {
      * @param {String} [options.host] - IP address of the Redis server. *Either url or host and port is required.
      * @param {String} [options.port] - Port of the Redis server. *Either url or host and port is required.
      * @param {String} [options.password] - If set, client will run Redis auth command on connect.
-     * @param {boolean} [options.keyspace_notification=false] - If true, we duplicates context to detect skill abort and log it.
+     * @param {String} [options.tls] - If "enable", client will connect to server over TLS.
      */
     constructor(options){
-        this.client = redis.createClient(options);
+        const o = JSON.parse(JSON.stringify(options));
+
+        if (o.tls){
+            o.rejectUnauthorized = false;
+            o.requestCert = true;
+            o.agent = false;
+        }
+
+        this.client = new Redis(o);
     }
 
     async get(key){
-        const response = await this.client.getAsync(key);
+        const response = await this.client.get(key);
 
         if (!response) return;
 
@@ -40,18 +45,18 @@ class MemoryRedis {
             context = JSON.stringify(context);
         }
 
-        return this.client.setAsync(key, context);
+        return this.client.set(key, context);
     }
 
     async del(key){
-        await this.client.delAsync(key);
+        await this.client.del(key);
     }
 
     /**
      * @deprecated
      */
     async close(){
-        return this.client.quitAsync();
+        return this.client.quit();
     }
 }
 

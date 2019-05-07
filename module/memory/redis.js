@@ -15,14 +15,20 @@ class MemoryRedis {
      */
     constructor(options){
         const o = JSON.parse(JSON.stringify(options));
-
-        if (o.tls){
-            o.rejectUnauthorized = false;
-            o.requestCert = true;
-            o.agent = false;
+        
+        if (o.tls === "enable" || o.tls === true){
+            o.tls = {
+                rejectUnauthorized: false,
+                requestCert: true,
+                agent: false
+            }
         }
 
-        this.client = new Redis(o);
+        if (o.url){
+            this.client = new Redis(o.url, o);
+        } else {
+            this.client = new Redis(o);
+        }
     }
 
     async get(key){

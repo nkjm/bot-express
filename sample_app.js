@@ -54,7 +54,7 @@ server.use('/bot/webhook', bot_express({
         type: process.env.MEMORY_TYPE, // memory-cache | redis 
         retention: Number(process.env.MEMORY_RETENTION),
         options: { // Options for redis
-            url: process.env.REDIS_URL
+            url: process.env.REDIS_URL,
         }
     },
     logger: {

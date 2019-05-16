@@ -42,14 +42,12 @@ module.exports = class BtwFlow extends Flow {
             }
 
             if (typeof postback_payload == "object"){
-                if (postback_payload._type == "intent"){
-                    if (!postback_payload.intent || !postback_payload.intent.name){
-                        throw new Error("Recieved postback event and the payload indicates that this should contain intent but not found.");
-                    }
-
+                if (super.is_intent_postback(this.event)){
+                    // This is intent postback.
                     this.context.sender_language = postback_payload.language;
 
                     if (postback_payload.intent && postback_payload.intent.name == this.context.intent.name){
+                        // This is restart conversation.
                         debug(`We conluded that user has in mind to restart conversation.`);
                         skip_translate = true;
                         skip_identify_mind = true;
@@ -58,6 +56,7 @@ module.exports = class BtwFlow extends Flow {
                             intent: postback_payload.intent
                         };
                     } else if (postback_payload.intent && postback_payload.intent.name != this.context.intent.name){
+                        // This is change intent.
                         debug(`We conluded that user has in mind to change intent.`);
                         skip_translate = true;
                         skip_identify_mind = true;

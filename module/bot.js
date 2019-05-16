@@ -261,7 +261,7 @@ class Bot {
     }
 
     /**
-     * Manually apply value to the parameter. This will skip parser but still trigger reaction.
+     * Manually apply value to the parameter. We can select if parser and reaction would be conducted. 
      * @method
      * @async
      * @param {String} param_key - Name of the parameter to apply.

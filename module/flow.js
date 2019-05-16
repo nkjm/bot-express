@@ -32,29 +32,54 @@ module.exports = class Flow {
      * @return {Boolean}
      */
     is_intent_postback(event){
-        const payload = this.slib.messenger.extract_param_value(event);
+        if (this.bot.identify_event_type() !== "postback") return false;
+        
+        let payload = this.slib.messenger.extract_postback_payload(event);
 
-        if (typeof payload === "object"){
-            if (payload.data){
-                let postback_data;
-                try {
-                    postback_data = JSON.parse(payload.data);
-                } catch(e) {
-                    debug(`Postback payload.data is not JSON format so this is not intent postback.`);
-                    return false;
-                }
-
-                if (typeof postback_data === "object" && postback_data._type == "intent"){
-                    debug(`This is intent postback.`);
-                    if (!(postback_data.intent && postback_data.intent.name)){
-                        throw new Error(`It seems this is intent postback but intent is not set or invalid.`);
-                    }
-                    return true;
-                }
-            }
+        try {
+            payload = JSON.parse(payload);
+        } catch(e) {
+            debug(`Postback payload.data is not JSON format so this is not intent postback.`);
+            return false;
         }
 
-        return false;
+        if (typeof payload !== "object") return false;
+        if (payload._type !== "intent" && payload.type !== "intent") return false;
+        
+        if (!(payload.intent && payload.intent.name)){
+            throw new Error(`It seems this is intent postback but intent is not correctly set.`);
+        }
+
+        debug(`This is intent postback.`);
+        return true;
+    }
+
+    /**
+     * @method 
+     * @param {Object} event
+     * @return {Boolean}
+     */
+    is_process_parameters_postback(event){
+        if (this.bot.identify_event_type() !== "postback") return false;
+
+        let payload = this.slib.messenger.extract_postback_payload(event);
+
+        try {
+            payload = JSON.parse(payload);
+        } catch(e) {
+            debug(`Postback payload.data is not JSON format so this is not process parameters postback.`);
+            return false;
+        }
+
+        if (typeof payload !== "object") return false;
+        if (payload._type !== "process_parameters" && payload.type !== "process_parameters") return false;
+        
+        if (!payload.parameters){
+            throw new Error(`It seems this is process parameters postback but parameters is not set.`);
+        }
+
+        debug(`This is process parameters postback.`);
+        return true;
     }
 
     /**

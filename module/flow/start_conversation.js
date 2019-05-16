@@ -39,30 +39,27 @@ module.exports = class StartConversationFlow extends Flow {
             // - payload is JSON and contains intent.
             // - payload is JSON.
             // - payload is not JSON (just a string).
-            let postback_payload = this.slib.messenger.extract_postback_payload(this.event);
-            try {
-                postback_payload = JSON.parse(postback_payload);
-                debug(`Postback payload is JSON format.`);
 
-                if (postback_payload._type == "intent"){
-                    if (!postback_payload.intent || !postback_payload.intent.name){
-                        throw new Error("Recieved postback event and the payload indicates that this should contain intent but not found.");
-                    }
-                    debug("This is a postback event and we found intent inside payload.");
-                    skip_translate = true;
-                    skip_identify_intent = true;
-                    this.context.sender_language = postback_payload.language;
-                    this.context.intent = postback_payload.intent;
-                } else {
+            let postback_payload = this.slib.messenger.extract_postback_payload(this.event);
+            if (super.is_intent_postback(this.event)){
+                postback_payload = JSON.parse(postback_payload);
+                skip_translate = true;
+                skip_identify_intent = true;
+                this.context.sender_language = postback_payload.language;
+                this.context.intent = postback_payload.intent;
+            } else {
+                try {
+                    postback_payload = JSON.parse(postback_payload);
+
                     debug("This is a postback event and payload is JSON. It's impossible to identify intent so we use default skill.");
                     skip_translate = true;
                     skip_identify_intent = true;
                     this.context.intent = {
                         name: this.options.default_intent
                     };
+                } catch(e){
+                    debug(`Postback payload is not JSON format. We use as it is.`);
                 }
-            } catch(e) {
-                debug(`Postback payload is not JSON format. We use as it is.`);
             }
         }
 

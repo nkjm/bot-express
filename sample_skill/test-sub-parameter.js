@@ -68,9 +68,11 @@ module.exports = class SkillTestConfirmingProperty {
                 }
             },
             review_juminhyo_list: {
-                message: {
-                    type: "text",
-                    text: "以上でよろしいですか？"
+                message: async (bot, event, context) => {
+                    return {
+                        type: "text",
+                        text: "以上でよろしいですか？"
+                    }
                 },
                 parser: {
                     type: "list",

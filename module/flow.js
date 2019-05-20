@@ -786,7 +786,8 @@ module.exports = class Flow {
             this.context._parent = [];
         }
 
-        const parent_context = Object.assign({}, this.context);
+        const parent_context = JSON.parse(JSON.stringify(this.context));
+        delete parent_context.skill;
         parent_context.reason = "sub_skill";
         this.context._parent.unshift(parent_context);
 
@@ -804,6 +805,7 @@ module.exports = class Flow {
 
         // Save current context to _parent.
         const parent_context = JSON.parse(JSON.stringify(this.context));
+        delete parent_context.skill;
         parent_context.reason = "sub_parameter";
         this.context._parent.unshift(parent_context);
 

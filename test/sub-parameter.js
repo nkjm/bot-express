@@ -164,7 +164,7 @@ describe("Test sub parameter", async function(){
         });
     });
 
-    describe.only("If skill is launched by intent postback with parameters,", async function(){
+    describe("If skill is launched by intent postback with parameters,", async function(){
         it("set them.", async function(){
             let context = await emu.send(emu.create_postback_event(user_id, {
                 data: JSON.stringify({

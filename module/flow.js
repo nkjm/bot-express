@@ -661,6 +661,7 @@ module.exports = class Flow {
             intent: intent,
             flow: this.context._flow,
             event: this.context.event,
+            sender_language: this.context.sender_language
         })
         // Using Object.assign for updating context to keep original reference.
         Object.assign(this.context, context);

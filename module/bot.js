@@ -224,7 +224,7 @@ class Bot {
      * Check parameter type.
      * @method
      * @param {String} param_name - Parameter name.
-     * @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
+     * @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "sub_parameter" | "not_applicable"
      */
     check_parameter_type(param_name){
         if (this._context.skill.required_parameter && this._context.skill.required_parameter[param_name]){
@@ -233,9 +233,10 @@ class Bot {
             return "optional_parameter";
         } else if (this._context.skill.dynamic_parameter && this._context.skill.dynamic_parameter[param_name]){
             return "dynamic_parameter";
-        } else if (this._context.confirming_property){
-            return this._context.confirming_property.parameter_type;
+        } else if (this._context._sub_parameter){
+            return "sub_parameter";
         }
+
         return "not_applicable";
     }
 
@@ -271,6 +272,31 @@ class Bot {
     }
 
     /**
+     * Get parameter object by parameter name. 
+     * @param {String} param_name 
+     * @return {Object} Parameter object.
+     */
+    get_parameter(param_name){
+        const param = {};
+        param.name = param_name;
+        param.type = this.check_parameter_type(param.name);
+
+        if (param.type === "not_applicable"){
+            throw new Error(`Paramter: "${param.name}" not found in skill.`);
+        }
+
+        if (param.type === "sub_parameter"){
+            // Pick up sub parameter.
+            Object.assign(param, this._context.skill[this._context._parent_parameter.type][this._context._parent_parameter.name].sub_parameter[param.name]);
+        } else {
+            // Pick up parameter.
+            Object.assign(param, this._context.skill[param.type][param.name]);
+        }
+
+        return param;
+    }
+    
+    /**
      * Manually apply value to the parameter. We can select if parser and reaction would be conducted. 
      * @method
      * @async
@@ -280,8 +306,6 @@ class Bot {
      * @param {Boolean} [react=true] - Whether to run reaction.
      */ 
     async apply_parameter(param_name, param_value, parse = false, react = true){
-        const param_type = this.check_parameter_type(param_name);
-
         // Parse parameter.
         let parse_error;
         if (parse){
@@ -325,14 +349,7 @@ class Bot {
         debug(`Parsing following value for parameter "${param_name}"`);
         debug(JSON.stringify(param_value));
 
-        const param_type = this.check_parameter_type(param_name);
-
-        let param;
-        if (this._context.confirming_property){
-            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_name].property[param_name];
-        } else {
-            param = this._context.skill[param_type][param_name];
-        }
+        const param = this.get_parameter(param_name);
 
         let parser;
         if (param.parser){
@@ -395,55 +412,33 @@ class Bot {
      * @param {Boolean} [is_change]
      */
     add_parameter(param_name, param_value, is_change = false){
-        const param_type = this.check_parameter_type(param_name);
+        debug(`Adding ${JSON.stringify(param_value)} to parameter: ${param_name}..`)
 
-        let param;
-        if (this._context.confirming_property){
-            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_name].property[param_name];
-        } else {
-            param = this._context.skill[param_type][param_name];
-        }
+        const param = this.get_parameter(param_name);
 
         // Add the parameter to context.confirmed.
         // If the parameter should be list, we add value to the list.
         // IF the parameter should not be list, we just set the value.
         if (param.list){
+            debug(`This param is list so we push/unshift value.`);
             if (!(typeof param.list === "boolean" || typeof param.list === "object")){
                 throw new Error("list property should be boolean or object.");
             }
-            if (this._context.confirming_property){
-                if (!Array.isArray(this._context.confirming_property.confirmed[param_name])){
-                    this._context.confirming_property.confirmed[param_name] = [];
-                }
-                if (param.list === true){
-                    this._context.confirming_property.confirmed[param_name].unshift(param_value);
-                } else if (param.list.order === "new"){
-                    this._context.confirming_property.confirmed[param_name].unshift(param_value);
-                } else if (param.list.order === "old"){
-                    this._context.confirming_property.confirmed[param_name].push(param_value);
-                } else {
-                    this._context.confirming_property.confirmed[param_name].unshift(param_value);
-                }
+
+            if (!Array.isArray(this._context.confirmed[param_name])){
+                this._context.confirmed[param_name] = [];
+            }
+            if (param.list === true){
+                this._context.confirmed[param_name].unshift(param_value);
+            } else if (param.list.order === "new"){
+                this._context.confirmed[param_name].unshift(param_value);
+            } else if (param.list.order === "old"){
+                this._context.confirmed[param_name].push(param_value);
             } else {
-                if (!Array.isArray(this._context.confirmed[param_name])){
-                    this._context.confirmed[param_name] = [];
-                }
-                if (param.list === true){
-                    this._context.confirmed[param_name].unshift(param_value);
-                } else if (param.list.order === "new"){
-                    this._context.confirmed[param_name].unshift(param_value);
-                } else if (param.list.order === "old"){
-                    this._context.confirmed[param_name].push(param_value);
-                } else {
-                    this._context.confirmed[param_name].unshift(param_value);
-                }
+                this._context.confirmed[param_name].unshift(param_value);
             }
         } else {
-            if (this._context.confirming_property){
-                this._context.confirming_property.confirmed[param_name] = param_value;
-            } else {
-                this._context.confirmed[param_name] = param_value;
-            }
+            this._context.confirmed[param_name] = param_value;
         }
 
         // At the same time, add the parameter name to previously confirmed list. The order of this list is newest first.
@@ -481,14 +476,7 @@ class Bot {
             return;
         }
 
-        const param_type = this.check_parameter_type(param_name);
-
-        let param;
-        if (this._context.confirming_property){
-            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_name].property[param_name];
-        } else {
-            param = this._context.skill[param_type][param_name];
-        }
+        const param = this.get_parameter(param_name);
 
         if (param.reaction){
             debug(`Reaction for ${param_name} found. Performing reaction...`);

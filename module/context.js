@@ -18,7 +18,6 @@ module.exports = class Context {
         this.confirmed = o.confirmed || {}
         this.confirming = null
         this.to_confirm = []
-        this.confirming_property = null
         this.heard = o.heard || {}
         this.sender_language = o.sender_language || null
         this.translation = null
@@ -36,9 +35,11 @@ module.exports = class Context {
         this._pause = false
         this._exit = false
         this._init = false
-        this._digging = o._digging || false
         this._switch_intent = o._switch_intent || null
         this._parent = o._parent || []
+        this._parent_parameter = o._parent_parameter || {}
+        this._sub_skill = o._sub_skill || false
+        this._sub_parameter = o._sub_parameter || false
     }
 
     static get_archive(context){
@@ -51,7 +52,6 @@ module.exports = class Context {
             confirmed: context.confirmed,
             confirming: context.confirming,
             to_confirm: context.to_confirm,
-            confirming_property: context.confirming_property,
             heard: context.heard, 
             sender_language: context.sender_language,
             translation: context.transation
@@ -68,7 +68,6 @@ module.exports = class Context {
             intent: null,
             confirmed: {},
             confirming: null,
-            confirming_property: null,
             heard: {},
             sender_language: null,
             translation: null,
@@ -90,7 +89,7 @@ module.exports = class Context {
             _pause: false,
             _exit: false,
             _init: false,
-            _digging: false,
+            // _digging: false,
             _switch_intent: null
         }
     }

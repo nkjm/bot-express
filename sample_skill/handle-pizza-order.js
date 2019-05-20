@@ -8,7 +8,7 @@ module.exports = class SkillHandlePizzaOrder {
     constructor() {
         this.required_parameter = {
             pizza: {
-                message_to_confirm: {
+                message: {
                     type: "template",
                     altText: "ご注文のピザはお決まりでしょうか？ マルゲリータ、マリナーラからお選びください。",
                     template: {
@@ -25,7 +25,7 @@ module.exports = class SkillHandlePizzaOrder {
                     if (error){
                         if (value == "") return;
 
-                        bot.change_message_to_confirm("pizza", {
+                        bot.change_message("pizza", {
                             type: "text",
                             text: "恐れ入りますが当店ではマルゲリータかマリナーラしかございません。どちらになさいますか？"
                         });
@@ -38,7 +38,7 @@ module.exports = class SkillHandlePizzaOrder {
                 }
             },
             size: {
-                message_to_confirm: {
+                message: {
                     type: "template",
                     altText: "サイズはいかがいたしましょうか？ S、M、Lからお選びください。",
                     template: {
@@ -54,7 +54,7 @@ module.exports = class SkillHandlePizzaOrder {
                 parser: "dialogflow"
             },
             address: {
-                message_to_confirm: {
+                message: {
                     type: "text",
                     text: "お届け先の住所を教えていただけますか？"
                 },
@@ -90,7 +90,7 @@ module.exports = class SkillHandlePizzaOrder {
                 }
             },
             name: {
-                message_to_confirm: {
+                message: {
                     type: "text",
                     text: "最後に、お客様のお名前を教えていただけますか？"
                 },
@@ -102,7 +102,7 @@ module.exports = class SkillHandlePizzaOrder {
                 },
                 reaction: async (error, value, bot, event, context) => {
                     if (error){
-                        bot.change_message_to_confirm("name", {
+                        bot.change_message("name", {
                             type: "text",
                             text: "すみません、お名前は20文字まででお願いします。"
                         })

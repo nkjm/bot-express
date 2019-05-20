@@ -422,14 +422,7 @@ module.exports = class Flow {
 
             // Check if this is dig.
             if (this.context._flow == "reply" && this.context.confirming){
-                const param_type = this.bot.check_parameter_type(this.context.confirming);
-
-                let param;
-                if (this.context.confirming_property){
-                    param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_name].property[this.context.confirming];
-                } else {
-                    param = this.context.skill[param_type][this.context.confirming];
-                }
+                const param = this.bot.get_parameter(this.context.confirming);
 
                 // Check if sub skill is configured in the confirming parameter.
                 if (param.sub_skill && param.sub_skill.indexOf(intent.name) !== -1){
@@ -606,24 +599,6 @@ module.exports = class Flow {
     /**
      * @method
      * @async
-     * @param {Object} intent 
-     */
-    async dig(intent){
-        if (!Array.isArray(this.context._parent)){
-            this.context._parent = [];
-        }
-
-        const parent_context = Object.assign({}, this.context);
-        parent_context.reason = "sub_skill";
-        this.context._parent.unshift(parent_context);
-        // this.context._digging = true;
-
-        return this.change_intent(intent);
-    }
-
-    /**
-     * @method
-     * @async
      * @param {Object} intent
      */
     async restart_conversation(intent){
@@ -633,7 +608,7 @@ module.exports = class Flow {
             event: this.context.event,
         })
         // Using Object.assign for updating context to keep original reference.
-        this.context = Object.assign(this.context, context);
+        Object.assign(this.context, context);
 
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
@@ -676,6 +651,18 @@ module.exports = class Flow {
      * @async
      * @param {Object} intent 
      */
+    async dig(intent){
+
+        this.checkout_sub_skill();
+
+        return this.change_intent(intent);
+    }
+
+    /**
+     * @method
+     * @async
+     * @param {Object} intent 
+     */
     async change_intent(intent){
         // Get archive of current context.
         const archive = Context.get_archive(this.context);
@@ -689,13 +676,13 @@ module.exports = class Flow {
             confirmed: this.context.confirmed,
             heard: this.context.heard,
             sender_language: this.context.sender_language,
-            _parent: this.context._parent
-            // _digging: this.context._digging
+            _parent: this.context._parent,
+            _sub_skill: this.context._sub_skill
         })
         context.archive = archive;
 
         // Using Object.assign for updating context to keep original reference. Otherwise, reference of context between flow and bot or other script become different.
-        this.context = Object.assign(this.context, context);
+        Object.assign(this.context, context);
         
         // Re-instantiate skill since some params might been added dynamically.
         if (this.context.intent && this.context.intent.name){
@@ -748,10 +735,11 @@ module.exports = class Flow {
         await this.context.skill.begin(this.bot, this.event, this.context);
     }
 
+
     /**
      * @method
      * @async
-     * @return {Object}
+     * @return {Object} parameter
      */
     async pop_parameter_to_collect(){
         // Check if there is parameter to confirm.
@@ -760,34 +748,9 @@ module.exports = class Flow {
             return;
         }
 
-        const param_name = this.context.to_confirm[0];
-        const param_type = this.bot.check_parameter_type(param_name);
-
-        if (param_type === "not_applicable"){
-            throw new Error(`Paramter: "${param_name}" not found in skill.`);
-        }
-        if (!this.context.skill[param_type]){
-            throw new Error(`Paramter type: "${param_type}" not found in skill.`);
-        }
-
-        let param;
-        if (this.context.confirming_property && param_name !== this.context.confirming_property.parameter_name){
-            if (!(
-                    this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_name] && 
-                    this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_name].property && 
-                    this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_name].property[param_name])){
-                throw new Error(`Property: "${param_name}" not found in parameter "${this.context.confirming_property.parameter_name}".`);
-            }
-            param = this.context.skill[this.context.confirming_property.parameter_type][this.context.confirming_property.parameter_name].property[param_name];
-        } else {
-            if (!this.context.skill[param_type][param_name]){
-                throw new Error(`Parameter: "${param_name}" not found in skill.`);
-            }
-            param = this.context.skill[param_type][param_name]
-        }
-        param.name = param_name;
-        param.type = param_type;
-
+        // Extract parameter by name
+        const param = this.bot.get_parameter(this.context.to_confirm[0]);
+        
         // If condition is defined, we test it.
         if (param.condition){
             // Check if condition is properly implemented.
@@ -807,45 +770,56 @@ module.exports = class Flow {
         }
 
         // Check if this parameter has sub parameter. If does not, we simply return this param.
-        if (!param.parameter){
+        if (!param.sub_parameter){
             return param;
         }
        
-        // This param has sub parameter. We need to switch context for the sub parameter.
-        this.context._parent.push({
-            reason: "sub_parameter",
-            to_confirm: JSON.parse(JSON.stringify(this.context.to_confirm)),
-            confirming: param.name,
-            confirmed: JSON.parse(JSON.stringify(this.context.confirmed)),
-        });
-        this.context.to_confirm = Object.keys(param.parameter).reverse();
+        // This param has sub parameter. We need to checkout it. 
+        // By checkout, current context will be save to _parent and sub parameters will be set to to_confirm and confirmed will be cleared.
+        this.checkout_sub_parameter(param);
+
+        return await this.pop_parameter_to_collect();
+    }
+
+    checkout_sub_skill(){
+        if (!Array.isArray(this.context._parent)){
+            this.context._parent = [];
+        }
+
+        const parent_context = Object.assign({}, this.context);
+        parent_context.reason = "sub_skill";
+        this.context._parent.unshift(parent_context);
+
+        // Bit _sub_skill flag.
+        this.context._sub_skill = true;
+    }
+
+    checkout_sub_parameter(param){
+        if (!Array.isArray(this.context._parent)){
+            this.context._parent = [];
+        }
+
+        // Set parent param name to confirming.
+        this.context.confirming = param.name;
+
+        // Save current context to _parent.
+        const parent_context = JSON.parse(JSON.stringify(this.context));
+        parent_context.reason = "sub_parameter";
+        this.context._parent.unshift(parent_context);
+
+        // Bit _sub_parameter flag.
+        this.context._sub_parameter = true;
+
+        // Set sub parameters to to_confirm.
+        this.context.to_confirm = Object.keys(param.sub_parameter);
+        // Clear confirmed.
         this.context.confirmed = {};
-        this.context.parent_parameter = {
+        // Set parent information.
+        this.context._parent_parameter = {
+            type: param.type,
             name: param.name,
             list: param.list
         }
-        
-        /*
-        // This param has property. We need to expand it.
-        // parameter_name will be used in respond() to identify which parameter we should save properties to.
-        // to_confrim will be used in respond() to identify which confirmed parameter we should aggregate.
-        // confirmed will be used to apply to parent parameter when all properties set.
-        this.context.confirming_property = {
-            parameter_name: param_name,
-            parameter_type: param_type,
-            to_confirm: Object.keys(param.property).reverse(),
-            confirmed: {}
-        }
-        */
-
-        // Set context.to_confirm based on property.
-        /*
-        for (let prop_name of this.context.confirming_property.to_confirm){
-            this.context.to_confirm.unshift(prop_name);
-        }
-        */
-
-        return await this.pop_parameter_to_collect();
     }
 
     /**
@@ -957,22 +931,25 @@ module.exports = class Flow {
         }
 
         // If we're now confiming property, check if we got all the required properties.
-        if (this.context.to_confirm.length && this.context.confirming_property){
-            // While pop_parameter_to_collect() will be executed in _collect() again, it ends up with same result so should be harmless.
-            const param = await this.pop_parameter_to_collect();
+        if (this.context._sub_parameter){
+            if (Array.isArray(this.context.to_confirm) && this.context.to_confirm.length === 0){
+                // We got all the required sub parameters. Set them to parent parameter.
+                const parent_context = this.context._parent.shift();
+                if (this.context._parent_parameter.name !== parent_context.confirming){
+                    throw new Error(`Parent parameter name defined in sub context differs from confirming of parent context.`);
+                }
+                debug(`We have collected all the required sub parameters. Saving them to parent parameter: "${this.context._parent_parameter.name}".`);
 
-            // If param name is equal to confirming property's parameter, it means we collected all required properties so we're now ready to copy confirmed properties to context.confirmed.
-            if (param.name === this.context.confirming_property.parameter_name){
-                debug(`It seems we have all the required property so set it to parameter.`);
+                const collected_sub_parameters = JSON.parse(JSON.stringify(this.context.confirmed));
                 
-                // Copy confirmed property temporarily.
-                let confirmed_property = JSON.parse(JSON.stringify(this.context.confirming_property.confirmed));
+                delete parent_context.reason;
+                parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message);
 
-                // Clear confirming property object.
-                delete this.context.confirming_property;
+                // Get parent context back while keeping object pointer by Object.assgin().
+                Object.assign(this.context, parent_context);
 
-                // Apply aggregated property to parameter.
-                await this.bot.apply_parameter(param.name, confirmed_property);
+                // Apply collected sub parameters to parent parameter.
+                await this.bot.apply_parameter(this.context.confirming, collected_sub_parameters);
 
                 return await this.respond();
             }
@@ -1013,12 +990,15 @@ module.exports = class Flow {
         });
 
         // If this is sub skill, we concat previous message and get parent context back.
-        if (Array.isArray(this.context._parent) && this.context._parent.length > 0 && this.context._parent[0].reason === "sub_skill"){
-            const parent = this.context._parent.shift();
-            debug(`We finished sub skill and get back to parent skill "${parent.intent.name}".`);
-            parent.previous.message = this.context.previous.message.concat(parent.previous.message);
-            this.context = parent;
-            // this.context._digging = false;
+        if (this.context._sub_skill && Array.isArray(this.context._parent) && this.context._parent.length > 0 && this.context._parent[0].reason === "sub_skill"){
+            const parent_context = this.context._parent.shift();
+            debug(`We finished sub skill and get back to parent skill "${parent_context.intent.name}".`);
+
+            delete parent_context.reason;
+            parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message);
+
+            // Get parent context back while keeping object pointer by Object.assign().
+            Object.assign(this.context, parent_context);
 
             return this.context;
         }

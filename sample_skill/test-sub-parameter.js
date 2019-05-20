@@ -9,32 +9,35 @@ module.exports = class SkillTestConfirmingProperty {
                 list: {
                     order: "new"
                 },
-                property: {
+                sub_parameter: {
                     juminhyo_type: {
-                        message_to_confirm: async (bot, event, context) => {
+                        message: async (bot, event, context) => {
                             return {
                                 type: `text`,
                                 text: `必要な住民票を教えてください。`
                             }
                         },
                         parser: async (value, bot, event, context) => {
-                            return value;
+                            return bot.builtin_parser.list.parse(value, {
+                                list: ["住民票", "住民票除票", "記載事項証明", "abc"]
+                            })
                         },
                         reaction: async (error, value, bot, event, context) => {
                             if (value === "abc"){
                                 await bot.apply_parameter("quantity", 3);
                             }
-                        }
+                        },
+                        sub_skill: ["juminhyo_faq"]
                     },
                     whose: {
                         condition: async (bot, event, context) => {
                             debug("condition in whose");
-                            if (context.confirming_property.confirmed.juminhyo_type === "住民票"){
+                            if (context.confirmed.juminhyo_type === "住民票"){
                                 return true;
                             }
                             return false;
                         },
-                        message_to_confirm: async (bot, event, context) => {
+                        message: async (bot, event, context) => {
                             debug("message_to_confirm in whose");
                             return {
                                 type: "text",
@@ -50,10 +53,11 @@ module.exports = class SkillTestConfirmingProperty {
                         },
                         reaction: async (error, value, bot, event, context) => {
                             debug("reaction in whose");
-                        }
+                        },
+                        sub_skill: ["juminhyo_faq"]
                     },
                     quantity: {
-                        message_to_confirm: async (bot, event, context) => {
+                        message: async (bot, event, context) => {
                             return {
                                 type: "text",
                                 text: "何通必要ですか？"
@@ -64,7 +68,7 @@ module.exports = class SkillTestConfirmingProperty {
                 }
             },
             review_juminhyo_list: {
-                message_to_confirm: {
+                message: {
                     type: "text",
                     text: "以上でよろしいですか？"
                 },
@@ -90,21 +94,21 @@ module.exports = class SkillTestConfirmingProperty {
 
         this.optional_parameter = {
             juminhyo_to_remove: {
-                property: {
+                sub_parameter: {
                     juminhyo_type: {
-                        message_to_confrim: {
+                        message: {
                             type: "text",
                             text: "どの住民票を削除しますか？",
                         }
                     },
                     whose: {
                         condition: async (bot, event, context) => {
-                            if (context.confirming_property.confirmed.juminhyo_type === "住民票"){
+                            if (context.confirmed.juminhyo_type === "住民票"){
                                 return true;
                             }
                             return false;
                         },
-                        message_to_confirm: {
+                        message: {
                             type: "text",
                             text: "どなたの書類ですか？"
                         }

@@ -46,7 +46,7 @@ module.exports = class ReplyFlow extends Flow {
                 debug("Parameter was not applicable. We skip reaction and go to finish.");
             } else if (!applied_parameter.error){
                 // Parameter accepted.
-                await this.bot.react(applied_parameter.error, applied_parameter.param_key, applied_parameter.param_value);
+                await this.bot.react(applied_parameter.error, applied_parameter.param_name, applied_parameter.param_value);
             } else {
                 // Parameter rejected.
                 
@@ -82,7 +82,7 @@ module.exports = class ReplyFlow extends Flow {
                     await super.change_intent(mind.intent);
                 } else if (mind.result == "change_parameter"){
                     // Now there is no chance to run this case since detecting change parameter in reply flow is very likely to be false positive.
-                    applied_parameter = await super.change_parameter(response.parameter.key, translated_param_value)
+                    applied_parameter = await super.change_parameter(mind.parameter.name, translated_param_value)
                     await this.bot.react(applied_parameter.error, this.context.confirming, param_value);
                 } else if (mind.result == "no_idea"){
                     await this.bot.react(applied_parameter.error, this.context.confirming, param_value);

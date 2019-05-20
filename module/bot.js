@@ -223,15 +223,15 @@ class Bot {
     /**
      * Check parameter type.
      * @method
-     * @param {String} key - Parameter name.
+     * @param {String} param_name - Parameter name.
      * @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "not_applicable"
      */
-    check_parameter_type(key){
-        if (this._context.skill.required_parameter && this._context.skill.required_parameter[key]){
+    check_parameter_type(param_name){
+        if (this._context.skill.required_parameter && this._context.skill.required_parameter[param_name]){
             return "required_parameter";
-        } else if (this._context.skill.optional_parameter && this._context.skill.optional_parameter[key]){
+        } else if (this._context.skill.optional_parameter && this._context.skill.optional_parameter[param_name]){
             return "optional_parameter";
-        } else if (this._context.skill.dynamic_parameter && this._context.skill.dynamic_parameter[key]){
+        } else if (this._context.skill.dynamic_parameter && this._context.skill.dynamic_parameter[param_name]){
             return "dynamic_parameter";
         } else if (this._context.confirming_property){
             return this._context.confirming_property.parameter_type;
@@ -240,48 +240,58 @@ class Bot {
     }
 
     /**
-     * Change the message to collect specified parameter.
+     * Wrapper of change_message for backward compatibility.
      * @method
-     * @param {String} param_key - Name of the parameter to collect.
+     * @param {String} param_name - Name of the parameter to collect.
      * @param {MessageObject} message - The message object.
      */
-    change_message_to_confirm(param_key, message){
-        let param_type = this.check_parameter_type(param_key);
+    change_message_to_confirm(param_name, message){
+        this.change_message(param_name, message);
+    }
+
+    /**
+     * Change the message to collect specified parameter.
+     * @method
+     * @param {String} param_name - Name of the parameter to collect.
+     * @param {MessageObject} message - The message object.
+     */
+    change_message(param_name, message){
+        let param_type = this.check_parameter_type(param_name);
 
         if (param_type == "not_applicable"){
             debug("The parameter to change message not found.");
             throw new Error("The parameter to change message not found.")
         }
 
-        this._context.skill[param_type][param_key].message_to_confirm = message;
+        this._context.skill[param_type][param_name].message = message;
 
         // Record this change.
         debug(`Saving change log to change_parameter_history...`);
-        this._save_param_change_log(param_type, param_key, {message_to_confirm: message});
+        this._save_param_change_log(param_type, param_name, {message: message});
     }
 
     /**
      * Manually apply value to the parameter. We can select if parser and reaction would be conducted. 
      * @method
      * @async
-     * @param {String} param_key - Name of the parameter to apply.
+     * @param {String} param_name - Name of the parameter to apply.
      * @param {*} param_value - Value to apply.
      * @param {Boolean} [parse=false] - Whether to run parser.
      * @param {Boolean} [react=true] - Whether to run reaction.
      */ 
-    async apply_parameter(param_key, param_value, parse = false, react = true){
-        const param_type = this.check_parameter_type(param_key);
+    async apply_parameter(param_name, param_value, parse = false, react = true){
+        const param_type = this.check_parameter_type(param_name);
 
         // Parse parameter.
         let parse_error;
         if (parse){
             try {
-                param_value = await this.parse_parameter(param_key, param_value);
+                param_value = await this.parse_parameter(param_name, param_value);
             } catch (e){
                 if (e.name === "Error"){
                     // This should be intended exception in parser.
                     parse_error = e;
-                    debug(`Parser rejected following value for parameter: "${param_key}".`);
+                    debug(`Parser rejected following value for parameter: "${param_name}".`);
                     debug(param_value);
                     if (e.message){
                         debug(e.message);
@@ -294,11 +304,11 @@ class Bot {
         }
 
         // Add parameter to context.
-        this.add_parameter(param_key, param_value);
+        this.add_parameter(param_name, param_value);
 
         // Take reaction.
         if (react){
-            await this.react(parse_error, param_key, param_value);
+            await this.react(parse_error, param_name, param_value);
         }
     }
 
@@ -306,31 +316,31 @@ class Bot {
      * Run parser defined in skill.
      * @method
      * @async
-     * @param {String} param_key - Parameter name.
+     * @param {String} param_name - Parameter name.
      * @param {*} param_value - Value to validate.
      * @param {Boolean} [strict=false] - If true, reject if parser does not exist. This option is for imternal use.
      * @returns {*}
     */
-    async parse_parameter(param_key, param_value, strict = false){
-        debug(`Parsing following value for parameter "${param_key}"`);
+    async parse_parameter(param_name, param_value, strict = false){
+        debug(`Parsing following value for parameter "${param_name}"`);
         debug(JSON.stringify(param_value));
 
-        const param_type = this.check_parameter_type(param_key);
+        const param_type = this.check_parameter_type(param_name);
 
         let param;
         if (this._context.confirming_property){
-            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_key].property[param_key];
+            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_name].property[param_name];
         } else {
-            param = this._context.skill[param_type][param_key];
+            param = this._context.skill[param_type][param_name];
         }
 
         let parser;
         if (param.parser){
             debug("Parse method found in parameter definition.");
             parser = param.parser;
-        } else if (this._context.skill["parse_" + param_key]){
+        } else if (this._context.skill["parse_" + param_name]){
             debug("Parse method found in default parser function name.");
-            parser = this._context.skill["parse_" + param_key];
+            parser = this._context.skill["parse_" + param_name];
         } else {
             if (strict){
                 throw new Error("Parser not found.");
@@ -357,7 +367,7 @@ class Bot {
         } else if (typeof parser === "string"){
             // We use builtin parser.
             debug(`Parser is string so we use builtin parser: ${parser}.`);
-            return this.builtin_parser[parser].parse(param_value, { parameter_name: param_key });
+            return this.builtin_parser[parser].parse(param_value, { parameter_name: param_name });
         } else if (typeof parser === "object"){
             // We use builtin parser.
             if (!parser.type){
@@ -367,12 +377,12 @@ class Bot {
 
             // Add parameter_name to policy if it is not set.
             if (!parser.policy) parser.policy = {};
-            parser.policy.parameter_name = parser.policy.parameter_name || param_key;
+            parser.policy.parameter_name = parser.policy.parameter_name || param_name;
 
             return this.builtin_parser[parser.type].parse(param_value, parser.policy);
         } else {
             // Invalid parser.
-            throw new Error(`Parser for the parameter: ${param_key} is invalid.`);
+            throw new Error(`Parser for the parameter: ${param_name} is invalid.`);
         }
     }
 
@@ -380,18 +390,18 @@ class Bot {
     /**
      * Add parameter to context as confirmed.
      * @method
-     * @param {String} param_key 
+     * @param {String} param_name 
      * @param {*} param_value 
      * @param {Boolean} [is_change]
      */
-    add_parameter(param_key, param_value, is_change = false){
-        const param_type = this.check_parameter_type(param_key);
+    add_parameter(param_name, param_value, is_change = false){
+        const param_type = this.check_parameter_type(param_name);
 
         let param;
         if (this._context.confirming_property){
-            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_key].property[param_key];
+            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_name].property[param_name];
         } else {
-            param = this._context.skill[param_type][param_key];
+            param = this._context.skill[param_type][param_name];
         }
 
         // Add the parameter to context.confirmed.
@@ -402,55 +412,55 @@ class Bot {
                 throw new Error("list property should be boolean or object.");
             }
             if (this._context.confirming_property){
-                if (!Array.isArray(this._context.confirming_property.confirmed[param_key])){
-                    this._context.confirming_property.confirmed[param_key] = [];
+                if (!Array.isArray(this._context.confirming_property.confirmed[param_name])){
+                    this._context.confirming_property.confirmed[param_name] = [];
                 }
                 if (param.list === true){
-                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
+                    this._context.confirming_property.confirmed[param_name].unshift(param_value);
                 } else if (param.list.order === "new"){
-                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
+                    this._context.confirming_property.confirmed[param_name].unshift(param_value);
                 } else if (param.list.order === "old"){
-                    this._context.confirming_property.confirmed[param_key].push(param_value);
+                    this._context.confirming_property.confirmed[param_name].push(param_value);
                 } else {
-                    this._context.confirming_property.confirmed[param_key].unshift(param_value);
+                    this._context.confirming_property.confirmed[param_name].unshift(param_value);
                 }
             } else {
-                if (!Array.isArray(this._context.confirmed[param_key])){
-                    this._context.confirmed[param_key] = [];
+                if (!Array.isArray(this._context.confirmed[param_name])){
+                    this._context.confirmed[param_name] = [];
                 }
                 if (param.list === true){
-                    this._context.confirmed[param_key].unshift(param_value);
+                    this._context.confirmed[param_name].unshift(param_value);
                 } else if (param.list.order === "new"){
-                    this._context.confirmed[param_key].unshift(param_value);
+                    this._context.confirmed[param_name].unshift(param_value);
                 } else if (param.list.order === "old"){
-                    this._context.confirmed[param_key].push(param_value);
+                    this._context.confirmed[param_name].push(param_value);
                 } else {
-                    this._context.confirmed[param_key].unshift(param_value);
+                    this._context.confirmed[param_name].unshift(param_value);
                 }
             }
         } else {
             if (this._context.confirming_property){
-                this._context.confirming_property.confirmed[param_key] = param_value;
+                this._context.confirming_property.confirmed[param_name] = param_value;
             } else {
-                this._context.confirmed[param_key] = param_value;
+                this._context.confirmed[param_name] = param_value;
             }
         }
 
-        // At the same time, add the parameter key to previously confirmed list. The order of this list is newest first.
+        // At the same time, add the parameter name to previously confirmed list. The order of this list is newest first.
         if (!is_change){
-            this._context.previous.confirmed.unshift(param_key);
-            this._context.previous.processed.unshift(param_key);
+            this._context.previous.confirmed.unshift(param_name);
+            this._context.previous.processed.unshift(param_name);
         }
 
         // Remove item from to_confirm.
-        let index_to_remove = this._context.to_confirm.indexOf(param_key);
+        let index_to_remove = this._context.to_confirm.indexOf(param_name);
         if (index_to_remove !== -1){
-            debug(`Removing ${param_key} from to_confirm.`);
+            debug(`Removing ${param_name} from to_confirm.`);
             this._context.to_confirm.splice(index_to_remove, 1);
         }
 
         // Clear confirming.
-        if (this._context.confirming === param_key){
+        if (this._context.confirming === param_name){
             debug(`Clearing confirming.`);
             this._context.confirming = null;
         }
@@ -461,35 +471,34 @@ class Bot {
      * @method
      * @async
      * @param {Error} error
-     * @param {String} param_key
+     * @param {String} param_name 
      * @param {*} param_value
      */
-    async react(error, param_key, param_value){
+    async react(error, param_name, param_value){
         // If pause or exit flag found, we skip remaining process.
         if (this._context._pause || this._context._exit || this._context._init){
             debug(`Detected pause or exit or init flag so we skip reaction.`);
             return;
         }
 
-        const param_type = this.check_parameter_type(param_key);
+        const param_type = this.check_parameter_type(param_name);
 
         let param;
         if (this._context.confirming_property){
-            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_key].property[param_key];
+            param = this._context.skill[this._context.confirming_property.parameter_type][this._context.confirming_property.parameter_name].property[param_name];
         } else {
-            param = this._context.skill[param_type][param_key];
+            param = this._context.skill[param_type][param_name];
         }
 
         if (param.reaction){
-            debug(`Reaction for ${param_key} found. Performing reaction...`);
+            debug(`Reaction for ${param_name} found. Performing reaction...`);
             await param.reaction(error, param_value, this, this.event, this._context);
-        } else if (this._context.skill["reaction_" + param_key]){
-            debug(`Reaction for ${param_key} found. Performing reaction...`);
-            await this._context.skill["reaction_" + param_key](error, param_value, this, this.event, this._context);
+        } else if (this._context.skill["reaction_" + param_name]){
+            debug(`Reaction for ${param_name} found. Performing reaction...`);
+            await this._context.skill["reaction_" + param_name](error, param_value, this, this.event, this._context);
         } else {
             // This parameter does not have reaction so do nothing.
-            debug(`Reaction for ${param_key} not found.`);
-            return;
+            debug(`Reaction for ${param_name} not found.`);
         }
     }
 
@@ -498,10 +507,10 @@ class Bot {
      * @method
      * @private
      * @param {String} param_type - required_parameter | optional_parameter | dynamic_parameter
-     * @param {String} param_key - Name of the parameter.
+     * @param {String} param_name - Name of the parameter.
      * @param {Skill#skill_parameter} param - Skill parameter object.
      */
-    _save_param_change_log(param_type, param_key, param_orig){
+    _save_param_change_log(param_type, param_name, param_orig){
         // We copy param_orig to param to prevent propagate the change in this function to original object.
         let param = Object.assign({}, param_orig);
 
@@ -509,9 +518,11 @@ class Bot {
             this._context.param_change_history= [];
         }
 
-        if (param.message_to_confirm){
-            if (typeof param.message_to_confirm === "function"){
-                param.message_to_confirm = param.message_to_confirm.toString();
+        if (param.message || param.message_to_confirm){
+            if (param.message && typeof param.message === "function"){
+                param.message = param.message.toString();
+            } else if (param.message_to_confirm && typeof param.message_to_confirm === "function"){
+                param.message = param.message_to_confirm.toString();
             }
         }
         if (param.condition){
@@ -530,7 +541,7 @@ class Bot {
 
         this._context.param_change_history.unshift({
             type: param_type,
-            key: param_key,
+            name: param_name,
             param: param
         });
     }
@@ -547,11 +558,11 @@ class Bot {
             options.dedup = true;
         }
 
-        let parameter_key;
+        let param_name;
 
         if (typeof arg == "string"){
             debug(`Reserving collection of parameter: ${arg}.`);
-            parameter_key = arg;
+            param_name = arg;
         } else if (typeof arg == "object"){
             if (Object.keys(arg).length !== 1){
                 throw("Malformed parameter container object. You can pass just 1 parameter.");
@@ -559,38 +570,38 @@ class Bot {
 
             debug(`Reserving collection of parameter: ${Object.keys(arg)[0]}.`);
             let parameter_container = arg;
-            parameter_key = Object.keys(parameter_container)[0];
+            param_name = Object.keys(parameter_container)[0];
     
-            if (this._context.skill.required_parameter && this._context.skill.required_parameter[parameter_key]){
-                // If we have parameter of same parameter key, override it.
+            if (this._context.skill.required_parameter && this._context.skill.required_parameter[param_name]){
+                // If we have parameter of same parameter name, override it.
                 debug(`Found the parameter in required_parameter so we override it.`);
                 Object.assign(this._context.skill.required_parameter, parameter_container);
-                this._save_param_change_log("required_parameter", parameter_key, parameter_container[parameter_key]);
-            } else if (this._context.skill.optional_parameter && this._context.skill.optional_parameter[parameter_key]){
-                // If we have parameter of same parameter key, override it.
+                this._save_param_change_log("required_parameter", param_name, parameter_container[param_name]);
+            } else if (this._context.skill.optional_parameter && this._context.skill.optional_parameter[param_name]){
+                // If we have parameter of same parameter name, override it.
                 debug(`Found the parameter in optional_parameter so we override it.`);
                 Object.assign(this._context.skill.optional_parameter, parameter_container);
-                this._save_param_change_log("optional_parameter", parameter_key, parameter_container[parameter_key]);
+                this._save_param_change_log("optional_parameter", param_name, parameter_container[param_name]);
             } else {
-                // If we do not have parameter of same parameter key, add it as dynamic parameter.
+                // If we do not have parameter of same parameter name, add it as dynamic parameter.
                 debug(`The parameter not found in skill so we add it as dynamic parameter.`);
                 if (this._context.skill.dynamic_parameter === undefined) this._context.skill.dynamic_parameter = {};
                 Object.assign(this._context.skill.dynamic_parameter, parameter_container);
-                this._save_param_change_log("dynamic_parameter", parameter_key, parameter_container[parameter_key]);
+                this._save_param_change_log("dynamic_parameter", param_name, parameter_container[param_name]);
             }
         } else {
             throw(new Error("Invalid argument."));
         }
 
         // If the parameter is already in the to_confirm list and dedup is true, we remove it to avoid duplicate.
-        let index_to_remove = this._context.to_confirm.indexOf(parameter_key);
+        let index_to_remove = this._context.to_confirm.indexOf(param_name);
         if (index_to_remove !== -1 && options.dedup){
-            debug(`We found this parameter has already been confirmed so remove ${parameter_key} from to_confirm to dedup.`);
+            debug(`We found this parameter has already been confirmed so remove ${param_name} from to_confirm to dedup.`);
             this._context.to_confirm.splice(index_to_remove, 1);
         }
 
-        debug(`Reserved collection of parameter: ${parameter_key}. We put it to the top of to_confirm list.`);
-        this._context.to_confirm.unshift(parameter_key);
+        debug(`Reserved collection of parameter: ${param_name}. We put it to the top of to_confirm list.`);
+        this._context.to_confirm.unshift(param_name);
     }
 
     /**

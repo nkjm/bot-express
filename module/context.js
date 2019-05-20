@@ -14,6 +14,7 @@ module.exports = class Context {
         this.launched_at = o.launched_at || new Date().getTime()
         this.event = o.event
         this.intent = o.intent
+        this.global = o.global || {}
         this.confirmed = o.confirmed || {}
         this.confirming = null
         this.to_confirm = []
@@ -46,6 +47,7 @@ module.exports = class Context {
             launched_at: context.launched_at,
             event: context.event, 
             intent: context.intent,
+            global: context.global,
             confirmed: context.confirmed,
             confirming: context.confirming,
             to_confirm: context.to_confirm,

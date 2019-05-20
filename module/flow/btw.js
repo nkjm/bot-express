@@ -123,8 +123,8 @@ module.exports = class BtwFlow extends Flow {
             } else if (mind.result == "change_intent"){
                 await super.change_intent(mind.intent);
             } else if (mind.result == "change_parameter"){
-                const applied_parameter = await super.change_parameter(mind.parameter.key, mind.payload);
-                await this.bot.react(null, applied_parameter.param_key, applied_parameter.param_value);
+                const applied_parameter = await super.change_parameter(mind.parameter.name, mind.payload);
+                await this.bot.react(null, applied_parameter.param_name, applied_parameter.param_value);
             } else if (mind.result == "no_idea"){
                 await super.change_intent(mind.intent);
             }

@@ -238,29 +238,61 @@ module.exports = class Flow {
             this.context.heard = {};
         }
 
+        // Retrieve parameter to collect next.
+        // If the parameter has sub parameters, pop_parameter_to_collect checkout the sub parameters.
+        // If there is no more to_confirm, it returns null.
         const param = await this.pop_parameter_to_collect();
 
         if (!param){
+            if (this.context._sub_parameter && this.context._parent_parameter.list){
+                // While there is no parameters to confirm, this is sub parameter. There is a chance to be able to apply some more parameter.
+                const parent_parameter = JSON.parse(JSON.stringify(this.context._parent_parameter));
+                const sub_parameter_list = Object.keys(this.context.confirmed);
+
+                await this.apply_sub_parameters();
+
+                // If input parameter still has value for the parameter, we process it again.
+                if (sub_parameter_list.length > 0 && Array.isArray(parameters[sub_parameter_list[0]]) && parameters[sub_parameter_list[0]].length > 0){
+                    this.bot.collect(parent_parameter.name);
+                }
+                
+                return await this.process_parameters(parameters);
+            }
+
             debug("There is no parameters to confirm for now but we save the input parameters as heard just in case. Exit process parameters.");
             Object.assign(this.context.heard, parameters);
             return;
         }
 
-        if (typeof parameters[param.name] === "undefined"){
+        if (typeof parameters[param.name] === "undefined" || parameters[param.name] === []){
             debug(`Input parameters does not contain "${param.name}" which we should process now. We save the rest of input parameters as heard in context and exit process parameters.`);
             Object.assign(this.context.heard, parameters);
             return;
         }
 
         // Parse and add parameter.
-        const applied_parameter = await this.apply_parameter(param.name, parameters[param.name]);
+        let param_value = parameters[param.name];
+        // If this is sub parameter and parent parameter is list and input parameter is array, we apply them one by one.
+        if (this.context._sub_parameter && this.context._parent_parameter.list && Array.isArray(parameters[param.name])){
+            param_value = parameters[param.name][0];
+        }
+        const applied_parameter = await this.apply_parameter(param.name, param_value);
 
         // Take reaction.
         await this.bot.react(applied_parameter.error, applied_parameter.param_name, applied_parameter.param_value);
 
         // Delete processed parameter.
         const updated_parameters = JSON.parse(JSON.stringify(parameters));
-        delete updated_parameters[applied_parameter.param_name];
+        // If this is sub parameter and parent parameter is list and input parameter is array, we remove element from array. 
+        if (this.context._sub_parameter && this.context._parent_parameter.list && Array.isArray(updated_parameters[applied_parameter.param_name])){
+            updated_parameters[applied_parameter.param_name].shift();
+            // If the number of elements turned to 0, we delete the input param.
+            if (updated_parameters[applied_parameter.param_name].length === 0){
+                delete updated_parameters[applied_parameter.param_name];
+            }
+        } else {
+            delete updated_parameters[applied_parameter.param_name];
+        }
 
         debug("Updated input parameters follow.");
         debug(updated_parameters);
@@ -321,6 +353,29 @@ module.exports = class Flow {
             param_name: param_name,
             param_value: param_value
         }
+    }
+
+    async apply_sub_parameters(){
+        if (!(Array.isArray(this.context._parent) && this.context._parent.length > 0)){
+            throw new Error(`There is no parent context.`);
+        }
+
+        const parent_context = this.context._parent.shift();
+        if (this.context._parent_parameter.name !== parent_context.confirming){
+            throw new Error(`Parent parameter name defined in sub context differs from confirming of parent context.`);
+        }
+
+        debug(`Saving sub parameters to parent parameter: "${this.context._parent_parameter.name}".`);
+
+        const collected_sub_parameters = JSON.parse(JSON.stringify(this.context.confirmed));
+        delete parent_context.reason;
+        parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message);
+        
+        // Get parent context back while keeping object pointer by Object.assgin().
+        Object.assign(this.context, parent_context);
+
+        // Apply collected sub parameters to parent parameter.
+        await this.bot.apply_parameter(this.context.confirming, collected_sub_parameters);
     }
 
     /**
@@ -932,10 +987,13 @@ module.exports = class Flow {
             return this.context;
         }
 
-        // If we're now confiming property, check if we got all the required properties.
+        // If we're now confiming sub parameters, check if we got all the required parameters. 
         if (this.context._sub_parameter){
             if (Array.isArray(this.context.to_confirm) && this.context.to_confirm.length === 0){
                 // We got all the required sub parameters. Set them to parent parameter.
+                await this.apply_sub_parameters();
+
+                /*
                 const parent_context = this.context._parent.shift();
                 if (this.context._parent_parameter.name !== parent_context.confirming){
                     throw new Error(`Parent parameter name defined in sub context differs from confirming of parent context.`);
@@ -952,6 +1010,7 @@ module.exports = class Flow {
 
                 // Apply collected sub parameters to parent parameter.
                 await this.bot.apply_parameter(this.context.confirming, collected_sub_parameters);
+                */
 
                 return await this.respond();
             }

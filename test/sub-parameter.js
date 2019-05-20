@@ -197,5 +197,119 @@ describe("Test sub parameter", async function(){
             context._parent_parameter.should.deep.equal({});
         });
     });
+
+    describe("If skill is launched by intent postback with multi-set of parameters,", async function(){
+        it("set them all.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-sub-parameter",
+                        parameters: {
+                            juminhyo_type: ["住民票", "住民票"],
+                            whose: ["個人", "世帯全員"],
+                            quantity: [2, 1]
+                        }
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-sub-parameter");
+
+            should.not.exist(context.confirmed.juminhyo_type);
+            should.not.exist(context.confirmed.whose);
+            should.not.exist(context.confirmed.quantity);
+            context.confirmed.juminhyo_list.should.deep.equal([{
+                juminhyo_type: "住民票",
+                whose: "世帯全員",
+                quantity: 1
+            },{
+                juminhyo_type: "住民票",
+                whose: "個人",
+                quantity: 2
+            }]);
+            context.confirming.should.equal("review_juminhyo_list");
+            context.to_confirm.should.deep.equal(["review_juminhyo_list"]);
+            context._sub_parameter.should.equal(false);
+            context._parent_parameter.should.deep.equal({});
+        });
+    });
+
+    describe("If skill is launched by intent postback with incomplete multi-set of parameters,", async function(){
+        it("set them all and ask rest of the sub parameters.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-sub-parameter",
+                        parameters: {
+                            juminhyo_type: ["住民票", "住民票"],
+                            whose: ["個人"],
+                            quantity: [2]
+                        }
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-sub-parameter");
+            context.confirming.should.equal("whose");
+
+            context.confirmed.juminhyo_type.should.equal("住民票");
+            should.not.exist(context.confirmed.whose);
+            should.not.exist(context.confirmed.quantity);
+            context._parent[0].confirmed.juminhyo_list.should.deep.equal([{
+                juminhyo_type: "住民票",
+                whose: "個人",
+                quantity: 2
+            }]);
+
+            context = await emu.send(emu.create_message_event(user_id, "世帯全員"));
+            context = await emu.send(emu.create_message_event(user_id, "1"));
+
+            should.not.exist(context.confirmed.juminhyo_type);
+            should.not.exist(context.confirmed.whose);
+            should.not.exist(context.confirmed.quantity);
+            context.confirmed.juminhyo_list.should.deep.equal([{
+                juminhyo_type: "住民票",
+                whose: "世帯全員",
+                quantity: 1
+            },{
+                juminhyo_type: "住民票",
+                whose: "個人",
+                quantity: 2
+            }]);
+            context.confirming.should.equal("review_juminhyo_list");
+        });
+    });
+
+    describe("If skill is launched by intent postback with incomplete multi-set of parameters,", async function(){
+        it("set 1 set and goes to next param since required first sub parameter is not included in input.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-sub-parameter",
+                        parameters: {
+                            juminhyo_type: ["住民票"],
+                            whose: ["個人", "世帯全員"],
+                            quantity: [2, 1]
+                        }
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-sub-parameter");
+            context.confirming.should.equal("review_juminhyo_list");
+
+            context.confirmed.juminhyo_list.should.deep.equal([{
+                juminhyo_type: "住民票",
+                whose: "個人",
+                quantity: 2
+            }]);
+        });
+    });
 });
 

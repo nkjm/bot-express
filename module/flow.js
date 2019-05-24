@@ -838,6 +838,7 @@ module.exports = class Flow {
     }
 
     checkout_sub_skill(){
+        debug(`Checking out sub skill..`);
         if (!Array.isArray(this.context._parent)){
             this.context._parent = [];
         }
@@ -852,6 +853,7 @@ module.exports = class Flow {
     }
 
     checkout_sub_parameter(param){
+        debug(`Checking out sub parameter: ${param.name}..`);
         if (!Array.isArray(this.context._parent)){
             this.context._parent = [];
         }
@@ -894,13 +896,6 @@ module.exports = class Flow {
             return await this.respond();
         }
 
-        // Check if there is corresponding parameter in context.heard.
-        if (this.context.to_confirm.length && this.context.heard[param.name]){
-            debug("Found corresponding parameter in context.heard. We try to apply.");
-            await this.process_parameters(this.context.heard);
-
-            return await this._collect();
-        }
 
         // Set context.confirming.
         this.context.confirming = param.name;
@@ -1006,14 +1001,18 @@ module.exports = class Flow {
             }
         }
 
-        // If we still have parameters to confirm, we collect them.
+        if (this.context.heard && Object.keys(this.context.heard).length > 0){
+            await this.process_parameters(this.context.heard);
+        }
+
         if (this.context.to_confirm.length){
+            // If we still have parameters to confirm, we collect them.
             debug("We still have parameters to confirm. Going to collect.");
             await this._collect();
 
             return this.context;
         }
-
+        
         // If we have no parameters to confirm, we finish this conversation using finish method of skill.
         debug("We have no parameters to confirm anymore. Going to perform skill.finish().");
 

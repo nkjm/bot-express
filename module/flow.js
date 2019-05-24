@@ -894,6 +894,14 @@ module.exports = class Flow {
             return await this.respond();
         }
 
+        // Check if there is corresponding parameter in context.heard.
+        if (this.context.to_confirm.length && this.context.heard[param.name]){
+            debug("Found corresponding parameter in context.heard. We try to apply.");
+            await this.process_parameters(this.context.heard);
+
+            return await this._collect();
+        }
+
         // Set context.confirming.
         this.context.confirming = param.name;
 
@@ -994,33 +1002,8 @@ module.exports = class Flow {
                 // We got all the required sub parameters. Set them to parent parameter.
                 await this.apply_sub_parameters();
 
-                /*
-                const parent_context = this.context._parent.shift();
-                if (this.context._parent_parameter.name !== parent_context.confirming){
-                    throw new Error(`Parent parameter name defined in sub context differs from confirming of parent context.`);
-                }
-                debug(`We have collected all the required sub parameters. Saving them to parent parameter: "${this.context._parent_parameter.name}".`);
-
-                const collected_sub_parameters = JSON.parse(JSON.stringify(this.context.confirmed));
-                
-                delete parent_context.reason;
-                parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message);
-
-                // Get parent context back while keeping object pointer by Object.assgin().
-                Object.assign(this.context, parent_context);
-
-                // Apply collected sub parameters to parent parameter.
-                await this.bot.apply_parameter(this.context.confirming, collected_sub_parameters);
-                */
-
                 return await this.respond();
             }
-        }
-
-        // Check if there is corresponding parameter in context.heard.
-        if (this.context.to_confirm.length && this.context.heard[this.context.to_confirm[0]]){
-            debug("Found corresponding parameter in context.heard. We try to apply.");
-            await this.process_parameters(this.context.heard);
         }
 
         // If we still have parameters to confirm, we collect them.

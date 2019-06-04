@@ -123,8 +123,10 @@ class Webhook {
             // Active Event Flow
             if (!this.options.skill[event_type]){
                 debug(`This is active event flow for ${event_type} event but ${event_type}_skill not found so skip.`);
-                context._in_progress = false;
-                await this.slib.memory.put(memory_id, context);
+                if (context){
+                    context._in_progress = false;
+                    await this.slib.memory.put(memory_id, context);
+                } 
                 return;
             }
 
@@ -225,7 +227,7 @@ class Webhook {
                 timestamp: Date.now(),
                 postback: {
                     data: JSON.stringify({
-                        _type: "intent",
+                        type: "intent",
                         intent: intent,
                         language: updated_context.sender_language
                     })

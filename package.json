@@ -2,7 +2,7 @@
   "description": "A development framework to develop tailor-made chatbot lightning fast.",
   "main": "index.js",
   "name": "bot-express",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "private": false,
   "repository": {
     "type": "git",

@@ -126,7 +126,9 @@ class Webhook {
                 if (context){
                     context._in_progress = false;
                     await this.slib.memory.put(memory_id, context);
-                } 
+                } else {
+                    await this.slib.memory.put(memory_id, { _in_progress: false });
+                }
                 return;
             }
 

@@ -21,6 +21,7 @@ module.exports = class Context {
         this.heard = o.heard || {}
         this.sender_language = o.sender_language || null
         this.translation = null
+        this.param_change_history = []
         this.previous = { // To save history of current context.
             event: null,
             intent: [],

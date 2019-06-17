@@ -111,7 +111,7 @@ module.exports = class SkillHandlePizzaOrder {
             }
         }
 
-        this.clear_context_on_finish = true;
+        this.take_over_parameter = true
     }
 
     // パラメーターが全部揃ったら実行する処理を記述します。

@@ -2,8 +2,8 @@
   "description": "A development framework to develop tailor-made chatbot lightning fast.",
   "main": "index.js",
   "name": "bot-express",
-  "version": "0.6.8",
-  "private": false,
+  "version": "0.6.10",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nkjm/bot-express.git"
@@ -24,7 +24,7 @@
   "engines": {
     "node": "10.x"
   },
-  "author": "Kazuki Nakajima <nkjm.kzk@gmail.com>",
+  "author": "Kazuki Nakajima <nakajima@bot-express.com>",
   "dependencies": {
     "@google-cloud/translate": "^2.1.2",
     "@line/bot-sdk": "^6.3.0",

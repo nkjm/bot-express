@@ -83,7 +83,7 @@ for (let messenger_option of messenger_options){
             });
         });
 
-        describe("When intent is changed in the middle of the conversation", function(){
+        describe("When intent is changed in after finishing conversation", function(){
             it("should run through begin, required param and finish.", function(){
                 this.timeout(8000);
 

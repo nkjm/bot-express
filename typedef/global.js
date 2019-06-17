@@ -20,19 +20,17 @@ Object which contains context information.
 @prop {String} sender_language - Automatically detected ISO-639-1 based code of the senders language.
 @prop {String} translation - Translated text of current message.
 @prop {Array.<MessageObject>} _message_queue - Array of messages to be sent.
-@prop {Object} confirming_property - Information about confirming property.
-@prop {String} confirming_property.parameter_key - Parameter key which properties belong to.
-@prop {String} confirming_property.parameter_type - Parameter type which properties belong to.
-@prop {Array.<String>} confirming_property.to_confirm - Properties to confirm.
-@prop {Object} confirming_property.confirmed - Confirmed properties.
-@prop {Boolean} _digging - True when digging.
-@prop {Array.<context>} _parent - Array of parent context.
 @prop {Boolean} _in_progress - Flag to indicate if bot is currenty processing an event from this user.
 @prop {String} _flow - Flow applied to current event.
 @prop {Boolean} _pause - Flag to pause.
 @prop {Boolean} _exit - Flag to exit.
 @prop {Boolean} _init - Flag to init context.
 @prop {intent} _switch_intent - Intent object to switch skill.
+@prop {Boolean} _digging - True when digging.
+@prop {Array.<context>} _parent - Array of parent context.
+@prop {Object} _parent_parameter - Parent parameter.
+@prop {Boolean} _sub_skill - True if this is sub skill.
+@prop {Boolean} _sub_parameter - True if this is sub parameter.
 */
 
 /**

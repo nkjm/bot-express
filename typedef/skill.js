@@ -4,7 +4,8 @@
  * @param {Object} config - Object which contains skill specific configurations.
  * @prop {Skill#skill_parameter_container} required_parameter - Object to list required parameters for the skill.
  * @prop {Skill#skill_parameter_container} optional_parameter - Object to list optional parameters for the skill.
- * @prop {boolean} clear_context_on_finish=false - Flag to flush context information on skill finishes. Set true to flush.
+ * @prop {boolean} [clear_context_on_finish=true] - True to flush context information on skill finishes.
+ * @prop {boolean} [take_over_parameter=false] - True to take over confirmed parameters from previous skill.
  */
 
 /**

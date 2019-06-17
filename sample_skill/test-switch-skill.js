@@ -2,6 +2,7 @@
 
 module.exports = class SkillSwitchSkill {
     constructor(){
+        this.clear_context_on_finish = false
         this.required_parameter = {
             param_a: {
                 message_to_confirm: {

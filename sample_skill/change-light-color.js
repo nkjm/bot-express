@@ -73,7 +73,9 @@ module.exports = class SkillChangeLightColor {
                 },
                 sub_skill: ["answer-available-light-color"]
             }
-        };
+        }
+
+        this.clear_context_on_finish = false
     }
 
     // IFTTT経由でHueのカラーを変更する

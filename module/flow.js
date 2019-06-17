@@ -368,11 +368,13 @@ module.exports = class Flow {
         debug(`Saving sub parameters to parent parameter: "${this.context._parent_parameter.name}".`);
 
         const collected_sub_parameters = JSON.parse(JSON.stringify(this.context.confirmed));
+        const collected_heard = JSON.parse(JSON.stringify(this.context.heard));
         delete parent_context.reason;
         parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message);
         
         // Get parent context back while keeping object pointer by Object.assgin().
         Object.assign(this.context, parent_context);
+        Object.assign(this.context.heard, collected_heard);
 
         // Apply collected sub parameters to parent parameter.
         await this.bot.apply_parameter(this.context.confirming, collected_sub_parameters);
@@ -728,9 +730,6 @@ module.exports = class Flow {
             intent: intent,
             flow: this.context._flow,
             event: this.context.event,
-            global: this.context.global,
-            confirmed: this.context.confirmed,
-            heard: this.context.heard,
             sender_language: this.context.sender_language,
             _parent: this.context._parent,
             _sub_skill: this.context._sub_skill
@@ -750,6 +749,13 @@ module.exports = class Flow {
             }
 
             this.context.skill = skill;
+        }
+
+        // Take over previous parameters depending on the take_over_parameter config of skill.
+        if (this.context.skill.take_over_parameter){
+            this.context.global = JSON.parse(JSON.stringify(context.archive[0].global))
+            this.context.confirmed = JSON.parse(JSON.stringify(context.archive[0].confirmed))
+            this.context.heard = JSON.parse(JSON.stringify(context.archive[0].heard))
         }
 
         // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
@@ -1048,13 +1054,14 @@ module.exports = class Flow {
         }
         
         // Check clear_context_on_finish.
-        if (this.context.skill.clear_context_on_finish){
-            // We clear context.
-            debug(`Mark this context should be cleared.`);
-            this.context._clear = true
-        } else {
+        if (this.context.skill.clear_context_on_finish === false){
             // We keep context. But we still discard param change history.
+            debug(`We keep the context since clear_context_on_finish is false`);
             this.context.param_change_history = [];
+        } else {
+            // We clear context.
+            debug(`We will clear context.`);
+            this.context._clear = true
         }
 
         return this.context;

@@ -311,5 +311,37 @@ describe("Test sub parameter", async function(){
             }]);
         });
     });
+
+    describe("If skill is launched by intent postback with parameters to be save in heard,", async function(){
+        it("will be saved.", async function(){
+            let context = await emu.send(emu.create_postback_event(user_id, {
+                data: JSON.stringify({
+                    type: "intent",
+                    language: "ja",
+                    intent: {
+                        name: "test-sub-parameter",
+                        parameters: {
+                            delivery: "onsite"
+                        }
+                    }
+                })
+            }));
+
+            context.intent.name.should.equal("test-sub-parameter");
+            context.confirming.should.equal('juminhyo_type')
+            context = await emu.send(emu.create_message_event(user_id, "住民票"));
+
+            context.confirming.should.equal('whose')
+            context = await emu.send(emu.create_message_event(user_id, "世帯全員"));
+
+            context.confirming.should.equal('quantity')
+            context = await emu.send(emu.create_message_event(user_id, "2"));
+
+            context.confirming.should.equal("review_juminhyo_list");
+            context.heard.should.deep.equal({
+                delivery: "onsite"
+            })
+        });
+    });
 });
 

@@ -110,7 +110,7 @@ for (let messenger_option of messenger_options){
                 // Bot replied using default skill while keeping parameter.
                 context.should.have.property("_flow").and.equal("btw");
                 context.intent.name.should.equal("input.unknown");
-                context.should.have.property("confirmed").and.deep.equal({color: "FF7B7B"});
+                context.confirmed.should.deep.equal({})
             });
         });
 

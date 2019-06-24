@@ -150,7 +150,7 @@ module.exports = class MessengerLine {
         debug(JSON.stringify(body));
         debug(`Failed response body follows.`);
         debug(JSON.stringify(response.body));
-        throw new Error(response.body);
+        throw new Error(response.body.message);
     }
 
     async send(event, to, messages){
@@ -187,7 +187,7 @@ module.exports = class MessengerLine {
         debug(JSON.stringify(body));
         debug(`Failed response body follows.`);
         debug(JSON.stringify(response.body));
-        throw new Error(response.body);
+        throw new Error(response.body.message);
     }
 
     async reply_to_collect(event, messages){
@@ -227,7 +227,7 @@ module.exports = class MessengerLine {
         debug(JSON.stringify(body));
         debug(`Failed response body follows.`);
         debug(JSON.stringify(response.body));
-        throw new Error(response.body);
+        throw new Error(response.body.message);
     }
 
     static extract_events(body){

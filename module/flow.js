@@ -960,7 +960,18 @@ module.exports = class Flow {
             await this.bot.send(this.event.to[`${this.event.to.type}Id`], message, this.context.sender_language);
         } else {
             debug("We use reply method to collect parameter.");
-            await this.bot.reply_to_collect(message);
+            try {
+                await this.bot.reply_to_collect(message);
+            } catch (e){
+                // If failure is due to expiration of reply token, we try pushing it.
+                if (e.message == "Invalid reply token"){
+                    debug("We failed to reply since reply token did not work so try pushing the message.")
+                    await this.bot.send(this.bot.extract_sender_id(), message, this.context.sender_language)
+                    debug("Push worked.")
+                } else {
+                    debug(e.message)
+                }
+            }
         }
     }
 

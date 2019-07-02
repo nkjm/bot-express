@@ -452,6 +452,7 @@ module.exports = class Flow {
         debug("Going to check if we can identify the intent.");
         intent = await this.slib.nlu.identify_intent(payload, {
             session_id: this.bot.extract_session_id(),
+            channel_id: this.bot.extract_channel_id(),
             language: this.context.sender_language
         });
 

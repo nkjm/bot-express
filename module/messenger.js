@@ -103,6 +103,15 @@ class Messenger {
     }
 
     /**
+    * Extract channel id.
+    * @param {Object} event - Event to extract channel id.
+    * @returns {String}
+    */
+    extract_channel_id(event){
+        return this.Messenger_classes[this.type].extract_channel_id(event);
+    }
+
+    /**
     * Extract reciever's user/room/group id.
     * @param {EventObject} event - Event to extract message text.
     * @returns {String}

@@ -43,8 +43,11 @@ server.use("/bot/webhook", bot_express({
         }
     }],
     memory: {
-        type: "memory-cache", // memory-cache | redis
-        retention: Number(process.env.MEMORY_RETENTION)
+        type: process.env.MEMORY_TYPE || "memory-cache", // memory-cache | redis
+        retention: Number(process.env.MEMORY_RETENTION),
+        options: {
+            url: process.env.REDIS_URL
+        }
     },
     translator: {
         type: "google",
@@ -57,7 +60,7 @@ server.use("/bot/webhook", bot_express({
         }
     },
     logger: {
-        type: "stdout", // stdout | firestore
+        type: process.env.LOGGER_TYPE || "stdout", // stdout | firestore
         options: { // Options for firestore.
             project_id: process.env.FIREBASE_PROJECT_ID,
             client_email: process.env.FIREBASE_CLIENT_EMAIL,

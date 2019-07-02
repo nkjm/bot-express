@@ -47,8 +47,9 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.messenger.facebook.verify_token=options.facebook_app_secret] - Facebook token to verify webook url. This is only used in initial webhook registration.
 @param {Object} [options.messenger.google] - Messenger configuration for Google Assistant.
 @param {String} [options.messenger.google.project_id] - Project ID of Google Platform. Required when you use Google Assistant as messenger.
-@param {String} options.nlu - Option object for NLU Service.
+@param {Object | Array.<Object>} options.nlu - Option object for NLU Service. You can use mutiple agents by channel by providing array of this object.
 @param {String} [options.nlu.type="dialogflow"] - NLU service. Supported service is dialogflow.
+@param {String} [options.nlu.channel_id] - Channel ID to use this NLU agent. Required if you use multiple agents.
 @param {Object} options.nlu.options - NLU Configuration depending on the specific NLU service. As for Dialogflow, key_filename or (project_id, client_email and private key) is required.
 @param {Array.<Object>} [options.parser] - Array of option object for Parser Service.
 @param {String} [options.parser[].type] - Name of the builtin parser. Supported value is "dialogflow".

@@ -91,6 +91,7 @@ module.exports = class StartConversationFlow extends Flow {
             debug(`Going to identify intent of ${translated_message_text}...`);
             this.context.intent = await this.slib.nlu.identify_intent(translated_message_text, {
                 session_id: this.bot.extract_session_id(),
+                channel_id: this.bot.extract_channel_id(),
                 language: this.context.sender_language
             });
         }

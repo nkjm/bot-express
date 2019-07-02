@@ -633,6 +633,16 @@ class Bot {
     }
 
     /**
+    * Extract channel id.
+    * @method
+    * @param {Object} event - Event to extract channel id.
+    * @returns {String} - Extracted channel id.
+    */
+    extract_channel_id(event = this._event){
+        return this._slib.messenger.extract_channel_id(event);
+    }
+
+    /**
     * Identify the event type.
     * @method
     * @param {EventObject} event - Event to identify event type.

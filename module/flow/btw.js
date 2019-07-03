@@ -112,7 +112,7 @@ module.exports = class BtwFlow extends Flow {
         });
 
         // Log chat.
-        await this.slib.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
+        await this.slib.logger.chat(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
 
         // Run mind based flow.
         if (!skip_run_mind_based_flow){

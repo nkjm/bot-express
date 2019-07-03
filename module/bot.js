@@ -90,7 +90,7 @@ class Bot {
                 skill: this._context.skill.type
             });
 
-            await this._slib.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+            await this._slib.logger.chat(this.extract_channel_id(), this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
         }
         this._context._message_queue = [];
 
@@ -127,7 +127,7 @@ class Bot {
                 skill: this._context.skill.type
             });
 
-            await this._slib.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+            await this._slib.logger.chat(this.extract_channel_id(), this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
         }
 
         return response;
@@ -163,7 +163,7 @@ class Bot {
                 skill: this._context.skill.type
             });
 
-            await this._slib.logger.chat(this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
+            await this._slib.logger.chat(this.extract_channel_id(), this.extract_sender_id(), this._context.chat_id, this._context.skill.type, "bot", compiled_message);
         }
 
         return response;

@@ -11,13 +11,14 @@ module.exports = class LoggerStdout {
     /**
      * @method
      * @async
+     * @param {String} channel_id
      * @param {String} user_id
      * @param {String} chat_id
      * @param {String} skill
      * @param {String} status - "launched" | "aborted" | "switched" | "restarted" | "completed" | "abended"
      * @param {Object} payload
      */
-    async skill_status(user_id, chat_id, skill, status, payload){
+    async skill_status(channel_id, user_id, chat_id, skill, status, payload){
         if (status === "aborted"){
             if (!(payload.context && payload.context.confirming)){
                 payload.context = {
@@ -25,18 +26,17 @@ module.exports = class LoggerStdout {
                 }
             }
 
-            let log = `${user_id} ${chat_id} ${skill} - ${status} in confirming ${payload.context.confirming}`;
+            let log = `${channel_id} ${user_id} ${chat_id} ${skill} - ${status} in confirming ${payload.context.confirming}`;
 
             _skill_status(log);
         } else if (status === "abended"){
-            let log = `${user_id} ${chat_id} ${skill} - ${status}`;
+            let log = `${channel_id} ${user_id} ${chat_id} ${skill} - ${status}`;
 
             // Add error detail.
             if (payload.error) log += " Error:" + JSON.stringify({
                 line_number: payload.error.lineNumber || null,
                 file_name: payload.error.fileName || null,
-                message: payload.error.message || null,
-                name: payload.error.name || null,
+                message: payload.error.message || null, name: payload.error.name || null,
                 stack: payload.error.stack || null
             })
 
@@ -55,14 +55,14 @@ module.exports = class LoggerStdout {
                     name: "unknown_skill"
                 }
             }
-            _skill_status(`${user_id} ${chat_id} ${skill} - ${status} to ${payload.intent.name} in confirming ${payload.context.confirming}`);
+            _skill_status(`${channel_id} ${user_id} ${chat_id} ${skill} - ${status} to ${payload.intent.name} in confirming ${payload.context.confirming}`);
         } else if (status === "restarted"){
             if (!(payload.context && payload.context.confirming)){
                 payload.context = {
                     confirming: `unknown_parameter`
                 }
             }
-            _skill_status(`${user_id} ${chat_id} ${skill} - ${status} in confirming ${payload.context.confirming}`);
+            _skill_status(`${channel_id} ${user_id} ${chat_id} ${skill} - ${status} in confirming ${payload.context.confirming}`);
         } else if (status === "completed"){
             let ttc;
             if (payload.context && payload.context.launched_at){
@@ -70,22 +70,23 @@ module.exports = class LoggerStdout {
             } else {
                 ttc = "unknown_duration"
             }
-            _skill_status(`${user_id} ${chat_id} ${skill} - ${status} in ${ttc}.`);
+            _skill_status(`${channel_id} ${user_id} ${chat_id} ${skill} - ${status} in ${ttc}.`);
         } else {
-            _skill_status(`${user_id} ${chat_id} ${skill} - ${status}`);
+            _skill_status(`${channel_id} ${user_id} ${chat_id} ${skill} - ${status}`);
         }
     }
 
     /**
      * @method
      * @async
+     * @param {String} channel_id
      * @param {String} user_id
      * @param {String} chat_id
      * @param {String} skill
      * @param {String} who
      * @param {Object} message
      */
-    async chat(user_id, chat_id, skill, who, message){
+    async chat(channel_id, user_id, chat_id, skill, who, message){
         let message_text
 
         if (message.text){
@@ -96,7 +97,7 @@ module.exports = class LoggerStdout {
             message_text = JSON.stringify(message);
         }
         
-        _chat(`${user_id} ${chat_id} ${skill} - ${who} says ${message_text}`);
+        _chat(`${channel_id} ${user_id} ${chat_id} ${skill} - ${who} says ${message_text}`);
     }
 }
 

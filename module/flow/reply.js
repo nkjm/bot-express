@@ -66,7 +66,7 @@ module.exports = class ReplyFlow extends Flow {
                     await super.dig(mind.intent);
                 } else if (mind.result == "restart_conversation"){
                     // Log skill_status.
-                    await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "restarted", {
+                    await this.slib.logger.skill_status(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "restarted", {
                         context: this.context, 
                         intent: mind.intent
                     });
@@ -74,7 +74,7 @@ module.exports = class ReplyFlow extends Flow {
                     await super.restart_conversation(mind.intent);
                 } else if (mind.result == "change_intent"){
                     // Log skill_status.
-                    await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "switched", {
+                    await this.slib.logger.skill_status(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "switched", {
                         context: this.context, 
                         intent: mind.intent
                     });
@@ -100,7 +100,7 @@ module.exports = class ReplyFlow extends Flow {
         });
 
         // Log chat.
-        await this.slib.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
+        await this.slib.logger.chat(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
         
         return super.respond();
     }

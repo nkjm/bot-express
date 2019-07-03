@@ -44,14 +44,16 @@ module.exports = class LoggerFirestore {
     /**
      * @method
      * @async
+     * @param {String} channel_id
      * @param {String} user_id
      * @param {String} chat_id
      * @param {String} skill
      * @param {String} status - "launched" | "aborted" | "switched" | "restarted" | "completed" | "abended"
      * @param {Object} payload
      */
-    async skill_status(user_id, chat_id, skill, status, payload){
+    async skill_status(channel_id, user_id, chat_id, skill, status, payload){
         const skill_status = {
+            channel_id: channel_id,
             user_id: user_id,
             chat_id: chat_id,
             skill: skill,
@@ -94,14 +96,16 @@ module.exports = class LoggerFirestore {
     /**
      * @method
      * @async
+     * @param {String} channel_id
      * @param {String} user_id
      * @param {String} chat_id
      * @param {String} skill
      * @param {String} who
      * @param {Object} message
      */
-    async chat(user_id, chat_id, skill, who, message){
+    async chat(channel_id, user_id, chat_id, skill, who, message){
         const chat = {
+            channel_id: channel_id,
             user_id: user_id,
             chat_id: chat_id,
             skill: skill,

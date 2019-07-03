@@ -42,11 +42,11 @@ module.exports = class Logger {
      * @param {String} status - "launched" | "aborted" | "switched" | "restarted" | "completed" | "abended"
      * @param {Object} [payload]
      */
-    async skill_status(user_id, chat_id, skill, status, payload = {}){
+    async skill_status(channel_id, user_id, chat_id, skill, status, payload = {}){
         // Disable logging if skill-status is exlucded by option.
         if (this.exclude.includes("skill-status")) return;
 
-        await this.logger.skill_status(user_id, chat_id, skill, status, payload);
+        await this.logger.skill_status(channel_id, user_id, chat_id, skill, status, payload);
     }
 
     /**
@@ -57,10 +57,10 @@ module.exports = class Logger {
      * @param {String} who
      * @param {Object} message
      */
-    async chat(user_id, chat_id, skill, who, message){
+    async chat(channel_id, user_id, chat_id, skill, who, message){
         // Disable logging if chat is exlucded by option.
         if (this.exclude.includes("chat")) return;
 
-        await this.logger.chat(user_id, chat_id, skill, who, message);
+        await this.logger.chat(channel_id, user_id, chat_id, skill, who, message);
     }
 }

@@ -689,7 +689,7 @@ module.exports = class Flow {
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
         // Log skill status.
-        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+        await this.slib.logger.skill_status(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
             context: this.context
         });
 
@@ -767,7 +767,7 @@ module.exports = class Flow {
         debug(`We have ${this.context.to_confirm.length} parameters to confirm.`);
 
         // Log skill status.
-        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+        await this.slib.logger.skill_status(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
             context: this.context
         });
 
@@ -1047,7 +1047,7 @@ module.exports = class Flow {
         }
 
         // Log skill status.
-        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "completed", {
+        await this.slib.logger.skill_status(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "completed", {
             context: this.context
         });
 

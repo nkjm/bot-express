@@ -10,12 +10,12 @@ const messenger_options = [{
     options: {
         line_channel_secret: process.env.LINE_CHANNEL_SECRET
     }
-},{
+}/*,{
     name: "facebook",
     options: {
         facebook_app_secret: process.env.FACEBOOK_APP_SECRET
     }
-}];
+}*/];
 
 chai.use(chaiAsPromised);
 const should = chai.should();

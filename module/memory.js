@@ -56,7 +56,7 @@ class Memory {
     @param {String} key - Key of the context.
     @param {context} context - Context object to store.
     @param {*} bot - bot instance.
-    @param {Number} retention - Lifetime of the context in seconds.
+    @param {Number} [retention] - Lifetime of the context in seconds.
     @returns {Promise.<null>}
     */
     async put(key, context, bot, retention = this.retention){
@@ -66,7 +66,8 @@ class Memory {
         memory_cache.put(`${prefix_timer}${key}`, { 
             updated_at: context.updated_at, 
             key: key,
-            bot: bot
+            bot: bot || null,
+            channel_id: (bot) ? bot.extract_channel_id() : null
         }, retention * 1000, async (timer_key, timer_value) => {
             debug("Context timer launching.");
 
@@ -85,7 +86,7 @@ class Memory {
                     debug("It seems this conversation is aborted. Running on abort process..");
 
                     // Log skill-status.
-                    await this.logger.skill_status(timer_value.key, context.chat_id, context.skill.type, "aborted", { context });
+                    await this.logger.skill_status(timer_value.channel_id, timer_value.key, context.chat_id, context.skill.type, "aborted", { context });
 
                     // Check if skill exists.
                     let skip_on_abort = false;
@@ -101,7 +102,7 @@ class Memory {
                         debug("Running on_abort function..");
                         const Skill = require(`${context.skill.path}${context.skill.type}`);
                         const skill = new Skill();
-                        if (typeof skill.on_abort === "function"){
+                        if (typeof skill.on_abort === "function" && timer_value.bot){
                             await skill.on_abort(timer_value.bot, context.event, context);
                         }
                     }

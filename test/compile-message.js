@@ -384,7 +384,7 @@ describe("Test compile message from line", function(){
         });
     });
 });
-
+/*
 describe("Test compile message from facebook", function(){
     const messenger_option = {
         name: "facebook",
@@ -739,3 +739,4 @@ describe("Test compile message from facebook", function(){
         });
     });
 });
+*/

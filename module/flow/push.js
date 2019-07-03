@@ -42,7 +42,7 @@ module.exports = class PushFlow extends Flow {
         });
 
         // Log skill status.
-        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+        await this.slib.logger.skill_status(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
             context: this.context
         });
 

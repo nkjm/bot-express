@@ -122,7 +122,7 @@ module.exports = class StartConversationFlow extends Flow {
         }
 
         // Log skill status.
-        await this.slib.logger.skill_status(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
+        await this.slib.logger.skill_status(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "launched", {
             context: this.context
         });
 
@@ -134,7 +134,7 @@ module.exports = class StartConversationFlow extends Flow {
         });
 
         // Log chat.
-        await this.slib.logger.chat(this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
+        await this.slib.logger.chat(this.bot.extract_channel_id(), this.bot.extract_sender_id(), this.context.chat_id, this.context.skill.type, "user", this.bot.extract_message());
 
         // Run begin().
         if (!skip_begin){

@@ -262,7 +262,7 @@ module.exports = class MessengerLine {
         return MessengerLine.extract_sender_id(event);
     }
 
-    static extract_channel_id(event){
+    extract_channel_id(event){
         return this._channel_id
     }
 

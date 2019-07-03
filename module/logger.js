@@ -36,6 +36,7 @@ module.exports = class Logger {
     /**
      * @method
      * @async
+     * @param {String} channel_id
      * @param {String} user_id
      * @param {String} chat_id
      * @param {String} skill
@@ -51,6 +52,7 @@ module.exports = class Logger {
 
     /**
      * @method
+     * @param {String} channel_id
      * @param {String} user_id
      * @param {String} chat_id
      * @param {String} skill

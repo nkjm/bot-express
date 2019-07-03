@@ -108,7 +108,7 @@ class Messenger {
     * @returns {String}
     */
     extract_channel_id(event){
-        return this.Messenger_classes[this.type].extract_channel_id(event);
+        return this.service.extract_channel_id(event);
     }
 
     /**

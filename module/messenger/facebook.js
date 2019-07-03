@@ -156,7 +156,7 @@ module.exports = class MessengerFacebook {
         return event.sender.id;
     }
 
-    static extract_channel_id(event){
+    extract_channel_id(event){
         return event.recipient.id
     }
 

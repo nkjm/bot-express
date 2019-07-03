@@ -1,5 +1,7 @@
 "use strict";
 
+const prefix = `be`
+
 module.exports = class LoggerFirestore {
     /**
      * @constructor 
@@ -90,7 +92,7 @@ module.exports = class LoggerFirestore {
         // Add timestamp.
         skill_status.created_at = new Date();
 
-        await this._create("botex_skill_status", skill_status);
+        await this._create(`${prefix}_skill_status`, skill_status);
     }
 
     /**
@@ -116,7 +118,7 @@ module.exports = class LoggerFirestore {
         // Add timestamp.
         chat.created_at = new Date();
 
-        await this._create("botex_chat", chat);
+        await this._create(`${prefix}_chat`, chat);
     }
 
     /**

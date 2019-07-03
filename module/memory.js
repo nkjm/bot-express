@@ -4,8 +4,8 @@ const debug = require("debug")("bot-express:memory");
 const default_store = "memory-cache";
 const fs = require("fs");
 const memory_cache = require("memory-cache"); // Not as memory store but as timer.
-const prefix_context = "botex_context_";
-const prefix_timer = "botex_timer_";
+const prefix_context = "be_context_";
+const prefix_timer = "be_timer_";
 
 /**
  * Memory to store context. *Context free

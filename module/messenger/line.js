@@ -8,7 +8,7 @@ const cache = require("memory-cache");
 const secure_compare = require('secure-compare');
 const api_version = "v2";
 const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"];
-const CACHE_PREFIX = "botex_messenger_line_";
+const CACHE_PREFIX = "be_messenger_line_";
 Promise.promisifyAll(request);
 
 module.exports = class MessengerLine {

@@ -272,6 +272,32 @@ class Bot {
     }
 
     /**
+     * Change the message of confirming parameter.
+     * @method
+     * @param {MessageObject} message - The message object.
+     */
+    change_this_message(message){
+        if (!this._context.confirming){
+            throw new Error(`confirming parameter not found. change_this_message() needs confirming to be set.`)
+        }
+
+        let param_type = this.check_parameter_type(this._context.confirming);
+
+        if (param_type == "not_applicable"){
+            debug("The parameter to change message not found.");
+            throw new Error("The parameter to change message not found.")
+        }
+
+        if (param_type === "sub_parameter"){
+            // Pick up sub parameter.
+            this._context.skill[this._context._parent_parameter.type][this._context._parent_parameter.name].sub_parameter[this._context.confirming].message = message
+        } else {
+            // Pick up parameter.
+            this._context.skill[param_type][this._context.confirming].message = message;
+        }
+    }
+
+    /**
      * Get parameter object by parameter name. 
      * @param {String} param_name 
      * @return {Object} Parameter object.

@@ -25,6 +25,11 @@ module.exports = class SkillTestConfirmingProperty {
                         reaction: async (error, value, bot, event, context) => {
                             if (value === "abc"){
                                 await bot.apply_parameter("quantity", 3);
+                            } else if (value === "change_message"){
+                                bot.change_this_message({
+                                    type: "text",
+                                    text: `選択肢から選択してください。`
+                                })
                             }
                         },
                         sub_skill: ["juminhyo_faq"]

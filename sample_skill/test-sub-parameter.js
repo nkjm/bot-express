@@ -120,6 +120,13 @@ module.exports = class SkillTestConfirmingProperty {
         }
     }
 
+    async begin(bot, event, context){
+        bot.queue({
+            type: "text",
+            text: "では住民票の申請を開始します。"
+        })
+    }
+
     async finish(bot, event, context){
 
     }

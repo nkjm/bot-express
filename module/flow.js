@@ -357,27 +357,29 @@ module.exports = class Flow {
 
     async apply_sub_parameters(){
         if (!(Array.isArray(this.context._parent) && this.context._parent.length > 0)){
-            throw new Error(`There is no parent context.`);
+            throw new Error(`There is no parent context.`)
         }
 
-        const parent_context = this.context._parent.shift();
+        const parent_context = this.context._parent.shift()
         if (this.context._parent_parameter.name !== parent_context.confirming){
-            throw new Error(`Parent parameter name defined in sub context differs from confirming of parent context.`);
+            throw new Error(`Parent parameter name defined in sub context differs from confirming of parent context.`)
         }
 
-        debug(`Saving sub parameters to parent parameter: "${this.context._parent_parameter.name}".`);
+        debug(`Saving sub parameters to parent parameter: "${this.context._parent_parameter.name}".`)
 
-        const collected_sub_parameters = JSON.parse(JSON.stringify(this.context.confirmed));
-        const collected_heard = JSON.parse(JSON.stringify(this.context.heard));
-        delete parent_context.reason;
-        parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message);
+        const collected_sub_parameters = JSON.parse(JSON.stringify(this.context.confirmed))
+        const collected_heard = JSON.parse(JSON.stringify(this.context.heard))
+        const message_queue = JSON.parse(JSON.stringify(this.context._message_queue))
+        delete parent_context.reason
+        parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message)
         
         // Get parent context back while keeping object pointer by Object.assgin().
-        Object.assign(this.context, parent_context);
-        Object.assign(this.context.heard, collected_heard);
+        Object.assign(this.context, parent_context)
+        Object.assign(this.context.heard, collected_heard)
+        Object.assign(this.context._message_queue, message_queue)
 
         // Apply collected sub parameters to parent parameter.
-        await this.bot.apply_parameter(this.context.confirming, collected_sub_parameters);
+        await this.bot.apply_parameter(this.context.confirming, collected_sub_parameters)
     }
 
     /**
@@ -860,27 +862,28 @@ module.exports = class Flow {
     }
 
     checkout_sub_parameter(param){
-        debug(`Checking out sub parameter: ${param.name}..`);
+        debug(`Checking out sub parameter: ${param.name}..`)
         if (!Array.isArray(this.context._parent)){
-            this.context._parent = [];
+            this.context._parent = []
         }
 
         // Set parent param name to confirming.
-        this.context.confirming = param.name;
+        this.context.confirming = param.name
 
         // Save current context to _parent.
-        const parent_context = JSON.parse(JSON.stringify(this.context));
-        delete parent_context.skill;
-        parent_context.reason = "sub_parameter";
-        this.context._parent.unshift(parent_context);
+        const parent_context = JSON.parse(JSON.stringify(this.context))
+        delete parent_context.skill
+        parent_context._message_queue = []
+        parent_context.reason = "sub_parameter"
+        this.context._parent.unshift(parent_context)
 
         // Bit _sub_parameter flag.
-        this.context._sub_parameter = true;
+        this.context._sub_parameter = true
 
         // Set sub parameters to to_confirm.
-        this.context.to_confirm = Object.keys(param.sub_parameter);
+        this.context.to_confirm = Object.keys(param.sub_parameter)
         // Clear confirmed.
-        this.context.confirmed = {};
+        this.context.confirmed = {}
         // Set parent information.
         this.context._parent_parameter = {
             type: param.type,

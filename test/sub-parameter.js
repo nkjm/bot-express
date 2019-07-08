@@ -344,7 +344,7 @@ describe("Test sub parameter", async function(){
         });
     });
 
-    describe.only("If begin() contains bot.queue(),", async function(){
+    describe("If begin() contains bot.queue(),", async function(){
         it("will be sent out in first sub_parameter and removed.", async function(){
             let context = await emu.send(emu.create_postback_event(user_id, {
                 data: JSON.stringify({

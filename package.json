@@ -2,7 +2,7 @@
   "description": "A development framework to develop tailor-made chatbot lightning fast.",
   "main": "index.js",
   "name": "bot-express",
-  "version": "0.6.16",
+  "version": "0.6.17",
   "private": true,
   "repository": {
     "type": "git",
@@ -27,7 +27,7 @@
   "author": "Kazuki Nakajima <nakajima@bot-express.com>",
   "dependencies": {
     "@google-cloud/translate": "^2.1.2",
-    "@line/bot-sdk": "^6.3.0",
+    "@line/bot-sdk": "^6.8.0",
     "actions-on-google": "^1.11.0",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",

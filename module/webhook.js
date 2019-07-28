@@ -222,19 +222,32 @@ class Webhook {
                 await this.slib.memory.put(memory_id, updated_context, flow.bot);
             }
 
-            updated_context = await this.process_event({
-                type: "postback",
-                replyToken: event.replyToken,
-                source: event.source,
-                timestamp: Date.now(),
-                postback: {
-                    data: JSON.stringify({
-                        type: "intent",
-                        intent: intent,
-                        language: updated_context.sender_language
-                    })
+            // We use intent postback usually but in case of this event is bot-express:push, we use bot-express:push as well.
+            let new_event
+            if (event.type === "bot-express:push"){
+                new_event = {
+                    type: "bot-express:push",
+                    to: event.to,
+                    timestamp: Date.now(),
+                    intent: intent,
+                    language: updated_context.sender_language
                 }
-            })
+            } else {
+                new_event = {
+                    type: "postback",
+                    replyToken: event.replyToken,
+                    source: event.source,
+                    timestamp: Date.now(),
+                    postback: {
+                        data: JSON.stringify({
+                            type: "intent",
+                            intent: intent,
+                            language: updated_context.sender_language
+                        })
+                    }
+                }
+            }
+            updated_context = await this.process_event(new_event)
         }
 
         // Update memory.

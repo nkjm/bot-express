@@ -59,15 +59,17 @@ module.exports = class ParserString {
 
         if (policy.character){
             if (policy.character === "katakana"){
-                value = wanakana.toKatakana(value);
-                if (!wanakana.isKatakana(value)){
+                if (wanakana.isKatakana(value) || wanakana.isHiragana(value)){
+                    value = wanakana.toKatakana(value);
+                } else {
                     throw new Error("should_be_katakana");
                 }
             }
 
             if (policy.character === "hiragana"){
-                value = wanakana.toHiragana(value);
-                if (!wanakana.isHiragana(value)){
+                if (wanakana.isKatakana(value) || wanakana.isHiragana(value)){
+                    value = wanakana.toHiragana(value);
+                } else {
                     throw new Error("should_be_hiragana");
                 }
             }

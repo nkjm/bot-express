@@ -406,7 +406,7 @@ class Bot {
         if (typeof parser === "function"){
             // We use the defined function.
             debug(`Parser is function so we use it as it is.`)
-            return parser(param_value, this, this.event, this._context);
+            return parser(param_value, this, this._event, this._context);
         } else if (typeof parser === "string"){
             // We use builtin parser.
             debug(`Parser is string so we use builtin parser: ${parser}.`);
@@ -506,10 +506,10 @@ class Bot {
 
         if (param.reaction){
             debug(`Reaction for ${param_name} found. Performing reaction...`);
-            await param.reaction(error, param_value, this, this.event, this._context);
+            await param.reaction(error, param_value, this, this._event, this._context);
         } else if (this._context.skill["reaction_" + param_name]){
             debug(`Reaction for ${param_name} found. Performing reaction...`);
-            await this._context.skill["reaction_" + param_name](error, param_value, this, this.event, this._context);
+            await this._context.skill["reaction_" + param_name](error, param_value, this, this._event, this._context);
         } else {
             // This parameter does not have reaction so do nothing.
             debug(`Reaction for ${param_name} not found.`);

@@ -19,6 +19,27 @@
  */
 
 /**
+ * Function which is triggerd on abort
+ * @async
+ * @method Skill#abort
+ * @memberof Skill
+ * @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
+ * @param {Object} event - Event object which triggers this flow.
+ * @param {context} context - Context information.
+ */
+
+/**
+ * Function which is triggerd on abend
+ * @async
+ * @method Skill#abend
+ * @memberof Skill
+ * @param {Error} error - Thrown error.
+ * @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
+ * @param {Object} event - Event object which triggers this flow.
+ * @param {context} context - Context information.
+ */
+
+/**
  * Function which is triggerd when all the required parameters are collected.
  * @async
  * @method Skill#finish

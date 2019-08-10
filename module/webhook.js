@@ -185,8 +185,16 @@ class Webhook {
         try {
             updated_context = await flow.run();
         } catch (e){
+            // Run on_abend() of current skill.
+            if (context && context.skill && context.skill.on_abend && typeof context.skill.on_abend === "function" && flow && flow.bot){
+                debug(`Found on_abend function in ${context.skill.type} skill. Running it..`)
+                await context.skill.on_abend(e, flow.bot, event, context)
+            }
+
             const chat_id = (context && context.chat_id) ? context.chat_id : "unknown_chat_id";
             const skill_type = (context && context.skill && context.skill.type) ? context.skill.type : "unknown_skill";
+
+            // Log abend.
             await this.slib.logger.skill_status(flow.bot.extract_channel_id(), memory_id, chat_id, skill_type, "abended", {
                 error: e,
                 context: context

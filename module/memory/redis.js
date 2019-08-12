@@ -17,11 +17,15 @@ class MemoryRedis {
         const o = JSON.parse(JSON.stringify(options));
         
         if (o.tls === "enable" || o.tls === true){
+            debug(`Enable TLS on redis connection for memory store.`)
             o.tls = {
                 rejectUnauthorized: false,
                 requestCert: true,
                 agent: false
             }
+        } else {
+            debug(`Disable TLS on redis connection for memory store.`)
+            delete o.tls
         }
 
         if (o.url){

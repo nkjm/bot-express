@@ -1,6 +1,7 @@
 "use strict";
 
 const prefix = `be`
+const memory_cache = require("memory-cache")
 
 module.exports = class LoggerFirestore {
     /**
@@ -14,8 +15,14 @@ module.exports = class LoggerFirestore {
     constructor(options){
         // If options.instance is set, we just use the instance.
         if (options.instance){
-            this.db = options.instance;
-            return;
+            this.db = options.instance
+            return
+        }
+
+        // If firestore instance is found in memory cache, we use it.
+        this.db = memory_cache.get("firestore")
+        if (this.db){
+            return
         }
 
         // If options.instance is not set, we create new firestore instance.
@@ -29,7 +36,7 @@ module.exports = class LoggerFirestore {
             }
         }
 
-        firebase_admin.initializeApp({
+        const firebase_config = {
             credential: firebase_admin.credential.cert({
                 projectId: options.project_id,
                 clientEmail: options.client_email,
@@ -38,9 +45,18 @@ module.exports = class LoggerFirestore {
             databaseURL: `https://${options.project_id}.firebaseio.com`,
             storageBucket: `${options.project_id}.appspot.com`,
             projectId: options.project_id
-        });
+        }
+        try {
+            firebase_admin.initializeApp(firebase_config)
+        } catch(e){
+            if (e.code === "app/duplicate-app"){
+                debug(`Default firebase app already exists so we create another one.`)
+                firebase_admin.initializeApp(firebase_config, "bot-express")
+            }
+        }
 
-        this.db = firebase_admin.firestore();
+        this.db = firebase_admin.firestore()
+        memory_cache.put("firestore", this.db)
     }
 
     /**

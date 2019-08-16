@@ -7,8 +7,6 @@ const required_options = ["project_id"];
 const cache = require("memory-cache");
 const structjson = require("./dialogflow/structjson");
 
-Promise = require("bluebird");
-
 module.exports = class NluDialogflow {
     /**
     @constructor
@@ -64,16 +62,16 @@ module.exports = class NluDialogflow {
     @param {String} [options.language]
     @param {intent}
     */
-    identify_intent(sentence, options){
+    async identify_intent(sentence, options){
         if (!options.session_id){
             throw new Error(`Required option "session_id" for NluDialogflow.indentify_intent() not set.`);
         }
 
         if (this._bytes(sentence) > 256){
             debug(`Sentence exceeds 256 bytes so we return input.unknown.`);
-            return Promise.resolve({
+            return {
                 name: "input.unknown"
-            })
+            }
         }
 
         const session_path = this._sessions_client.sessionPath(this._project_id, options.session_id);

@@ -1,7 +1,6 @@
 "use strict";
 
 const Context = require("./context");
-Promise = require("bluebird");
 
 // Debuggers
 const debug = require("debug")("bot-express:webhook");

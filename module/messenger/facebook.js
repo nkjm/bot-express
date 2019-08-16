@@ -1,12 +1,10 @@
 'use strict';
 
-const request = require('request');
+const axios = require('axios');
 const crypto = require('crypto');
 const debug = require("debug")("bot-express:messenger");
 const secure_compare = require('secure-compare');
 const REQUIRED_PARAMETERS = ["app_secret", "page_access_token"];
-
-Promise.promisifyAll(request);
 
 module.exports = class MessengerFacebook {
 
@@ -70,20 +68,12 @@ module.exports = class MessengerFacebook {
             message: message
         }
 
-        let response = await request.postAsync({
+        debug(`Running _send_single_message..`)
+        return this.request({
+            method: "post",
             url: url,
-            body: body,
-            json: true
-        });
-        if (response.statusCode != 200){
-            debug("facebook._send_single_message() failed.");
-            if (response.body && response.body.error && response.body.error.message){
-                throw new Error(response.body.error.message);
-            } else if (response.statusMessage){
-                throw new Error(response.statusMessage);
-            }
-        }
-        return response;
+            data: body
+        })
     }
 
     async reply_to_collect(event, messages){
@@ -769,4 +759,15 @@ module.exports = class MessengerFacebook {
             }
         }
     }
-};
+
+    async request(options){
+        let response = await axios.request(options).catch(e => {
+            let error_message = `Failed.`
+            if (e.resopnse){
+                error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
+            }
+            throw Error(error_message)
+        })
+        return response.data
+    }
+}

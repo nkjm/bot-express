@@ -1,6 +1,5 @@
 "use strict";
 
-Promise = require("bluebird");
 const debug = require("debug")("bot-express:flow");
 const Flow = require("../flow");
 

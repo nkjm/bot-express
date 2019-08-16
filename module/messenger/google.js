@@ -1,12 +1,9 @@
 "use strict";
 
-const request = require("request");
 const crypto = require("crypto");
 const debug = require("debug")("bot-express:messenger");
 const { ActionsSdkApp } = require('actions-on-google');
 const REQUIRED_PARAMETERS = ["project_id"];
-
-Promise.promisifyAll(request);
 
 module.exports = class MessengerGoogle {
 

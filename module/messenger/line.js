@@ -1,15 +1,14 @@
 'use strict';
 
-const request = require("request");
-const crypto = require("crypto");
-const debug = require("debug")("bot-express:messenger");
-const bot_sdk = require("@line/bot-sdk");
-const cache = require("memory-cache");
-const secure_compare = require('secure-compare');
-const api_version = "v2";
-const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"];
-const CACHE_PREFIX = "be_messenger_line_";
-Promise.promisifyAll(request);
+const axios = require("axios")
+const crypto = require("crypto")
+const debug = require("debug")("bot-express:messenger")
+const bot_sdk = require("@line/bot-sdk")
+const cache = require("memory-cache")
+const secure_compare = require('secure-compare')
+const api_version = "v2"
+const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"]
+const CACHE_PREFIX = "be_messenger_line_"
 
 module.exports = class MessengerLine {
 
@@ -83,31 +82,31 @@ module.exports = class MessengerLine {
         } else {
             debug(`access_token for LINE Messaging API not found or expired. We get new one.`);
             const url = `https://${this._endpoint}/${api_version}/oauth/accessToken`;
-            const form = {
-                grant_type: "client_credentials",
-                client_id: this._channel_id,
-                client_secret: this._channel_secret
+            const params = new URLSearchParams()
+            params.append("grant_type", "client_credentials")
+            params.append("client_id", this._channel_id)
+            params.append("client_secret", this._channel_secret)
+            const headers = {
+                "Content-Type": "application/x-www-form-urlencoded"
             }
 
-            const response = await request.postAsync({
+            debug(`Running refresh_token..`)
+            const response = await this.request({
+                method: "post",
                 url: url,
-                form: form
+                headers: headers,
+                data: params,
+                responseType: "json"
             })
 
-            if (response.statusCode != 200){
-                throw new Error(`Failed to refresh token for LINE Messaging API. Status code: ${response.statusCode}.`);
-            }
-
-            const body = JSON.parse(response.body);
-
-            if (!body.access_token){
+            if (!(response && response.access_token)){
                 throw new Error(`access_token not found in response.`);
             }
 
             // We save access token in cache for 24 hours.
-            cache.put(`${CACHE_PREFIX}${this._channel_id}_access_token`, body.access_token, 86400000);
+            cache.put(`${CACHE_PREFIX}${this._channel_id}_access_token`, response.access_token, 86400000);
 
-            access_token = body.access_token;
+            access_token = response.access_token;
         }
 
         this._access_token = access_token;
@@ -134,23 +133,14 @@ module.exports = class MessengerLine {
             to: to,
             messages: messages
         }
-        let response = await request.postAsync({
+
+        debug(`Running multicast..`)
+        return this.request({
+            method: "post",
             url: url,
             headers: headers,
-            body: body,
-            json: true
-        });
-
-        if (response.statusCode == 200){
-            return response.body;
-        }
-
-        debug(`Failed to multicast message. Status code: ${response.statusCode}`);
-        debug(`Failed request body follows.`);
-        debug(JSON.stringify(body));
-        debug(`Failed response body follows.`);
-        debug(JSON.stringify(response.body));
-        throw new Error(response.body.message);
+            data: body
+        })
     }
 
     async send(event, to, messages){
@@ -171,23 +161,13 @@ module.exports = class MessengerLine {
             messages: messages
         }
 
-        let response = await request.postAsync({
+        debug(`Running send..`)
+        return this.request({
+            method: "post",
             url: url,
             headers: headers,
-            body: body,
-            json: true
-        });
-
-        if (response.statusCode == 200){
-            return response.body;
-        }
-
-        debug(`Failed to send message. Status code: ${response.statusCode}`);
-        debug(`Failed request body follows.`);
-        debug(JSON.stringify(body));
-        debug(`Failed response body follows.`);
-        debug(JSON.stringify(response.body));
-        throw new Error(response.body.message);
+            data: body
+        })
     }
 
     async reply_to_collect(event, messages){
@@ -212,22 +192,13 @@ module.exports = class MessengerLine {
             messages: messages
         }
         
-        let response = await request.postAsync({
+        debug(`Running reply..`)
+        return this.request({
+            method: "post",
             url: url,
             headers: headers,
-            body: body,
-            json: true
-        });
-
-        if (response.statusCode == 200){
-            return response.body;
-        }
-        debug(`Failed to reply message. Status code: ${response.statusCode}`);
-        debug(`Failed request body follows.`);
-        debug(JSON.stringify(body));
-        debug(`Failed response body follows.`);
-        debug(JSON.stringify(response.body));
-        throw new Error(response.body.message);
+            data: body
+        })
     }
 
     static extract_events(body){
@@ -670,7 +641,7 @@ module.exports = class MessengerLine {
     /**
     @deprecated
     */
-    static translate_message(translater, message_type, message, sender_language){
+    static async translate_message(translater, message_type, message, sender_language){
         switch(message_type){
             case "text": {
                 return translater.translate(message.text, sender_language).then(
@@ -763,9 +734,20 @@ module.exports = class MessengerLine {
             }
             */
             default: {
-                return Promise.resolve(message);
+                return message;
                 break;
             }
         }
     }
-};
+
+    async request(options){
+        let response = await axios.request(options).catch(e => {
+            let error_message = `Failed.`
+            if (e.response){
+                error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
+            }
+            throw Error(error_message)
+        })
+        return response.data
+    }
+}

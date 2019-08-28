@@ -20,7 +20,8 @@ server.use('/bot/webhook', bot_express({
     messenger: {
         line: [{
             channel_id: process.env.LINE_CHANNEL_ID,
-            channel_secret: process.env.LINE_CHANNEL_SECRET
+            channel_secret: process.env.LINE_CHANNEL_SECRET,
+            token_retention: process.env.LINE_TOKEN_RETENTION
         }],
         facebook: {
             app_secret: process.env.FACEBOOK_APP_SECRET,

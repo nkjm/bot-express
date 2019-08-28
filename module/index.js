@@ -38,6 +38,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.messenger.line.channel_id] - Channel ID of Messaging API. Required when you use LINE as messenger.
 @param {String} [options.messenger.line.channel_secret] - Channel Secret of Messaging API. Required when you use LINE as messenger.
 @param {String} [options.messenger.line.switcher_secret] - Switcher Secret of Messaging API. Required when you use Switcher API.
+@param {String} [options.messenger.line.token_retention=86400000] - Channel Access Token retention in second.
 @param {String} [options.messenger.line.endpoint="api.line.me"] - Test purpose onlyl. Change Messaging API endpoint hostname.
 @param {Object} [options.messenger.facebook] - Messenger configuration of facebook.
 @param {String} [options.messenger.facebook.app_secret] - Facebook App Secret. Required when you use Facebook Messenger.

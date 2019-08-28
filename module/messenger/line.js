@@ -66,6 +66,7 @@ module.exports = class MessengerLine {
                 this._channel_id = o.channel_id;
                 this._channel_secret = o.channel_secret;
                 this._switcher_secret = o.switcher_secret;
+                this._token_retention = (o.token_retention) ? o.token_retention * 1000 : 86400000;
                 this._endpoint = o.endpoint || "api.line.me";
                 return;
             }
@@ -103,8 +104,9 @@ module.exports = class MessengerLine {
                 throw new Error(`access_token not found in response.`);
             }
 
-            // We save access token in cache for 24 hours.
-            cache.put(`${CACHE_PREFIX}${this._channel_id}_access_token`, response.access_token, 86400000);
+            // We save access token in cache for 24 hours by default.
+            debug(`Saving channel access token. Retention is ${String(this._token_retention / 1000)} seconds.`)
+            cache.put(`${CACHE_PREFIX}${this._channel_id}_access_token`, response.access_token, this._token_retention);
 
             access_token = response.access_token;
         }

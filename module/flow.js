@@ -853,8 +853,12 @@ module.exports = class Flow {
         }
 
         const parent_context = JSON.parse(JSON.stringify(this.context));
+        const skill = {
+            type: this.context.skill.type
+        }
         delete parent_context.skill;
         parent_context.reason = "sub_skill";
+        parent_context.skill = skill;
         this.context._parent.unshift(parent_context);
 
         // Bit _sub_skill flag.

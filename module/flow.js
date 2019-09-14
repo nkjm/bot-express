@@ -977,7 +977,7 @@ module.exports = class Flow {
                     await this.bot.send(this.bot.extract_sender_id(), message, this.context.sender_language)
                     debug("Push worked.")
                 } else {
-                    debug(e.message)
+                    throw (e)
                 }
             }
         }

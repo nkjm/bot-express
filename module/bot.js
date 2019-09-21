@@ -197,6 +197,14 @@ class Bot {
     }
 
     /**
+     * Clear all messages in queue.
+     * @method
+     */
+    clear_queue(){
+        this._context._message_queue = [];
+    }
+
+    /**
      * Stop processing all remaining actions and keep context.
      * @method
      */

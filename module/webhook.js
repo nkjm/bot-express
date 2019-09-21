@@ -45,7 +45,7 @@ class Webhook {
         await this.slib.messenger.refresh_token();
         debug("Refresh token succeeded.");
 
-        // Process events
+        // Process events.
         let events = this.slib.messenger.extract_events(this.options.req.body);
         let done_process_events = [];
         for (let e of events){
@@ -53,10 +53,15 @@ class Webhook {
         }
         const context_list = await Promise.all(done_process_events);
 
+        // Log context.
         for (let context of context_list){
             if (typeof context === "object"){
                 debug("Updated context follows.");
-                debug(JSON.stringify(context));
+                const context_for_log = JSON.parse(JSON.stringify(context))
+                if (!this.options.log_global){
+                    delete context_for_log.global
+                }
+                debug(context_for_log)
             }
         }
 
@@ -269,7 +274,7 @@ class Webhook {
             await this.slib.memory.put(memory_id, updated_context, flow.bot);
         }
 
-        return updated_context;
+        return updated_context
     }
 }
 

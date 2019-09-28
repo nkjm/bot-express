@@ -24,7 +24,10 @@ module.exports = class SkillTestConfirmingProperty {
                         },
                         reaction: async (error, value, bot, event, context) => {
                             if (value === "abc"){
-                                await bot.apply_parameter("quantity", 3);
+                                await bot.apply_parameter({
+                                    name: "quantity", 
+                                    value: 3
+                                });
                             } else if (value === "change_message"){
                                 bot.change_this_message({
                                     type: "text",

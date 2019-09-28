@@ -6,16 +6,17 @@ const fs = require("fs");
 const request = require("request");
 const debug = require("debug")("bot-express:test");
 const TEST_WEBHOOK_URL = process.env.TEST_WEBHOOK_URL;
-Promise = require("bluebird");
+const Promise = require("bluebird");
 Promise.promisifyAll(request);
 
 module.exports = class TestUtilEmulator {
     /**
-    @constructor
-    @param {String} messenger_type - Supported values are "line", "facebook", "unsupported".
-    @param {Object} options - Parameters required by the messenger.
-    */
-    constructor(messenger_type, options){
+     * @constructor
+     * @param {String} messenger_type - Supported values are "line", "facebook", "unsupported".
+     * @param {Object} options - Parameters required by the messenger.
+     * @param {String} line_user_id 
+     */
+    constructor(messenger_type, options, line_user_id){
         this.messenger_type = messenger_type;
 
         let scritps = fs.readdirSync(__dirname + "/messenger");
@@ -26,6 +27,34 @@ module.exports = class TestUtilEmulator {
                 this.messenger = new Messenger(options);
             }
         }
+        this.line_user_id = line_user_id
+    }
+
+    async say(message_text){
+        const event = this.create_message_event(this.line_user_id, message_text)
+        return this.send(event)
+    }
+
+    async postback(data){
+        const event = this.create_postback_event(this.line_user_id, {data: (typeof data === "string") ? data : JSON.stringify(data)})
+        return this.send(event)
+    }
+
+    async postback_params(params){
+        const event = this.create_postback_event(this.line_user_id, {params: params})
+        return this.send(event)
+    }
+
+    async launch(skill_name, parameters, language){
+        const event = this.create_postback_event(this.line_user_id, {data: JSON.stringify({
+            type: "intent",
+            intent: {
+                name: skill_name,
+                parameters: parameters
+            },
+            language: language
+        })})
+        return this.send(event)
     }
 
     /**

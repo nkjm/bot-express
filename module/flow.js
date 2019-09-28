@@ -191,6 +191,9 @@ module.exports = class Flow {
                     }
                 }
             }
+            if (log.param.preaction){
+                log.param.preaction = Function.call(skill, "return " + log.param.preaction)();
+            }
             if (log.param.parser){
                 if (typeof log.param.parser === "string"){
                     debug(`parser is string. We try to make it function...`);
@@ -269,6 +272,9 @@ module.exports = class Flow {
             Object.assign(this.context.heard, parameters);
             return;
         }
+
+        // Take preaction.
+        await this.bot.preact(param.name)
 
         // Parse and add parameter.
         let param_value = parameters[param.name];
@@ -379,7 +385,10 @@ module.exports = class Flow {
         Object.assign(this.context._message_queue, message_queue)
 
         // Apply collected sub parameters to parent parameter.
-        await this.bot.apply_parameter(this.context.confirming, collected_sub_parameters)
+        await this.bot.apply_parameter({
+            name: this.context.confirming, 
+            value: collected_sub_parameters
+        })
     }
 
     /**
@@ -910,9 +919,14 @@ module.exports = class Flow {
             return await this.respond();
         }
 
-
         // Set context.confirming.
         this.context.confirming = param.name;
+
+        // Perform preaction.
+        if (param.preaction && typeof param.preaction === "function"){
+            debug(`Preaction found. Performing..`)
+            await param.preaction(this.bot, this.event, this.context)
+        }
 
         // Check if there is message_to_confirm.
         if (!(param.message || param.message_to_confirm)){

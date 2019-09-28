@@ -79,6 +79,15 @@
  */
 
 /**
+ * Function which is triggered before processing parameter.
+ * @typedef {Function} Skill#preaction
+ * @async
+ * @param {Bot} bot - Toolkit which can be used to access Messenger API, queuing messeage, collecting arbitrary parameter and son on.
+ * @param {Object} event - Event object which triggers this flow.
+ * @param {context} context - Context information.
+ */
+
+/**
  * Function to generate message to confirm the value of teh parameter.
  * @typedef {Function} Skill#message
  * @async

@@ -332,14 +332,22 @@ class Bot {
     
     /**
      * Manually apply value to the parameter. We can select if parser and reaction would be conducted. 
+     * @deprecated
      * @method
      * @async
      * @param {String} param_name - Name of the parameter to apply.
      * @param {*} param_value - Value to apply.
+     * @param {Boolean} [preact=true] - Whether to run preaction.
      * @param {Boolean} [parse=false] - Whether to run parser.
      * @param {Boolean} [react=true] - Whether to run reaction.
      */ 
+    /*
     async apply_parameter(param_name, param_value, parse = false, react = true){
+        // Take preaction.
+        if (preact){
+            await this.preact(param_name);
+        }
+
         // Parse parameter.
         let parse_error;
         if (parse){
@@ -367,6 +375,59 @@ class Bot {
         // Take reaction.
         if (react){
             await this.react(parse_error, param_name, param_value);
+        }
+    }
+    */
+
+    /**
+     * Manually apply value to the parameter. We can select if parser and reaction would be conducted. 
+     * @method
+     * @async
+     * @param {Object} options
+     * @param {String} options.name - Name of the parameter to apply.
+     * @param {*} options.value - Value to apply.
+     * @param {Boolean} [options.preact=true] - Whether to run preaction.
+     * @param {Boolean} [options.parse=false] - Whether to run parser.
+     * @param {Boolean} [options.react=true] - Whether to run reaction.
+     */ 
+    async apply_parameter(o){
+        o.preact = (o.preact === undefined) ? true : o.preact
+        o.parse = (o.parse === undefined) ? false : o.parse
+        o.react = (o.react === undefined) ? true : o.react
+
+        // Take preaction.
+        if (o.preact){
+            await this.preact(o.name)
+        }
+
+        // Parse parameter.
+        let parse_error
+        if (o.parse){
+            try {
+                o.value = await this.parse_parameter(o.name, o.value);
+            } catch (e){
+                if (e.name === "Error"){
+                    // This should be intended exception in parser.
+                    parse_error = e;
+                    debug(`Parser rejected following value for parameter: "${o.name}".`);
+                    debug(o.value);
+                    if (e.message){
+                        debug(e.message);
+                    }
+                    return
+                } else {
+                    // This should be unexpected exception so we just throw error.
+                    throw e;
+                }
+            }
+        }
+
+        // Add parameter to context.
+        this.add_parameter(o.name, o.value);
+
+        // Take reaction.
+        if (o.react){
+            await this.react(parse_error, o.name, o.value);
         }
     }
 
@@ -496,6 +557,33 @@ class Bot {
     }
 
     /**
+     * Run preaction defined in skill.
+     * @method
+     * @async
+     * @param {String} param_name 
+     */
+    async preact(param_name){
+        // If pause or exit flag found, we skip remaining process.
+        if (this._context._pause || this._context._exit || this._context._init){
+            debug(`Detected pause or exit or init flag so we skip preaction.`);
+            return;
+        }
+
+        const param = this.get_parameter(param_name);
+
+        if (param.preaction){
+            debug(`Preaction for ${param_name} found. Performing..`);
+            await param.preaction(this, this._event, this._context);
+        } else if (this._context.skill["preaction_" + param_name]){
+            debug(`Preaction for ${param_name} found. Performing..`);
+            await this._context.skill["preaction_" + param_name](this, this._event, this._context);
+        } else {
+            // This parameter does not have preaction so do nothing.
+            debug(`preaction for ${param_name} not found.`);
+        }
+    }
+
+    /**
      * Run reaction defined in skill.
      * @method
      * @async
@@ -551,6 +639,9 @@ class Bot {
             if (typeof param.condition === "function"){
                 param.condition = param.condition.toString();
             }
+        }
+        if (param.preaction){
+            param.preaction = param.preaction.toString();
         }
         if (param.parser){
             if (typeof param.parser === "function"){

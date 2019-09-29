@@ -10,6 +10,7 @@ module.exports = class Context {
     constructor(options = {}){
         const o = options
 
+        this.session_id = o.session_id || crypto.randomBytes(80).toString('hex')
         this.chat_id = o.chat_id || crypto.randomBytes(20).toString('hex')
         this.launched_at = o.launched_at || new Date().getTime()
         this.event = o.event

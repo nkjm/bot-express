@@ -45,6 +45,13 @@ class Bot {
     }
 
     /**
+     * Create session which contains context id.
+     */
+    async create_session(){
+        return this._slib.memory.create_session(this._context.session_id, this.extract_sender_id())
+    }
+
+    /**
     * Reply messages to sender to collect parameter
     * @method
     * @async

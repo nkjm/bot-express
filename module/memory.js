@@ -5,6 +5,7 @@ const default_store = "memory-cache";
 const fs = require("fs");
 const memory_cache = require("memory-cache"); // Not as memory store but as timer.
 const prefix_context = "be_context_";
+const prefix_session = "be_session_";
 const prefix_timer = "be_timer_";
 
 /**
@@ -41,24 +42,26 @@ class Memory {
     }
 
     /**
-    Get the context by key.
-    @function
-    @param {String} key - Key of the context.
-    @returns {Promise.<context>} context - Context object.
-    */
+     * Get the context by key.
+     * @method
+     * @async
+     * @param {String} key - Key of the context.
+     * @returns {Promise.<context>} context - Context object.
+     */
     async get(key){
         return this.store.get(`${prefix_context}${key}`);
     }
 
     /**
-    Put the context by key.
-    @function
-    @param {String} key - Key of the context.
-    @param {context} context - Context object to store.
-    @param {*} bot - bot instance.
-    @param {Number} [retention] - Lifetime of the context in seconds.
-    @returns {Promise.<null>}
-    */
+     * Put the context by key.
+     * @method
+     * @async
+     * @param {String} key - Key of the context.
+     * @param {context} context - Context object to store.
+     * @param {*} bot - bot instance.
+     * @param {Number} [retention] - Lifetime of the context in seconds.
+     * @returns {Promise.<null>}
+     */
     async put(key, context, bot, retention = this.retention){
         context.updated_at = new Date().getTime();
 
@@ -113,28 +116,63 @@ class Memory {
         })
 
         // Save context.
-        return this.store.put(`${prefix_context}${key}`, context);
+        await this.store.put(`${prefix_context}${key}`, context)
     }
 
     /**
-    Delete the context by key.
-    @function
-    @param {String} key - Key of the context.
-    @returns {Promise.<null>}
-    */
+     * Get session.
+     * @method
+     * @async
+     * @param {String} session_id
+     * @return {String} context_id
+     */
+    async get_session(session_id){
+        return this.store.get(`${prefix_session}${session_id}`)
+    }
+
+    /**
+     * Save session and return its key.
+     * @method
+     * @async
+     * @param {String} session_id
+     * @param {String} context_id
+     * @return {String} session_id
+     */
+    async create_session(session_id, context_id){
+        await this.store.put(`${prefix_session}${session_id}`, context_id)
+        return session_id
+    }
+
+    /**
+     * Delete the context and session by key.
+     * @method
+     * @async
+     * @param {String} key - Key of the context.
+     * @returns {Promise.<null>}
+     */
     async del(key){
         // Delete timer.
         memory_cache.del(`${prefix_timer}${key}`);
+
+        // Get context to retrieve session_id.
+        const context = await this.store.get(`${prefix_context}${key}`)
         
-        // Delete context.
-        return this.store.del(`${prefix_context}${key}`);
+        if (context){
+            // Delete session.
+            if (context.session_id){
+                await this.store.del(`${prefix_session}${context.session_id}`)
+            }
+            // Delete context.
+            await this.store.del(`${prefix_context}${key}`);
+        }
     }
 
     /**
-    Close the connection.
-    @function
-    @returns {Promise.null}
-    */
+     * Close the connection.
+     * @method
+     * @async
+     * @returns {Promise.null}
+     */
     async close(){
         return this.store.close();
     }

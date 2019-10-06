@@ -8,6 +8,7 @@ const REQUIRED_OPTIONS = {
 const DEFAULT_SKILL_PATH = "../../../skill/";
 const DEFAULT_TRANSLATION_LABEL_PATH = "../../../translation/label.js";
 const DEFAULT_MESSAGE_PATH = "../../../message/";
+const DEFAULT_PARAMETER_PATH = "../../../parameter/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
 const DEFAULT_LANGUAGE = "ja";
@@ -76,6 +77,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.modify_previous_parameter_intent] - Intent name to modify the previously collected parameter.
 @param {String} [options.skill_path="./skill/"] - Path to the directory which contains skill scripts.
 @param {String} [options.message_path="./message/"] - Path to the directory which contains message scripts.
+@param {String} [options.parameter_path="./parameter/"] - Path to the directory which contains parameter scripts. Parameter scripts is used as parameter generator.
 @param {String} [options.parallel_event="ignore"] - Flag to decide the behavior in receiving parallel event. If set to "ignore", bot ignores the event during processing the event from same user. Supported value are "ignore" and "allow".
 @param {Object} [options.translator] - Option object for translator.
 @param {String} [options.translator.label_path="./translation/label.js"] - Path to prepared translation label file.
@@ -112,6 +114,16 @@ module.exports = (options) => {
         options.message_path = "../sample_message/";
     } else {
         options.message_path = DEFAULT_MESSAGE_PATH;
+    }
+
+    // Parameter will be required in flow. So path should be relative path from flow.
+    if (options.parameter_path){
+        options.parameter_path = "../../../" + options.parameter_path;
+    } else if (process.env.BOT_EXPRESS_ENV == "development"){
+        // This is for Bot Express development environment only.
+        options.parameter_path = "../sample_parameter/";
+    } else {
+        options.parameter_path = DEFAULT_PARAMETER_PATH;
     }
 
     // Translator will be required in bot. So path should be relative path from bot.

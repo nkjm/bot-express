@@ -170,7 +170,8 @@ module.exports = class Flow {
             return skill;
         }
 
-        this.context.param_change_history.forEach((log) => {
+        this.context.param_change_history.forEach((orig_log) => {
+            let log = JSON.parse(JSON.stringify(orig_log))
             if (log.param.message){
                 if (typeof log.param.message === "string"){
                     debug(`message is string. We try to make it function...`);
@@ -210,8 +211,15 @@ module.exports = class Flow {
 
             if (log.type === "dynamic_parameter" && skill.dynamic_parameter === undefined){
                 skill.dynamic_parameter = {};
-                skill.dynamic_parameter[log.name] = log.param;
-                return;
+            }
+            if (log.param.generator){
+                if (!(log.param.generator.file && log.param.generator.method)){
+                    throw Error(`Generator of ${log.name} is not correctly set.`)
+                }
+                const Generator = require(`${this.options.parameter_path}${log.param.generator.file}`)
+                const generator = new Generator()
+                if (!generator[log.param.generator.method]) throw Error(`${log.param.generator.file} does not have ${log.param.generator.method}`)
+                log.param = generator[log.param.generator.method](log.param.generator.options)
             }
             if (skill[log.type][log.name] === undefined){
                 skill[log.type][log.name] = log.param;
@@ -823,7 +831,22 @@ module.exports = class Flow {
         }
 
         // Extract parameter by name
-        const param = this.bot.get_parameter(this.context.to_confirm[0]);
+        let param = this.bot.get_parameter(this.context.to_confirm[0]);
+
+        // If this param depends on generator, we generate it.
+        if (param.generator){
+            const param_name = param.name
+            const param_type = param.type
+            if (!(param.generator.file && param.generator.method)){
+                throw Error(`Generator of ${param_name} is not correctly set.`)
+            }
+            const Generator = require(`${this.options.parameter_path}${param.generator.file}`)
+            const generator = new Generator()
+            if (!generator[param.generator.method]) throw Error(`${param.generator.file} does not have ${param.generator.method}`)
+            param = generator[param.generator.method](param.generator.options)
+            param.name = param_name
+            param.type = param_type
+        }
         
         // If condition is defined, we test it.
         if (param.condition){

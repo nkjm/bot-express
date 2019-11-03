@@ -37,19 +37,19 @@ module.exports = class ParserNumber {
 
             // Check once again and throw error if it is still NaN.
             if (isNaN(parsed_value)){
-                throw new Error("should_be_number");
+                throw new Error("be_parser__should_be_number");
             }
         }
 
         if (policy.min){
             if (parsed_value < policy.min){
-                throw new Error("violates_min");
+                throw new Error("be_parser__too_small");
             }
         }
 
         if (policy.max){
             if (parsed_value> policy.max){
-                throw new Error("violates_max");
+                throw new Error("be_parser__too_large");
             }
         }
 

@@ -27,11 +27,12 @@ module.exports = class ParserList {
      */
     async parse(value, policy){
         if (!(policy && Array.isArray(policy.list) && policy.list.length > 0)){
-            throw new Error("policy_should_have_list");
+            debug(`policy.list should have array of value.`)
+            throw new Error()
         }
     
         if (!policy.list.includes(value)){
-            throw new Error("value_not_found_in_list");
+            throw new Error("be_parser__should_be_in_list");
         }
 
         return value;

@@ -13,7 +13,7 @@ module.exports = class ParserEmail {
 
         for (let required_option of this.required_options){
             if (!options[required_option]){
-                throw new Error(`Required option "${required_option}" not set.`);
+                throw new Error(`Required option "${required_option}" not set.`)
             }
         }
     }
@@ -24,18 +24,18 @@ module.exports = class ParserEmail {
      * @param {Object} [policy]
      */
     async parse(value, policy = {}){
-        if (typeof value != "string"){
-            throw new Error("should_be_string");
-        }
         if (!value){
-            throw new Error("value_is_empty");
+            throw new Error(`be_parser__should_be_set`)
+        }
+        if (typeof value !== "string"){
+            throw new Error(`be_parser__should_be_string`)
         }
 
-        let pattern = "^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$";
-
+        const pattern = "^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$"
         if (!value.match(pattern)){
-            throw new Error();
+            throw new Error(`be_parser__should_be_email_format`)
         }
+
         return value;
     }
 }

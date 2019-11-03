@@ -15,7 +15,7 @@ module.exports = class ParserString {
 
         for (let required_option of this.required_options){
             if (!options[required_option]){
-                throw new Error(`Required option "${required_option}" not set.`);
+                throw new Error(`Required option "${required_option}" not set.`)
             }
         }
     }
@@ -28,28 +28,29 @@ module.exports = class ParserString {
      * @param {Number} [policy.min]
      * @param {Number} [policy.max]
      * @param {String} [policy.character] - Supported values are hiragana and katakana.
+     * @param {Boolean} [policy.zenkaku] - Set true if value should be in zenkaku.
      * @param {Array.<String>} [policy.exclude] - List of values to be rejected.
      * @param {String} [policy.regex] - Regex expression to match value.
      * @param {Boolean} [policy.sanitize] - Sanitize string if true.
      * @return {String} - Parsed value.
      */
     async parse(value, policy = {}){
-        if (typeof value != "string"){
-            throw new Error("should_be_string");
-        }
         if (!value){
-            throw new Error("value_is_empty");
+            throw new Error("be_parser__should_be_set")
+        }
+        if (typeof value !== "string"){
+            throw new Error("be_parser__should_be_string")
         }
 
         if (policy.min){
             if (value.length < policy.min){
-                throw new Error("violates_min");
+                throw new Error("be_parser__too_short")
             }
         }
 
         if (policy.max){
             if (value.length > policy.max){
-                throw new Error("violates_max");
+                throw new Error("be_parser__too_long")
             }
         }
 
@@ -60,32 +61,38 @@ module.exports = class ParserString {
         if (policy.character){
             if (policy.character === "katakana"){
                 if (wanakana.isKana(value.replace(/(\s|　)/g, ""))){
-                    value = wanakana.toKatakana(value);
+                    value = wanakana.toKatakana(value)
                 } else {
-                    throw new Error("should_be_katakana");
+                    throw new Error("be_parser__should_be_katakana")
                 }
             } else if (policy.character === "hiragana"){
                 if (wanakana.isKana(value.replace(/(\s|　)/g, ""))){
-                    value = wanakana.toHiragana(value);
+                    value = wanakana.toHiragana(value)
                 } else {
-                    throw new Error("should_be_hiragana");
+                    throw new Error("be_parser__should_be_hiragana")
                 }
             } else if (policy.character === "kana"){
                 if (!wanakana.isKana(value.replace(/(\s|　)/g, ""))){
-                    throw new Error("should_be_kana");
+                    throw new Error("be_parser__should_be_kana")
                 }
+            }
+        }
+
+        if (policy.zenkaku){
+            if (!value.match(/^[^\x01-\x7E]+$/)){
+                throw Error("be_parser__should_be_zenkaku")
             }
         }
 
         if (Array.isArray(policy.exclude)){
             if (policy.exclude.includes(value)){
-                throw new Error("violates_exclude");
+                throw new Error(`be_parser__unavailable_word`)
             }
         }
 
         if (policy.regex){
             if (!value.match(policy.regex)){
-                throw new Error("should_follow_regex");
+                throw new Error("be_parser__should_follow_regex")
             }
         }
 

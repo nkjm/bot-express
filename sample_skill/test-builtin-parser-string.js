@@ -1,15 +1,22 @@
-"use strict";
-
+"use strict"; 
 const debug = require("debug")("bot-express:skill");
 
 module.exports = class SkillTestBuiltinParserString {
 
     constructor() {
         this.required_parameter = {
+            test_case: {
+                reaction: async (error, value, bot, event, context) => {
+                    bot.collect(context.confirmed.test_case)
+                }
+            },
+        }
+
+        this.optional_parameter = {
             katakana: {
-                message_to_confirm: {
+                message: {
                     type: "text",
-                    text: "katakana",
+                    text: "dummy",
                 },
                 parser: {
                     type: "string",
@@ -24,9 +31,9 @@ module.exports = class SkillTestBuiltinParserString {
                 }
             },
             hiragana: {
-                message_to_confirm: {
+                message: {
                     type: "text",
-                    text: "hiragana"
+                    text: "dummy",
                 },
                 parser: {
                     type: "string",
@@ -41,9 +48,9 @@ module.exports = class SkillTestBuiltinParserString {
                 }
             },
             minmax: {
-                message_to_confirm: {
+                message: {
                     type: "text",
-                    text: "minmax"
+                    text: "dummy",
                 },
                 parser: {
                     type: "string",
@@ -59,9 +66,9 @@ module.exports = class SkillTestBuiltinParserString {
                 }
             },
             regex: {
-                message_to_confirm: {
+                message: {
                     type: "text",
-                    text: "regex"
+                    text: "dummy",
                 },
                 parser: {
                     type: "string",
@@ -76,9 +83,9 @@ module.exports = class SkillTestBuiltinParserString {
                 }
             },
             no_policy: {
-                message_to_confirm: {
+                message: {
                     type: "text",
-                    text: "no_policy"
+                    text: "dummy",
                 },
                 parser: "string",
                 reaction: async (error, value, bot, event, context) => {
@@ -88,9 +95,9 @@ module.exports = class SkillTestBuiltinParserString {
                 }
             },
             exclude: {
-                message_to_confirm: {
+                message: {
                     type: "text",
-                    text: "exclude"
+                    text: "dummy",
                 },
                 parser: {
                     type: "string",
@@ -100,9 +107,9 @@ module.exports = class SkillTestBuiltinParserString {
                 }
             },
             sanitize: {
-                message_to_confirm: {
+                message: {
                     type: "text",
-                    text: "sanitize"
+                    text: "dummy"
                 },
                 parser: {
                     type: "string",
@@ -110,7 +117,19 @@ module.exports = class SkillTestBuiltinParserString {
                         sanitize: true
                     }
                 }
-            }
+            },
+            zenkaku: {
+                message: {
+                    type: "text",
+                    text: "dummy"
+                },
+                parser: {
+                    type: "string",
+                    policy: {
+                        zenkaku: true
+                    }
+                }
+            },
         }
     }
 

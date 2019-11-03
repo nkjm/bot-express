@@ -54,14 +54,15 @@ module.exports = class ParserDialogflow {
      */
     async parse(value, policy){
         if (!(policy && policy.parameter_name)){
-            throw new Error(`Required policy "parameter_name" not set.`)
+            debug(`Required policy parameter: parameter_name not set.`)
+            throw new Error()
         }
 
-        if (typeof value != "string"){
-            throw new Error("should_be_string");
-        }
         if (!value){
-            throw new Error("value_is_empty");
+            throw new Error("be_parser__should_be_set")
+        }
+        if (typeof value !== "string"){
+            throw new Error("be_parser__should_be_string")
         }
 
         const responses = await this.sessions_client.detectIntent({
@@ -75,18 +76,18 @@ module.exports = class ParserDialogflow {
         });
 
         if (responses[0].queryResult.action){
-            debug("Builtin parser found an intent but it seems for another purpose so reject it.");
-            throw new Error("action_is_set");
+            debug("Builtin parser found an intent but it seems for another purpose so reject it.")
+            throw new Error()
         }
 
-        const parameters = structjson.structProtoToJson(responses[0].queryResult.parameters);
-        debug("Detected parameters are following.");
-        debug(parameters);
+        const parameters = structjson.structProtoToJson(responses[0].queryResult.parameters)
+        debug("Detected parameters are following.")
+        debug(parameters)
 
         if (!parameters[policy.parameter_name]){
-            throw new Error("corresponding_parameter_not_found");
+            throw new Error("be_parser__corresponding_parameter_not_found")
         }
 
-        return parameters[policy.parameter_name];
+        return parameters[policy.parameter_name]
     }
 }

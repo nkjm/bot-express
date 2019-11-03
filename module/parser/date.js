@@ -67,7 +67,7 @@ module.exports = class ParserDate {
                 debug(`policy.max should be YYYY-MM-DD.`)
                 throw Error()
             }
-            if (moment(date).isAfter(policy.min)){
+            if (moment(date).isAfter(policy.max)){
                 throw Error(`be_parser__should_be_before_max_date`)
             }
         }

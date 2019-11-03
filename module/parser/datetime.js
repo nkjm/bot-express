@@ -49,18 +49,18 @@ module.exports = class ParserDatetime {
 
         // Check format.
         if (!(datetime && datetime.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/))){
-            throw Error(`be_parser__should_be_YYYY-MM-DDTHH:mm`)
+            throw Error(`be_parser__should_be_yyyy_mm_dd_hh_mm`)
         }
 
         // Check with policy.
         if (policy.min){
             if (moment(datetime).isBefore(moment(policy.min))){
-                throw Error(`be_parser__should_be_after_min_date`)
+                throw Error(`be_parser__should_be_after_min_datetime`)
             }
         }
         if (policy.max){
             if (moment(datetime).isAfter(moment(policy.max))){
-                throw Error(`be_parser__should_be_before_max_date`)
+                throw Error(`be_parser__should_be_before_max_datetime`)
             }
         }
 

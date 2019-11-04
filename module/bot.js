@@ -396,6 +396,7 @@ class Bot {
      * @param {Boolean} [options.preact=true] - Whether to run preaction.
      * @param {Boolean} [options.parse=false] - Whether to run parser.
      * @param {Boolean} [options.react=true] - Whether to run reaction.
+     * @return {Boolean} - Return false if options.parse is true and parser rejected. Otherwise, return true.
      */ 
     async apply_parameter(o){
         o.preact = (o.preact === undefined) ? true : o.preact
@@ -416,13 +417,12 @@ class Bot {
             } catch (e){
                 if (e.name === "Error"){
                     // This should be intended exception in parser.
-                    parse_error = e;
-                    debug(`Parser rejected following value for parameter: "${o.name}".`);
-                    debug(o.value);
+                    parse_error = e
+                    debug(`Parser rejected following value for parameter: "${o.name}".`)
+                    debug(o.value)
                     if (e.message){
-                        debug(e.message);
+                        debug(`Reason: ${e.message}`)
                     }
-                    return
                 } else {
                     // This should be unexpected exception so we just throw error.
                     throw e;
@@ -431,12 +431,16 @@ class Bot {
         }
 
         // Add parameter to context.
-        this.add_parameter(o.name, o.value);
+        if (!parse_error){
+            this.add_parameter(o.name, o.value)
+        }
 
         // Take reaction.
         if (o.react){
-            await this.react(parse_error, o.name, o.value);
+            await this.react(parse_error, o.name, o.value)
         }
+
+        return (parse_error) ? false : true
     }
 
     /**

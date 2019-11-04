@@ -412,6 +412,7 @@ class Bot {
         if (o.parse){
             try {
                 o.value = await this.parse_parameter(o.name, o.value);
+                debug(`Parser of ${o.name} accepted and return ${o.value}.`)
             } catch (e){
                 if (e.name === "Error"){
                     // This should be intended exception in parser.

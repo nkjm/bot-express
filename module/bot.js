@@ -396,7 +396,7 @@ class Bot {
      * @param {Boolean} [options.preact=true] - Whether to run preaction.
      * @param {Boolean} [options.parse=false] - Whether to run parser.
      * @param {Boolean} [options.react=true] - Whether to run reaction.
-     * @return {Boolean} - Return false if options.parse is true and parser rejected. Otherwise, return true.
+     * @return {Object} result.accepted is false and error is set to result.error if options.parse is true and parser rejected. Otherwise, return result.accepted is true and result.error is undefined.
      */ 
     async apply_parameter(o){
         o.preact = (o.preact === undefined) ? true : o.preact
@@ -440,7 +440,7 @@ class Bot {
             await this.react(parse_error, o.name, o.value)
         }
 
-        return (parse_error) ? false : true
+        return (parse_error) ? { accepted: false, error: parse_error } : { accepted: true }
     }
 
     /**

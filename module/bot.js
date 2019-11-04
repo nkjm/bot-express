@@ -740,7 +740,7 @@ class Bot {
     }
 
     /**
-     * Remove parameter from to_confirm list.
+     * Remove parameter from to_confirm and confirmed
      * @method
      * @param {String|Array.<String>} param_name_list
      */
@@ -757,13 +757,18 @@ class Bot {
         }
 
         for (const param_name of param_name_list){
+            // Remove from to_confirm.
             const i = this._context.to_confirm.indexOf(param_name)
-            if (i === -1){
-                debug(`${param_name} not found in to_confirm.`)
-                continue
+            if (i !== -1){
+                this._context.to_confirm.splice(i, 1)
+                debug(`Removed ${param_name} from to_confirm.`)
             }
-            this._context.to_confirm.splice(i, 1)
-            debug(`Removed ${param_name} from to_confirm.`)
+
+            // Remove from confirmed.
+            if (this._context.confirmed && this._context.confirmed.hasOwnProperty(param_name)){
+                delete this._context.confirmed[param_name]
+                debug(`Removed ${param_name} from confirmed.`)
+            }
         }
     }
 

@@ -24,6 +24,11 @@ module.exports = class SkillTestUncollect {
                 message: {
                     type: "text",
                     text: "B pls."
+                },
+                reaction: async (error, value, bot, event, context) => {
+                    if (value === "uncollect_collected"){
+                        bot.uncollect("param_a")
+                    }
                 }
             },
             param_c: {

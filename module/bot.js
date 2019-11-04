@@ -336,55 +336,6 @@ class Bot {
 
         return param;
     }
-    
-    /**
-     * Manually apply value to the parameter. We can select if parser and reaction would be conducted. 
-     * @deprecated
-     * @method
-     * @async
-     * @param {String} param_name - Name of the parameter to apply.
-     * @param {*} param_value - Value to apply.
-     * @param {Boolean} [preact=true] - Whether to run preaction.
-     * @param {Boolean} [parse=false] - Whether to run parser.
-     * @param {Boolean} [react=true] - Whether to run reaction.
-     */ 
-    /*
-    async apply_parameter(param_name, param_value, parse = false, react = true){
-        // Take preaction.
-        if (preact){
-            await this.preact(param_name);
-        }
-
-        // Parse parameter.
-        let parse_error;
-        if (parse){
-            try {
-                param_value = await this.parse_parameter(param_name, param_value);
-            } catch (e){
-                if (e.name === "Error"){
-                    // This should be intended exception in parser.
-                    parse_error = e;
-                    debug(`Parser rejected following value for parameter: "${param_name}".`);
-                    debug(param_value);
-                    if (e.message){
-                        debug(e.message);
-                    }
-                } else {
-                    // This should be unexpected exception so we just throw error.
-                    throw e;
-                }
-            }
-        }
-
-        // Add parameter to context.
-        this.add_parameter(param_name, param_value);
-
-        // Take reaction.
-        if (react){
-            await this.react(parse_error, param_name, param_value);
-        }
-    }
-    */
 
     /**
      * Manually apply value to the parameter. We can select if parser and reaction would be conducted. 
@@ -730,6 +681,7 @@ class Bot {
         this._context.to_confirm.unshift(param_name);
         debug(`Reserved collection of parameter: ${param_name}. We put it to the top of to_confirm list.`);
     }
+
     /**
      * Make the specified skill paramter being collected next.
      * @method
@@ -785,6 +737,34 @@ class Bot {
 
         debug(`Reserved collection of parameter: ${param_name}. We put it to the top of to_confirm list.`);
         this._context.to_confirm.unshift(param_name);
+    }
+
+    /**
+     * Remove parameter from to_confirm list.
+     * @method
+     * @param {String|Array.<String>} param_name_list
+     */
+    uncollect(param_name_list){
+        // Check if there are some to_confirm parameters.
+        if (!(Array.isArray(this._context.to_confirm) && this._context.to_confirm.length > 0)){
+            return
+        }
+        if (typeof param_name_list === "string"){
+            param_name_list = [param_name_list]
+        }
+        if (!(Array.isArray(param_name_list) && param_name_list.length > 0)){
+            throw Error(`param_name_list is invalid. Should be String or Array of String.`)
+        }
+
+        for (const param_name of param_name_list){
+            const i = this._context.to_confirm.indexOf(param_name)
+            if (i === -1){
+                debug(`${param_name} not found in to_confirm.`)
+                continue
+            }
+            this._context.to_confirm.splice(i, 1)
+            debug(`Removed ${param_name} from to_confirm.`)
+        }
     }
 
     /**

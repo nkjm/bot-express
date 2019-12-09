@@ -75,10 +75,10 @@ module.exports = class MessengerLine {
         throw new Error(`Signature validation failed.`);
     }
 
-    async refresh_token(){
+    async refresh_token(force = false){
         let access_token = cache.get(`${CACHE_PREFIX}${this._channel_id}_access_token`);
 
-        if (access_token){
+        if (!force && access_token){
             debug(`Found access_token for LINE Messaging API.`);
         } else {
             debug(`access_token for LINE Messaging API not found or expired. We get new one.`);
@@ -744,7 +744,6 @@ module.exports = class MessengerLine {
     }
 
     async request(options, retry = true){
-        debug(options)
         let response = await axios.request(options).catch(async (e) => {
             let error_message = `Failed.`
             if (e.response){
@@ -752,9 +751,12 @@ module.exports = class MessengerLine {
             }
             // If this is an error due to expiration of channel access token, we refresh and retry.
             if (e.response.status === 401 && retry === true){
-                debug(e.response)
+                debug(e.response.data)
                 debug(`Going to refresh channel access token and retry..`)
-                await this.refresh_token()
+                await this.refresh_token(true)
+                options.headers = {
+                    Authorization: `Bearer ${this._access_token}`
+                }
                 return this.request(options, false)
             }
             throw Error(error_message)

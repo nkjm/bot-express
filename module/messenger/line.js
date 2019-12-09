@@ -105,8 +105,9 @@ module.exports = class MessengerLine {
             }
 
             // We save access token in cache for 24 hours by default.
-            debug(`Saving channel access token. Retention is ${String(this._token_retention / 1000)} seconds.`)
-            cache.put(`${CACHE_PREFIX}${this._channel_id}_access_token`, response.access_token, this._token_retention);
+            const token_retention = this._token_retention || 86400000
+            debug(`Saving channel access token. Retention is ${String(token_retention / 1000)} seconds.`)
+            cache.put(`${CACHE_PREFIX}${this._channel_id}_access_token`, response.access_token, token_retention);
 
             access_token = response.access_token;
         }
@@ -742,11 +743,19 @@ module.exports = class MessengerLine {
         }
     }
 
-    async request(options){
-        let response = await axios.request(options).catch(e => {
+    async request(options, retry = true){
+        debug(options)
+        let response = await axios.request(options).catch(async (e) => {
             let error_message = `Failed.`
             if (e.response){
                 error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
+            }
+            // If this is an error due to expiration of channel access token, we refresh and retry.
+            if (e.response.status === 401 && retry === true){
+                debug(e.response)
+                debug(`Going to refresh channel access token and retry..`)
+                await this.refresh_token()
+                return this.request(options, false)
             }
             throw Error(error_message)
         })

@@ -186,6 +186,14 @@ class Messenger {
         return this.service.multicast(event, recipient_ids, messages);
     }
 
+    /**
+    * Push messages to all users.
+    * @param {Array.<MessageObject>} messages - The array of message objects.
+    * @returns {Array.<Promise>}
+    */
+    async broadcast(event, messages){
+        return this.service.broadcast(event, messages);
+    }
 
     /**
     * Compile message format to the specified format.

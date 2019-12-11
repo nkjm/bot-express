@@ -6,7 +6,8 @@ const debug = require("debug")("bot-express:messenger")
 const bot_sdk = require("@line/bot-sdk")
 const cache = require("memory-cache")
 const secure_compare = require('secure-compare')
-const api_version = "v2"
+const DEFAULT_ENDPOINT = "api.line.me"
+const DEFAULT_API_VERSION = "v2"
 const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"]
 const CACHE_PREFIX = "be_messenger_line_"
 
@@ -44,9 +45,10 @@ module.exports = class MessengerLine {
 
         // Since we now support multi-channel, these should be set in validate_signature() but in case there is just 1 option, we set it now.
         if (this._option_list.length === 1){
-            this._channel_id = this._option_list[0].channel_id;
-            this._channel_secret = this._option_list[0].channel_secret;
-            this._endpoint = this._option_list[0].endpoint || "api.line.me";
+            this._channel_id = this._option_list[0].channel_id
+            this._channel_secret = this._option_list[0].channel_secret
+            this._endpoint = this._option_list[0].endpoint || DEFAULT_ENDPOINT
+            this._api_version = this._option_list[0].api_version || DEFAULT_API_VERSION
         }
 
         this._access_token = null; // Will be set when this.refresh_token is called.
@@ -82,7 +84,7 @@ module.exports = class MessengerLine {
             debug(`Found access_token for LINE Messaging API.`);
         } else {
             debug(`access_token for LINE Messaging API not found or expired. We get new one.`);
-            const url = `https://${this._endpoint}/${api_version}/oauth/accessToken`;
+            const url = `https://${this._endpoint}/${this._api_version}/oauth/accessToken`;
             const params = new URLSearchParams()
             params.append("grant_type", "client_credentials")
             params.append("client_id", this._channel_id)
@@ -119,6 +121,93 @@ module.exports = class MessengerLine {
         })
     }
 
+    /**
+     * @method
+     * @async
+     * @param {Object} options
+     * @param {String} options.user_id
+     * @param {String} options.richmenu_id
+     */
+    async link_richmenu(o){
+        // If this is test, we will not actually issue call out.
+        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
+            debug("This is test so we skip the actual call out.");
+            return;
+        }
+        if (!o.richmenu_id){
+            debug(`Skip linking richmenu since richmenu_id not set.`)
+            return
+        }
+        if (!o.user_id){
+            throw Error(`Required option: user_id not set.`)
+        }
+
+        let url = `https://${this._endpoint}/${this._api_version}/bot/user/${o.user_id}/richmenu/${o.richmenu_id}}`;
+        let headers = {
+            Authorization: `Bearer ${this._access_token}`
+        }
+
+        debug(`Running link_richmenu..`)
+        return this.request({
+            method: "post",
+            url: url,
+            headers: headers,
+        })
+    }
+
+    /**
+     * @method
+     * @async
+     * @param {Object} options
+     * @param {String} options.user_id
+     */
+    async unlink_richmenu(o){
+        // If this is test, we will not actually issue call out.
+        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
+            debug("This is test so we skip the actual call out.");
+            return;
+        }
+        if (!o.user_id){
+            throw Error(`Required option: user_id not set.`)
+        }
+
+        let url = `https://${this._endpoint}/${this._api_version}/bot/user/${o.user_id}/richmenu`;
+        let headers = {
+            Authorization: `Bearer ${this._access_token}`
+        }
+
+        debug(`Running unlink_richmenu..`)
+        return this.request({
+            method: "delete",
+            url: url,
+            headers: headers,
+        })
+    }
+
+    async broadcast(event, messages){
+        // If this is test, we will not actually issue call out.
+        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
+            debug("This is test so we skip the actual call out.");
+            return;
+        }
+
+        let url = `https://${this._endpoint}/${this._api_version}/bot/message/broadcast`;
+        let headers = {
+            Authorization: `Bearer ${this._access_token}`
+        }
+        let body = {
+            messages: messages
+        }
+
+        debug(`Running broadcast..`)
+        return this.request({
+            method: "post",
+            url: url,
+            headers: headers,
+            data: body
+        })
+    }
+
     async multicast(event, to, messages){
         // If this is test, we will not actually issue call out.
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
@@ -128,7 +217,7 @@ module.exports = class MessengerLine {
 
         // return this.sdk.multicast(to, messages);
 
-        let url = `https://${this._endpoint}/${api_version}/bot/message/multicast`;
+        let url = `https://${this._endpoint}/${this._api_version}/bot/message/multicast`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`
         }
@@ -155,7 +244,7 @@ module.exports = class MessengerLine {
 
         //return this.sdk.pushMessage(to, messages);
 
-        let url = `https://${this._endpoint}/${api_version}/bot/message/push`;
+        let url = `https://${this._endpoint}/${this._api_version}/bot/message/push`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`
         }
@@ -186,7 +275,7 @@ module.exports = class MessengerLine {
 
         //return this.sdk.replyMessage(event.replyToken, messages);
 
-        let url = `https://${this._endpoint}/${api_version}/bot/message/reply`;
+        let url = `https://${this._endpoint}/${this._api_version}/bot/message/reply`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`
         }

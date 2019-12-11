@@ -142,7 +142,7 @@ module.exports = class MessengerLine {
             throw Error(`Required option: user_id not set.`)
         }
 
-        let url = `https://${this._endpoint}/${this._api_version}/bot/user/${o.user_id}/richmenu/${o.richmenu_id}}`;
+        let url = `https://${this._endpoint}/${this._api_version}/bot/user/${o.user_id}/richmenu/${o.richmenu_id}`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`
         }

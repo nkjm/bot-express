@@ -146,7 +146,7 @@ class Messenger {
     }
 
     get_secret(){
-        return this.Messenger_classes[this.type].get_secret()
+        return this.service.get_secret()
     }
 
     /**
@@ -158,7 +158,7 @@ class Messenger {
      * @param {Object} event - Event object to pass through.
      */
     async pass_through(webhook, secret, event){
-        return this.Messenger_classes[this.type].pass_through(webhook, secret, event)
+        return this.service.pass_through(webhook, secret, event)
     }
 
     /**

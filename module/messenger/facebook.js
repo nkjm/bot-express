@@ -20,6 +20,10 @@ module.exports = class MessengerFacebook {
         this.sdk = null; // TBC
     }
 
+    get_secret(){
+        return this._app_secret
+    }
+
     async refresh_token(){
         return;
     }

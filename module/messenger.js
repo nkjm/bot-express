@@ -145,6 +145,22 @@ class Messenger {
         return this.Messenger_classes[this.type].identify_message_type(message);
     }
 
+    get_secret(){
+        return this.Messenger_classes[this.type].get_secret()
+    }
+
+    /**
+     * Pass event through specified webhook.
+     * @method
+     * @async
+     * @param {String} webhook - URL to pass through event. 
+     * @param {String} secret - Secret key to create signature.
+     * @param {Object} event - Event object to pass through.
+     */
+    async pass_through(webhook, secret, event){
+        return this.Messenger_classes[this.type].pass_through(webhook, secret, event)
+    }
+
     /**
     * Reply messages to sender to collect parameter
     * @param {Object} event - Event object.

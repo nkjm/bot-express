@@ -52,6 +52,18 @@ class Bot {
     }
 
     /**
+     * Pass event through specified webhook.
+     * @method
+     * @async
+     * @param {String} webhook - URL to pass through event. 
+     * @param {String} secret - Secret key to create signature.
+     * @param {Object} event - Event object to pass through.
+     */
+    async pass_through(webhook, secret, event){
+        return this._slib.messenger.pass_through(webhook, secret, event)
+    }
+
+    /**
     * Reply messages to sender to collect parameter
     * @method
     * @async

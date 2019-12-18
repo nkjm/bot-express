@@ -77,6 +77,10 @@ module.exports = class MessengerLine {
         throw new Error(`Signature validation failed.`);
     }
 
+    get_secret(){
+        return this._channel_secret
+    }
+
     async refresh_token(force = false){
         let access_token = cache.get(`${CACHE_PREFIX}${this._channel_id}_access_token`);
 
@@ -118,6 +122,47 @@ module.exports = class MessengerLine {
         this.sdk = new bot_sdk.Client({
             channelAccessToken: this._access_token,
             channelSecret: this._channel_secret
+        })
+    }
+
+    /**
+     * Pass event through specified webhook.
+     * @method
+     * @async
+     * @param {String} webhook - URL to pass through event. 
+     * @param {String} secret - Secret key to create signature.
+     * @param {Object} event - Event object to pass through.
+     */
+    async pass_through(webhook, secret, event){
+        // Create payload.
+        const data = {
+            events: [event]
+        }
+
+        // Create signature.
+        const signature = crypto.createHmac('sha256',  secret).update(Buffer.from(JSON.stringify(data))).digest('base64')
+
+        // Set callout options.
+        const options = {
+            method: "post",
+            url: webhook,
+            headers: {
+                "X-Line-Signature": signature
+            },
+            data: data
+        }
+
+        // Make callout.
+        debug(`Passing through following event to ${webhook}..`)
+        debug(event)
+        await axios.request(options)
+        .then(response => {
+            debug(`Pass through succeeded.`)
+            debug(options)
+        }).catch(e => {
+            debug(`Pass through failed.`)
+            debug(options)
+            debug(e.response)
         })
     }
 

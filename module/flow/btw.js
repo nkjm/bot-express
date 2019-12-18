@@ -18,6 +18,13 @@ module.exports = class BtwFlow extends Flow {
         // Check if this event type is supported in this flow.
         if (!this.slib.messenger.check_supported_event_type(this.event, "btw")){
             debug(`This is unsupported event type in this flow so skip processing.`);
+
+            // Pass event through to another webhook if pass_through_webhook is set.
+            if (this.options.pass_through_webhook){
+                debug(`Passing event through another webhook..`)
+                await this.bot.pass_through(this.options.pass_through_webhook, this.slib.messenger.get_secret(), this.event)
+            }
+
             return this.context;
         }
 

@@ -38,12 +38,14 @@ class Webhook {
         debug("Webhook runs.");
 
         // Validate Signature
-        await this.slib.messenger.validate_signature(this.options.req);
+        if (!this.slib.messenger.validate_signature(this.options.req)){
+            debug(`Signature validation failed.`)
+            return
+        }
         debug("Signature validation succeeded.");
 
-        // Refresh token.
+        // Refresh token. This does not necessarily refresh token but retrieve access token from cache.
         await this.slib.messenger.refresh_token();
-        debug("Refresh token succeeded.");
 
         // Process events.
         let events = this.slib.messenger.extract_events(this.options.req.body);
@@ -83,8 +85,8 @@ class Webhook {
 
         // If this is for webhook validation, we skip processing this.
         if (this.slib.messenger.type === "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){
-            debug(`This is webhook validation so skip processing.`);
-            return;
+            debug(`This is webhook validation so skip processing.`)
+            return
         }
 
         // Identify memory id.

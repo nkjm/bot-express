@@ -10,6 +10,7 @@ const DEFAULT_ENDPOINT = "api.line.me"
 const DEFAULT_API_VERSION = "v2"
 const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"]
 const CACHE_PREFIX = "be_messenger_line_"
+const Redis = require("ioredis");
 
 module.exports = class MessengerLine {
 
@@ -53,28 +54,61 @@ module.exports = class MessengerLine {
 
         this._access_token = null; // Will be set when this.refresh_token is called.
         this.sdk = null; // Will be set when this.refresh_token is called.
+        
+        // Instantiate redis client.
+        if (options.token_store === "redis"){
+            if (!options.redis){
+                throw Error(`Redis options for messenger/line not set while token store is redis.`)
+            }
+
+            this.token_store = options.token_store
+            const redis_options = JSON.parse(JSON.stringify(options.redis))
+            if (redis_options.tls === "enable" || redis_options.tls === true){
+                debug(`Enable TLS on redis connection for messenger/line.`)
+                redis_options.tls = {
+                    rejectUnauthorized: false,
+                    requestCert: true,
+                    agent: false
+                }
+            } else {
+                debug(`Disable TLS on redis connection for messenger/line.`)
+                delete redis_options.tls
+            }
+
+            if (redis_options.url){
+                this.redis = new Redis(redis_options.url, redis_options);
+            } else {
+                this.redis = new Redis(redis_options);
+            }
+        } else {
+            this.token_store = "memory-cache"
+        }
     }
 
-    async validate_signature(req){
-        let signature = req.get('X-Line-Signature');
-        let raw_body = Buffer.from(JSON.stringify(req.body));
+    /**
+     * @method
+     * @param {Object} req 
+     * @return {Boolean}
+     */
+    validate_signature(req){
+        let signature = req.get('X-Line-Signature')
+        let raw_body = Buffer.from(JSON.stringify(req.body))
 
         // Signature Validation. We try all credentials in this._option_list.
         for (let o of this._option_list){
-            let hash = crypto.createHmac('sha256', o.switcher_secret || o.channel_secret).update(raw_body).digest('base64');
-            debug(`Going to validate using channel "${o.channel_id}"..`);
+            let hash = crypto.createHmac('sha256', o.switcher_secret || o.channel_secret).update(raw_body).digest('base64')
+            debug(`Going to validate using channel "${o.channel_id}"..`)
             if (secure_compare(hash, signature)){
-                debug(`Channel is "${o.channel_id}".`);
-                this._channel_id = o.channel_id;
-                this._channel_secret = o.channel_secret;
-                this._switcher_secret = o.switcher_secret;
-                this._token_retention = (o.token_retention) ? o.token_retention * 1000 : 86400000;
-                this._endpoint = o.endpoint || "api.line.me";
-                return;
+                debug(`Channel is "${o.channel_id}".`)
+                this._channel_id = o.channel_id
+                this._channel_secret = o.channel_secret
+                this._switcher_secret = o.switcher_secret
+                this._token_retention = o.token_retention
+                this._endpoint = o.endpoint || "api.line.me"
+                return true
             }
         }
-
-        throw new Error(`Signature validation failed.`);
+        return false
     }
 
     get_secret(){
@@ -82,12 +116,18 @@ module.exports = class MessengerLine {
     }
 
     async refresh_token(force = false){
-        let access_token = cache.get(`${CACHE_PREFIX}${this._channel_id}_access_token`);
+        const key = `${CACHE_PREFIX}${this._channel_id}_access_token`
+        let access_token
+        if (this.token_store === "redis"){
+            access_token = await this.redis.get(key)
+        } else {
+            access_token = cache.get(key)
+        }
 
         if (!force && access_token){
-            debug(`Found access_token for LINE Messaging API.`);
+            debug(`Access token for LINE Messaging API found.`);
         } else {
-            debug(`access_token for LINE Messaging API not found or expired. We get new one.`);
+            debug(`Access token for LINE Messaging API NOT found.`);
             const url = `https://${this._endpoint}/${this._api_version}/oauth/accessToken`;
             const params = new URLSearchParams()
             params.append("grant_type", "client_credentials")
@@ -97,7 +137,7 @@ module.exports = class MessengerLine {
                 "Content-Type": "application/x-www-form-urlencoded"
             }
 
-            debug(`Running refresh_token..`)
+            debug(`Retrieving new access token..`)
             const response = await this.request({
                 method: "post",
                 url: url,
@@ -107,15 +147,22 @@ module.exports = class MessengerLine {
             })
 
             if (!(response && response.access_token)){
-                throw new Error(`access_token not found in response.`);
+                throw Error(`Failed to retrieve access_token.`);
             }
-
-            // We save access token in cache for 24 hours by default.
-            const token_retention = this._token_retention || 86400000
-            debug(`Saving channel access token. Retention is ${String(token_retention / 1000)} seconds.`)
-            cache.put(`${CACHE_PREFIX}${this._channel_id}_access_token`, response.access_token, token_retention);
+            debug(`Retrieved access token.`)
 
             access_token = response.access_token;
+
+            // We save access token in cache for 24 hours by default.
+            const token_retention = this._token_retention || 86400
+            debug(`Saving access token. Retention is ${String(token_retention)} seconds. Store is ${this.token_store}.`)
+
+            if (this.token_store === "redis"){
+                await this.redis.set(key, access_token, "EX", token_retention)
+            } else {
+                cache.put(key, access_token, token_retention * 1000)
+            }
+            debug(`Saved access token.`)
         }
 
         this._access_token = access_token;

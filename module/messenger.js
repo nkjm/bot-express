@@ -38,7 +38,7 @@ class Messenger {
         }
     }
 
-    async validate_signature(req){
+    validate_signature(req){
         return this.service.validate_signature(req);
     }
 

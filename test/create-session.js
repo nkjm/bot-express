@@ -12,13 +12,31 @@ const emu = new Emulator(
     { line_channel_secret: process.env.LINE_CHANNEL_SECRET }, 
     process.env.TEST_USER_ID
 )
+const Redis = require("ioredis")
+const cache = require("memory-cache")
+/**
+ * Instantiate redis client
+ */
+let redis_client
+if (process.env.REDIS_URL){
+    const options = {}
+    if (process.env.REDIS_TLS === true || process.env.REDIS_TLS === "enable"){
+        options.tls = {
+            rejectUnauthorized: false,
+            requestCert: true,
+            agent: false
+        }
+    }
+    redis_client = new Redis(process.env.REDIS_URL, options)
+    cache.put("redis_client", redis_client);
+}
+
 const Memory = require("../module/memory")
 const memory = new Memory({
     type: process.env.MEMORY_TYPE, // memory-cache | redis 
     retention: Number(process.env.MEMORY_RETENTION),
     options: { // Options for redis
-        url: process.env.REDIS_URL,
-        tls: process.env.REDIS_TLS
+        redis_client: redis_client
     }
 })
 

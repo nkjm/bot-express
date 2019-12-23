@@ -5,8 +5,11 @@ require("dotenv").config();
 /** 
  * Import Packages
  */
-const server = require("express")();
-const bot_express = require("./index.js");
+const debug = require("debug")("bot-express:index")
+const server = require("express")()
+const bot_express = require("./index.js")
+const Redis = require("ioredis")
+const cache = require("memory-cache")
 
 /** 
  * Middleware Configuration
@@ -14,6 +17,25 @@ const bot_express = require("./index.js");
 server.listen(process.env.PORT || 5000, () => {
     console.log("server is running...");
 });
+
+/**
+ * Instantiate redis client
+ */
+let redis_client
+if (process.env.REDIS_URL){
+    debug("Instantiating redis client..")
+    const options = {}
+    if (process.env.REDIS_TLS === true || process.env.REDIS_TLS === "enable"){
+        options.tls = {
+            rejectUnauthorized: false,
+            requestCert: true,
+            agent: false
+        }
+    }
+    redis_client = new Redis(process.env.REDIS_URL, options)
+    debug("Redis client created.")
+    cache.put("redis_client", redis_client);
+}
 
 server.use('/bot/webhook', bot_express({
     language: "ja",
@@ -23,10 +45,7 @@ server.use('/bot/webhook', bot_express({
             channel_secret: process.env.LINE_CHANNEL_SECRET,
             token_retention: process.env.LINE_TOKEN_RETENTION,
             token_store: "redis",
-            redis: {
-                url: process.env.REDIS_URL,
-                tls: process.env.REDIS_TLS
-            }
+            redis_client: redis_client
         }],
         facebook: {
             app_secret: process.env.FACEBOOK_APP_SECRET,
@@ -60,8 +79,7 @@ server.use('/bot/webhook', bot_express({
         type: process.env.MEMORY_TYPE, // memory-cache | redis 
         retention: Number(process.env.MEMORY_RETENTION),
         options: { // Options for redis
-            url: process.env.REDIS_URL,
-            tls: process.env.REDIS_TLS
+            redis_client: redis_client,
         }
     },
     logger: {

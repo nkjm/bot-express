@@ -41,7 +41,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.messenger.line.switcher_secret] - Switcher Secret of Messaging API. Required when you use Switcher API.
 @param {String} [options.messenger.line.token_retention=86400] - Channel Access Token retention in second.
 @param {String} [options.messenger.line.token_store="memory-cache"] - Datbase to store channel access token.
-@param {Object} [options.messenger.line.redis] - Options for redis connection.
+@param {Object} [options.messenger.line.redis_client] - Instance of redis client. Valid in case toke_store is redis.
 @param {String} [options.messenger.line.endpoint="api.line.me"] - Change Messaging API endpoint hostname.
 @param {String} [options.messenger.line.api_version="v2"] - Change Messaging API version.
 @param {Object} [options.messenger.facebook] - Messenger configuration of facebook.

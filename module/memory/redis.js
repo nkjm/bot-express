@@ -1,38 +1,27 @@
 "use strict";
 
-const debug = require("debug")("bot-express:memory");
-const Redis = require("ioredis");
+const debug = require("debug")("bot-express:memory")
+const cache = require("memory-cache")
 
 class MemoryRedis {
     /**
      * @constructor
      * @param {Object} options
-     * @param {String} [options.url] - The URL of the Redis server. Format: [redis[s]:]//[[user][:password@]][host][:port][/db-number][?db=db-number[&password=bar[&option=value]]] *Either url or host and port is required.
-     * @param {String} [options.host] - IP address of the Redis server. *Either url or host and port is required.
-     * @param {String} [options.port] - Port of the Redis server. *Either url or host and port is required.
-     * @param {String} [options.password] - If set, client will run Redis auth command on connect.
-     * @param {String} [options.tls] - If "enable", client will connect to server over TLS.
+     * @param {Object} options.redis_client - Client instance of ioredis.
      */
-    constructor(options){
-        const o = JSON.parse(JSON.stringify(options));
-        
-        if (o.tls === "enable" || o.tls === true){
-            debug(`Enable TLS on redis connection for memory store.`)
-            o.tls = {
-                rejectUnauthorized: false,
-                requestCert: true,
-                agent: false
-            }
-        } else {
-            debug(`Disable TLS on redis connection for memory store.`)
-            delete o.tls
+    constructor(o){
+        if (o.redis_client){
+            debug(`Redis client found in option.`)
+            this.client = o.redis_client
+            return
         }
-
-        if (o.url){
-            this.client = new Redis(o.url, o);
-        } else {
-            this.client = new Redis(o);
+        const redis_client = cache.get("redis_client")
+        if (redis_client){
+            debug(`Redis client found in cache.`)
+            this.client = redis_client
+            return
         }
+        throw Error(`options.redis_client not set and "redis_client" not found in cache while memory/redis is loaded.`)
     }
 
     async get(key){

@@ -8,12 +8,22 @@ const cache = require("memory-cache")
 const secure_compare = require('secure-compare')
 const DEFAULT_ENDPOINT = "api.line.me"
 const DEFAULT_API_VERSION = "v2"
+const DEFAULT_TOKEN_STORE = "memory-cache"
 const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"]
 const CACHE_PREFIX = "be_messenger_line_"
-const Redis = require("ioredis");
 
 module.exports = class MessengerLine {
 
+    /**
+     * @constructor
+     * @param {Object|Array.<Object>} options
+     * @param {String} options.channel_id
+     * @param {String} options.channel_secret
+     * @param {String} [options.endpoint="api.line.me"]
+     * @param {String} [options.api_version="v2"]
+     * @param {String} [options.token_store="memory-cache"] - Store to save access token. Supported values are "memory-cache" and "redis".
+     * @param {Object} [options.redis_client] - Client instance of ioredis.
+     */
     constructor(options){
         if (!options){
             throw new Error(`Required parameter for LINE not set.`);
@@ -46,43 +56,31 @@ module.exports = class MessengerLine {
 
         // Since we now support multi-channel, these should be set in validate_signature() but in case there is just 1 option, we set it now.
         if (this._option_list.length === 1){
-            this._channel_id = this._option_list[0].channel_id
-            this._channel_secret = this._option_list[0].channel_secret
-            this._endpoint = this._option_list[0].endpoint || DEFAULT_ENDPOINT
-            this._api_version = this._option_list[0].api_version || DEFAULT_API_VERSION
+            const o = this._option_list[0]
+            this._channel_id = o.channel_id
+            this._channel_secret = o.channel_secret
+            this._endpoint = o.endpoint || DEFAULT_ENDPOINT
+            this._api_version = o.api_version || DEFAULT_API_VERSION
+            this.token_store = o.token_store || DEFAULT_TOKEN_STORE
+            // Instantiate redis client.
+            if (this.token_store === "redis"){
+                if (o.redis_client){
+                    debug(`Redis client found in option.`)
+                    this.redis_client = o.redis_client
+                    return
+                }
+                const redis_client = cache.get("redis_client")
+                if (redis_client){
+                    debug(`Redis client found in cache.`)
+                    this.redis_client = redis_client
+                    return
+                }
+                throw Error(`options.redis_client not set and "redis_client" not found in cache while token store is redis.`)
+            }
         }
 
         this._access_token = null; // Will be set when this.refresh_token is called.
         this.sdk = null; // Will be set when this.refresh_token is called.
-        
-        // Instantiate redis client.
-        if (options.token_store === "redis"){
-            if (!options.redis){
-                throw Error(`Redis options for messenger/line not set while token store is redis.`)
-            }
-
-            this.token_store = options.token_store
-            const redis_options = JSON.parse(JSON.stringify(options.redis))
-            if (redis_options.tls === "enable" || redis_options.tls === true){
-                debug(`Enable TLS on redis connection for messenger/line.`)
-                redis_options.tls = {
-                    rejectUnauthorized: false,
-                    requestCert: true,
-                    agent: false
-                }
-            } else {
-                debug(`Disable TLS on redis connection for messenger/line.`)
-                delete redis_options.tls
-            }
-
-            if (redis_options.url){
-                this.redis = new Redis(redis_options.url, redis_options);
-            } else {
-                this.redis = new Redis(redis_options);
-            }
-        } else {
-            this.token_store = "memory-cache"
-        }
     }
 
     /**
@@ -104,7 +102,20 @@ module.exports = class MessengerLine {
                 this._channel_secret = o.channel_secret
                 this._switcher_secret = o.switcher_secret
                 this._token_retention = o.token_retention
-                this._endpoint = o.endpoint || "api.line.me"
+                this._endpoint = o.endpoint || DEFAULT_ENDPOINT
+                this._api_version = o.api_version || DEFAULT_API_VERSION
+                this.token_store = o.token_store || DEFAULT_TOKEN_STORE
+                if (this.token_store === "redis"){
+                    if (o.redis_client){
+                        debug(`Redis client found in option.`)
+                        this.redis_client = o.redis_client
+                    } else if (cache.get("redis_client")){
+                        debug(`Redis client found in cache.`)
+                        this.redis_client = cache.get("redis_client")
+                    } else {
+                        throw Error(`options.redis_client not set and "redis_client" not found in cache while token store is redis.`)
+                    }
+                }
                 return true
             }
         }
@@ -119,7 +130,7 @@ module.exports = class MessengerLine {
         const key = `${CACHE_PREFIX}${this._channel_id}_access_token`
         let access_token
         if (this.token_store === "redis"){
-            access_token = await this.redis.get(key)
+            access_token = await this.redis_client.get(key)
         } else {
             access_token = cache.get(key)
         }
@@ -158,7 +169,7 @@ module.exports = class MessengerLine {
             debug(`Saving access token. Retention is ${String(token_retention)} seconds. Store is ${this.token_store}.`)
 
             if (this.token_store === "redis"){
-                await this.redis.set(key, access_token, "EX", token_retention)
+                await this.redis_client.set(key, access_token, "EX", token_retention)
             } else {
                 cache.put(key, access_token, token_retention * 1000)
             }

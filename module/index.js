@@ -182,15 +182,15 @@ module.exports = (options) => {
             }
             return;
         }
-        debug(`Messenger is ${messenger_type}`);
+        debug(`Messenger is ${messenger_type}`)
 
         // Check if corresponding messenger configuration has been set for this request.
         if (!options.messenger[messenger_type]){
-            debug(`bot-express has not been configured to handle message from ${messenger_type} so we skip this event.`);
+            debug(`bot-express has not been configured to handle message from ${messenger_type} so we skip this event.`)
             if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                res.sendStatus(200);
+                res.sendStatus(200)
             }
-            return;
+            return
         }
 
         // Instantiate messenger instance.
@@ -200,6 +200,9 @@ module.exports = (options) => {
         // Validate signature.
         if (!messenger.validate_signature(req)){
             debug(`Signature validation failed.`)
+            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
+                res.sendStatus(200)
+            }
             return
         }
         debug("Signature validation succeeded.");

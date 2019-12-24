@@ -62,20 +62,17 @@ module.exports = class MessengerLine {
             this._endpoint = o.endpoint || DEFAULT_ENDPOINT
             this._api_version = o.api_version || DEFAULT_API_VERSION
             this.token_store = o.token_store || DEFAULT_TOKEN_STORE
-            // Instantiate redis client.
+
             if (this.token_store === "redis"){
                 if (o.redis_client){
                     debug(`Redis client found in option.`)
                     this.redis_client = o.redis_client
-                    return
-                }
-                const redis_client = cache.get("redis_client")
-                if (redis_client){
+                } else if (cache.get("redis_client")){
                     debug(`Redis client found in cache.`)
-                    this.redis_client = redis_client
-                    return
+                    this.redis_client = cache.get("redis_client")
+                } else {
+                    throw Error(`options.redis_client not set and "redis_client" not found in cache while token store is redis.`)
                 }
-                throw Error(`options.redis_client not set and "redis_client" not found in cache while token store is redis.`)
             }
         }
 
@@ -169,7 +166,7 @@ module.exports = class MessengerLine {
             debug(`Saving access token. Retention is ${String(token_retention)} seconds. Store is ${this.token_store}.`)
 
             if (this.token_store === "redis"){
-                await this.redis_client.set(key, access_token, "EX", token_retention)
+                await this.redis_client.set(key, access_token, "EX", token_retention, "NX")
             } else {
                 cache.put(key, access_token, token_retention * 1000)
             }

@@ -34,7 +34,6 @@ if (process.env.REDIS_URL){
     }
     redis_client = new Redis(process.env.REDIS_URL, options)
     debug("Redis client created.")
-    cache.put("redis_client", redis_client);
 }
 
 server.use('/bot/webhook', bot_express({

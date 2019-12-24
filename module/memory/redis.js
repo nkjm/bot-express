@@ -13,15 +13,12 @@ class MemoryRedis {
         if (o.redis_client){
             debug(`Redis client found in option.`)
             this.client = o.redis_client
-            return
-        }
-        const redis_client = cache.get("redis_client")
-        if (redis_client){
+        } else if (cache.get("redis_client")){
             debug(`Redis client found in cache.`)
-            this.client = redis_client
-            return
+            this.client = cache.get("redis_client")
+        } else {
+            throw Error(`options.redis_client not set and "redis_client" not found in cache while memory/redis is loaded.`)
         }
-        throw Error(`options.redis_client not set and "redis_client" not found in cache while memory/redis is loaded.`)
     }
 
     async get(key){

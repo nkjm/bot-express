@@ -25,16 +25,18 @@ const emu = new Emulator(messenger_option.name, messenger_option.options);
 let u = 3;
 describe(`${u} user(s).`, async function(){
     it("get reply.", async function(){
-        this.timeout(20000);
+        this.timeout(120000);
 
         let i;
 
         // Clear context.
+        /*
         i = 0;
         for (let v of Array.from(Array(u))){
             await emu.clear_context(`${user_id}_${String(i)}`);
             i++;
         }
+        */
 
         i = 0;
         let done_launch_skill = [];

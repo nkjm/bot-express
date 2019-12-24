@@ -55,8 +55,10 @@ module.exports = class MessengerLine {
         }
 
         // Since we now support multi-channel, these should be set in validate_signature() but in case there is just 1 option, we set it now.
+        /*
         if (this._option_list.length === 1){
-            const o = this._option_list[0]
+            const redis_client = this._option_list[0].redis_client
+            const o = JSON.parse(JSON.stringify(this._option_list[0]))
             this._channel_id = o.channel_id
             this._channel_secret = o.channel_secret
             this._endpoint = o.endpoint || DEFAULT_ENDPOINT
@@ -64,9 +66,9 @@ module.exports = class MessengerLine {
             this.token_store = o.token_store || DEFAULT_TOKEN_STORE
 
             if (this.token_store === "redis"){
-                if (o.redis_client){
+                if (redis_client){
                     debug(`Redis client found in option.`)
-                    this.redis_client = o.redis_client
+                    this.redis_client = redis_client
                 } else if (cache.get("redis_client")){
                     debug(`Redis client found in cache.`)
                     this.redis_client = cache.get("redis_client")
@@ -75,6 +77,7 @@ module.exports = class MessengerLine {
                 }
             }
         }
+        */
 
         this._access_token = null; // Will be set when this.refresh_token is called.
         this.sdk = null; // Will be set when this.refresh_token is called.
@@ -88,7 +91,6 @@ module.exports = class MessengerLine {
     validate_signature(req){
         let signature = req.get('X-Line-Signature')
         let raw_body = Buffer.from(JSON.stringify(req.body))
-
         // Signature Validation. We try all credentials in this._option_list.
         for (let o of this._option_list){
             let hash = crypto.createHmac('sha256', o.switcher_secret || o.channel_secret).update(raw_body).digest('base64')

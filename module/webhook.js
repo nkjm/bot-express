@@ -34,21 +34,14 @@ class Webhook {
      * Main function.
      * @returns {Promise.<context>}
      */
-    async run(){
+    async run(body){
         debug("Webhook runs.");
-
-        // Validate Signature
-        if (!this.slib.messenger.validate_signature(this.options.req)){
-            debug(`Signature validation failed.`)
-            return
-        }
-        debug("Signature validation succeeded.");
 
         // Refresh token. This does not necessarily refresh token but retrieve access token from cache.
         await this.slib.messenger.refresh_token();
 
         // Process events.
-        let events = this.slib.messenger.extract_events(this.options.req.body);
+        let events = this.slib.messenger.extract_events(body);
         let done_process_events = [];
         for (let e of events){
             done_process_events.push(this.process_event(e));

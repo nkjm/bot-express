@@ -197,14 +197,24 @@ module.exports = (options) => {
         const messenger = new Messenger(options.messenger, messenger_type);
         debug("Messenger instantiated.");
 
+        // Validate signature.
+        if (!messenger.validate_signature(req)){
+            debug(`Signature validation failed.`)
+            return
+        }
+        debug("Signature validation succeeded.");
+
+        /*
+        We need to uncomment below in case of google assistant.
         options.req = req;
         options.res = res;
+        */
 
         const webhook = new Webhook(options, { logger, memory, nlu, parser, messenger });
 
         let context;
         try {
-            context = await webhook.run();
+            context = await webhook.run(req.body)
         } catch(e){
             debug("Abnormal End of Webhook. Error follows.");
             debug(e);

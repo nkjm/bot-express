@@ -55,20 +55,21 @@ module.exports = class MessengerLine {
         }
 
         // Since we now support multi-channel, these should be set in validate_signature() but in case there is just 1 option, we set it now.
-        /*
+        // This is required when this class is instantiated in other than webhook.
         if (this._option_list.length === 1){
-            const redis_client = this._option_list[0].redis_client
-            const o = JSON.parse(JSON.stringify(this._option_list[0]))
+            const o = this._option_list[0]
             this._channel_id = o.channel_id
             this._channel_secret = o.channel_secret
+            this._switcher_secret = o.switcher_secret
+            this._token_retention = o.token_retention
             this._endpoint = o.endpoint || DEFAULT_ENDPOINT
             this._api_version = o.api_version || DEFAULT_API_VERSION
             this.token_store = o.token_store || DEFAULT_TOKEN_STORE
 
             if (this.token_store === "redis"){
-                if (redis_client){
+                if (o.redis_client){
                     debug(`Redis client found in option.`)
-                    this.redis_client = redis_client
+                    this.redis_client = o.redis_client
                 } else if (cache.get("redis_client")){
                     debug(`Redis client found in cache.`)
                     this.redis_client = cache.get("redis_client")
@@ -77,7 +78,6 @@ module.exports = class MessengerLine {
                 }
             }
         }
-        */
 
         this._access_token = null; // Will be set when this.refresh_token is called.
         this.sdk = null; // Will be set when this.refresh_token is called.

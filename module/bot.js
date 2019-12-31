@@ -757,10 +757,6 @@ class Bot {
      * @param {String|Array.<String>} param_name_list
      */
     uncollect(param_name_list){
-        // Check if there are some to_confirm parameters.
-        if (!(Array.isArray(this._context.to_confirm) && this._context.to_confirm.length > 0)){
-            return
-        }
         if (typeof param_name_list === "string"){
             param_name_list = [param_name_list]
         }
@@ -770,10 +766,12 @@ class Bot {
 
         for (const param_name of param_name_list){
             // Remove from to_confirm.
-            const i = this._context.to_confirm.indexOf(param_name)
-            if (i !== -1){
-                this._context.to_confirm.splice(i, 1)
-                debug(`Removed ${param_name} from to_confirm.`)
+            if (Array.isArray(this._context.to_confirm)){
+                const i = this._context.to_confirm.indexOf(param_name)
+                if (i !== -1){
+                    this._context.to_confirm.splice(i, 1)
+                    debug(`Removed ${param_name} from to_confirm.`)
+                }
             }
 
             // Remove from confirmed.

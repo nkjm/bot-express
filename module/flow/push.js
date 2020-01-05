@@ -15,6 +15,12 @@ module.exports = class PushFlow extends Flow {
         if (!this.event.intent || !this.event.intent.name){
             throw new Error(`Push flow requires intent object set in event but not found.`);
         }
+        
+        // If clear_context is false, we instantiate skill by change_intent().
+        if (this.event.clear_context === false){
+            await super.change_intent(this.event.intent)
+            return super.respond()
+        }
 
         // Instantiate skill.
         this.context.intent = this.event.intent;

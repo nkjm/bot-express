@@ -162,7 +162,13 @@ class Webhook {
             flow = new flows[event_type](this.options, this.slib, event, context);
         } else if (event_type == "bot-express:push"){
             // Push Flow
-            context = new Context({ flow: "push", event: event });
+            // We keep context only if it exists and event.clear_context is false.
+            if (context && event && event.clear_context === false){
+                context._flow = "push"
+                context.event = event
+            } else {
+                context = new Context({ flow: "push", event: event });
+            }
             flow = new flows["push"](this.options, this.slib, event, context);
         } else if (!context || !context.intent){
             // Start Conversation Flow

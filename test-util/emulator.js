@@ -122,7 +122,7 @@ module.exports = class TestUtilEmulator {
             type: "bot-express:push",
             to: {
                 type: "user",
-                userId: mem_id
+                userId: mem_id || this.line_user_id
             },
             intent: {
                 name: "clear-context"

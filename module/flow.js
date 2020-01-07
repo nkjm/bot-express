@@ -126,14 +126,15 @@ module.exports = class Flow {
         skill.type = skill_name;
 
         // Set message instance.
+        const message_script = skill.message || skill.type
         try {
-            require.resolve(`${this.options.message_path}${skill.type}`);
+            require.resolve(`${this.options.message_path}${message_script}`);
         } catch (e){
-            debug(`Message "${skill.type}" not found in ${this.options.message_path}.`)
+            debug(`Message "${message_script}" not found in ${this.options.message_path}.`)
             return skill;
         }
-        debug(`Message "${skill.type}" found. Loading..`);
-        const Message = require(`${this.options.message_path}${skill.type}`);
+        debug(`Message "${message_script}" found. Loading..`);
+        const Message = require(`${this.options.message_path}${message_script}`);
         this.bot.m = new Message(this.bot.translator);
 
         return skill;

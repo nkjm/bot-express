@@ -359,6 +359,7 @@ class Bot {
      * @param {Boolean} [options.preact=true] - Whether to run preaction.
      * @param {Boolean} [options.parse=false] - Whether to run parser.
      * @param {Boolean} [options.react=true] - Whether to run reaction.
+     * @param {Boolean} [options.implicit=false] - If true, we do not add this parameter to context.previous.confirmed[] and context.previous.processed[].
      * @return {Object} result.accepted is false and error is set to result.error if options.parse is true and parser rejected. Otherwise, return result.accepted is true and result.error is undefined.
      */ 
     async apply_parameter(o){
@@ -395,7 +396,7 @@ class Bot {
 
         // Add parameter to context.
         if (!parse_error){
-            this.add_parameter(o.name, o.value)
+            this.add_parameter(o.name, o.value, o.implicit)
         }
 
         // Take reaction.
@@ -479,9 +480,9 @@ class Bot {
      * @method
      * @param {String} param_name 
      * @param {*} param_value 
-     * @param {Boolean} [is_change]
+     * @param {Boolean} [implicit]
      */
-    add_parameter(param_name, param_value, is_change = false){
+    add_parameter(param_name, param_value, implicit = false){
         debug(`Adding ${JSON.stringify(param_value)} to parameter: ${param_name}..`)
 
         const param = this.get_parameter(param_name);
@@ -512,7 +513,7 @@ class Bot {
         }
 
         // At the same time, add the parameter name to previously confirmed list. The order of this list is newest first.
-        if (!is_change){
+        if (!implicit){
             this._context.previous.confirmed.unshift(param_name);
             this._context.previous.processed.unshift(param_name);
         }

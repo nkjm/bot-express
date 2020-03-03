@@ -140,7 +140,7 @@ module.exports = class Flow {
         return skill;
     }
 
-    identify_to_confirm_parameter(required_parameter, confirmed){
+    identify_to_confirm_parameter(required_parameter, confirmed = {}){
         let to_confirm = []; // Array of parameter names.
 
         // If there is no required_parameter, we just return empty array.

@@ -92,7 +92,7 @@ module.exports = class LoggerFirestore {
                 name: payload.error.name || null,
                 stack: payload.error.stack || null
             }
-            if (payload.context) skill_status.context = JSON.parse(JSON.stringify(payload.context));
+            if (payload.context) skill_status.context = Context.remove_buffer(payload.context)
         } else if (status === "switched"){
             // Add next intent and confirming.
             if (payload.intent && payload.intent.name) skill_status.intent = payload.intent.name;

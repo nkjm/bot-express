@@ -52,7 +52,7 @@ class Webhook {
         for (let context of context_list){
             if (typeof context === "object"){
                 debug("Updated context follows.");
-                const context_for_log = JSON.parse(JSON.stringify(context))
+                const context_for_log = Context.remove_buffer(context)
                 if (!this.options.log_global){
                     delete context_for_log.global
                 }

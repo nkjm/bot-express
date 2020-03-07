@@ -1,7 +1,8 @@
 "use strict";
 
-const _skill_status = require("debug")("bot-express:skill-status");
-const _chat = require("debug")("bot-express:chat");
+const _skill_status = require("debug")("bot-express:skill-status")
+const _chat = require("debug")("bot-express:chat")
+const Context = require("../context")
 
 module.exports = class LoggerStdout {
     constructor(){
@@ -41,7 +42,7 @@ module.exports = class LoggerStdout {
             })
 
             // Add context.
-            if (payload.context) log += " Context:" + JSON.stringify(payload.context);
+            if (payload.context) log += " Context:" + JSON.stringify(Context.remove_buffer(payload.context))
 
             _skill_status(log);
         } else if (status === "switched"){

@@ -61,6 +61,34 @@ module.exports = class Context {
         return JSON.parse(JSON.stringify(context.archive));
     }
 
+    static remove_buffer(obj){
+        return JSON.parse(JSON.stringify(obj), (key, value) => {
+            if (typeof value === "object" && value && value.type && value.type == "Buffer"){
+                return undefined
+            } else {
+                return value
+            }
+        })
+    }
+
+    /*
+    static test_context(){
+        return {
+            str: "abc",
+            buf: Buffer.from("abc"),
+            num: 1,
+            arr: [1, 2, "abc", Buffer.from("abc")],
+            obj: {
+                str: "abc",
+                buf: Buffer.from("abc"),
+                num: 1,
+                arr: [1, 2, "abc", Buffer.from("abc")]
+            }
+        }
+    }
+    */
+
+
     /*
     static get_props(event){
         return {

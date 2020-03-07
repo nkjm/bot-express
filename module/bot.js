@@ -383,7 +383,11 @@ class Bot {
                     // This should be intended exception in parser.
                     parse_error = e
                     debug(`Parser rejected following value for parameter: "${o.name}".`)
-                    debug(o.value)
+                    if (Buffer.isBuffer(o.value)){
+                        debug("[Buffer]")
+                    } else {
+                        debug(o.value)
+                    }
                     if (e.message){
                         debug(`Reason: ${e.message}`)
                     }
@@ -418,7 +422,11 @@ class Bot {
     */
     async parse_parameter(param_name, param_value, strict = false){
         debug(`Parsing following value for parameter "${param_name}"`);
-        debug(JSON.stringify(param_value));
+        if (Buffer.isBuffer(param_value)){
+            debug("[Buffer]")
+        } else {
+            debug(JSON.stringify(param_value))
+        }
 
         const param = this.get_parameter(param_name);
 
@@ -483,7 +491,11 @@ class Bot {
      * @param {Boolean} [implicit]
      */
     add_parameter(param_name, param_value, implicit = false){
-        debug(`Adding ${JSON.stringify(param_value)} to parameter: ${param_name}..`)
+        if (Buffer.isBuffer(param_value)){
+            debug(`Adding [Buffer] to parameter: ${param_name}..`)
+        } else {
+            debug(`Adding ${JSON.stringify(param_value)} to parameter: ${param_name}..`)
+        }
 
         const param = this.get_parameter(param_name);
 

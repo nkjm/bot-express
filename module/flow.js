@@ -345,7 +345,7 @@ module.exports = class Flow {
                 // This should be intended exception in parser.
                 parse_error = e;
                 debug(`Parser rejected following value for parameter: "${param_name}".`)
-                if (Buffer.isBuffer(param_value)){
+                if (Buffer.isBuffer(param_value) || (typeof param_value == "object" && param_value && param_value.type && param_value.type == "Buffer")){
                     debug("[Buffer]")
                 } else {
                     debug(param_value)

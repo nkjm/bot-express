@@ -481,12 +481,6 @@ class Bot {
      * @param {Boolean} [implicit]
      */
     add_parameter(param_name, param_value, implicit = false){
-        if (Buffer.isBuffer(param_value) || (typeof param_value == "object" && param_value && param_value.type && param_value.type == "Buffer")){
-            debug(`Adding [Buffer] to parameter: ${param_name}..`)
-        } else {
-            debug(`Adding ${JSON.stringify(param_value)} to parameter: ${param_name}..`)
-        }
-
         const param = this.get_parameter(param_name);
 
         // Add the parameter to context.confirmed.

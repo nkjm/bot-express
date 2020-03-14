@@ -2,6 +2,7 @@
 
 const prefix = `be`
 const memory_cache = require("memory-cache")
+const Context = require("../context")
 
 module.exports = class LoggerFirestore {
     /**

@@ -251,16 +251,20 @@ class Bot {
      * Check parameter type.
      * @method
      * @param {String} param_name - Parameter name.
+     * @param {context} context
      * @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "sub_parameter" | "not_applicable"
      */
-    check_parameter_type(param_name){
-        if (this._context.skill.required_parameter && this._context.skill.required_parameter[param_name]){
+    check_parameter_type(param_name, context){
+        // Default context is current context.
+        if (context === undefined) context = this._context
+
+        if (context.skill.required_parameter && context.skill.required_parameter[param_name]){
             return "required_parameter";
-        } else if (this._context.skill.optional_parameter && this._context.skill.optional_parameter[param_name]){
+        } else if (context.skill.optional_parameter && context.skill.optional_parameter[param_name]){
             return "optional_parameter";
-        } else if (this._context.skill.dynamic_parameter && this._context.skill.dynamic_parameter[param_name]){
+        } else if (context.skill.dynamic_parameter && context.skill.dynamic_parameter[param_name]){
             return "dynamic_parameter";
-        } else if (this._context._sub_parameter){
+        } else if (context._sub_parameter){
             return "sub_parameter";
         }
 
@@ -325,28 +329,87 @@ class Bot {
     }
 
     /**
+     * Check parameter type.
+     * @method
+     * @param {String} param_name - Parameter name.
+     * @param {context} context
+     * @returns {String} "required_parameter" | "optional_parameter" | "dynamic_parameter" | "sub_parameter" | "not_applicable"
+     */
+    check_parameter_type(param_name, context){
+        // Default context is current context.
+        if (context === undefined) context = this._context
+
+        if (context.skill.required_parameter && context.skill.required_parameter[param_name]){
+            return "required_parameter";
+        } else if (context.skill.optional_parameter && context.skill.optional_parameter[param_name]){
+            return "optional_parameter";
+        } else if (context.skill.dynamic_parameter && context.skill.dynamic_parameter[param_name]){
+            return "dynamic_parameter";
+        } else if (context._sub_parameter){
+            return "sub_parameter";
+        }
+
+        return "not_applicable";
+    }
+
+    /**
      * Get parameter object by parameter name. 
      * @param {String} param_name 
      * @return {Object} Parameter object.
      */
     get_parameter(param_name){
-        const param = {};
-        param.name = param_name;
-        param.type = this.check_parameter_type(param.name);
+        const param = {}
+        param.name = param_name
+        param.type = this.check_parameter_type(param.name)
 
         if (param.type === "not_applicable"){
-            throw new Error(`Paramter: "${param.name}" not found in skill.`);
+            throw new Error(`Paramter: "${param.name}" not found in skill.`)
         }
 
-        if (param.type === "sub_parameter"){
-            // Pick up sub parameter.
-            Object.assign(param, this._context.skill[this._context._parent_parameter.type][this._context._parent_parameter.name].sub_parameter[param.name]);
+        // Get parameter path to this sub parameter.
+        const parameter_path = this.get_parameter_path(param_name)
+        Object.assign(param, this.get_property_by_path(this._context.skill, parameter_path))
+
+        return param
+    }
+
+    /**
+     * Returns parameter path to specifined parameter name. It would be like "required_parameter.family_list.fullname".
+     * @method
+     * @param {String} param_name 
+     * @param {context} context 
+     * @return {String} 
+     */
+    get_parameter_path(param_name, context){
+        // Default context is current context.
+        if (context === undefined) context = this._context
+
+        let parameter_path = ""
+        if (context._sub_parameter){
+            if (!(context._parent[0] && context._parent_parameter && context._parent_parameter.name)){
+                throw Error(`_parent or _parent_parameter not properly set while this is the context of sub_parameter.`)
+            }
+            // Set parent context to get parameter recursively. Since parent context does not have skill, we copy from current context.
+            const parent_context = JSON.parse(JSON.stringify(context._parent[0]))
+            parent_context.skill = context.skill
+            parameter_path = this.get_parameter_path(context._parent_parameter.name, parent_context) + ".sub_parameter." + param_name
         } else {
-            // Pick up parameter.
-            Object.assign(param, this._context.skill[param.type][param.name]);
+            parameter_path = this.check_parameter_type(param_name, context) + "." + param_name
         }
+        return parameter_path
+    }
 
-        return param;
+    get_property_by_path(object, path){
+        if (!object) return undefined
+      
+        let result = object
+        const path_array = path.split('.')
+        for (let i = 0; i <= path_array.length - 1; i += 1) {
+            if (path_array[i] === '' ) return undefined
+            if (typeof result[path_array[i]] === 'undefined') return undefined
+            result = result[path_array[i]]
+        }
+        return result
     }
 
     /**
@@ -401,6 +464,15 @@ class Bot {
         // Take reaction.
         if (o.react){
             await this.react(parse_error, o.name, o.value)
+        }
+
+        // Apply while condition.
+        const param = this.get_parameter(o.name)
+        if (param.list && param.while && typeof param.while === "function"){
+            if (await param.while(this, this._event, this._context)){
+                // Collect this parameter again.
+                this.collect(o.name)
+            }
         }
 
         return (parse_error) ? { accepted: false, error: parse_error } : { accepted: true }
@@ -862,5 +934,6 @@ class Bot {
     compile_message(message, format = this.type){
         return this._slib.messenger.compile_message(message, format);
     }
+
 }
 module.exports = Bot;

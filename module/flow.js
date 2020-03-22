@@ -898,7 +898,7 @@ module.exports = class Flow {
     }
 
     checkout_sub_parameter(param){
-        debug(`Checking out sub parameter: ${param.name}..`)
+        debug(`Checking out sub parameter of ${param.name}..`)
         if (!Array.isArray(this.context._parent)){
             this.context._parent = []
         }

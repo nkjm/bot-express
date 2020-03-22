@@ -47,6 +47,15 @@ module.exports = class ReplyFlow extends Flow {
             } else if (!applied_parameter.error){
                 // Parameter accepted.
                 await this.bot.react(applied_parameter.error, applied_parameter.param_name, applied_parameter.param_value);
+
+                // Apply while condition.
+                const param = this.bot.get_parameter(applied_parameter.param_name)
+                if (param.list && param.while && typeof param.while === "function"){
+                    if (await param.while(this.bot, this.event, this.context)){
+                        // Collect this parameter again.
+                        this.bot.collect(applied_parameter.param_name)
+                    }
+                }
             } else {
                 // Parameter rejected.
                 

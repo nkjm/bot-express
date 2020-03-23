@@ -964,7 +964,7 @@ module.exports = class Flow {
         const param = await this.pop_parameter_to_collect();
         // If there is no parameter to collect, we recursively run respond() to evaluate corrent context.
         if (!param){
-            return await this.respond();
+            return this.respond()
         }
 
         // Set context.confirming.
@@ -974,6 +974,18 @@ module.exports = class Flow {
         if (param.preaction && typeof param.preaction === "function"){
             debug(`Preaction found. Performing..`)
             await param.preaction(this.bot, this.event, this.context)
+        }
+
+        // Perform apply.
+        if (param.apply && typeof param.apply === "function"){
+            debug(`Apply found. Performing..`)
+            const value_to_apply = await param.apply(this.bot, this.event, this.context)
+            await bot.apply_parameter({
+                name: this.context.confirming,
+                value: value_to_apply,
+                implicit: true
+            })
+            return this.respond()
         }
 
         // Check if there is message_to_confirm.

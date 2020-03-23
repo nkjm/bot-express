@@ -40,6 +40,7 @@ describe("Test while", async function(){
             context = await emu.say("banana")
 
             context.confirming.should.equal("fullname")
+            context.global.done_preaction.should.equal(true)
             context = await emu.say("Kazuki Nakajima")
 
             context.confirming.should.equal("phone")
@@ -111,6 +112,39 @@ describe("Test while", async function(){
                     child_age: "4"
                 }]
             }])
+        })
+    })
+
+    describe("If 'while' function returns false before collecting parameter", async function(){
+        it("skips collecting it.", async function(){
+            let context = await emu.launch("test-while", {
+                skip_fruit_list: true
+            })
+
+            context.confirming.should.equal("fullname")
+        })
+    })
+
+    describe("If 'while' function returns false before collecting parameter which has sub_parameter", async function(){
+        it("skips collecting it.", async function(){
+            let context = await emu.launch("test-while", {
+                skip_member_list: true
+            })
+
+            context.confirming.should.equal("fruit_list")
+            context = await emu.say("apple")
+
+            context.confirming.should.equal("fruit_list")
+            context.confirmed.fruit_list.should.have.lengthOf(1)
+            context.confirmed.fruit_list.should.deep.equal(["apple"])
+            context = await emu.say("orange")
+
+            context.confirming.should.equal("fruit_list")
+            context.confirmed.fruit_list.should.have.lengthOf(2)
+            context.confirmed.fruit_list.should.deep.equal(["orange", "apple"])
+            context = await emu.say("banana")
+
+            should.not.exist(context.confirming)
         })
     })
 })

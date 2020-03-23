@@ -866,12 +866,37 @@ module.exports = class Flow {
             }
         }
 
+        // If while is defined, we test it.
+        if (param.list && param.while){
+            // Check if while is properly implemented.
+            if (typeof param.while != "function"){
+                throw new Error("while should be function.");
+            }
+
+            // If while returns false, we skip this parameter.
+            if (!await param.while(this.bot, this.event, this.context)){
+                // Since while returns false, we should skip this parameter and check next parameter.
+                debug(`We skip collecting "${param.name}" due to while.`);
+                this.context.previous.processed.unshift(param.name);
+                this.context.to_confirm.shift();
+
+                return await this.pop_parameter_to_collect();
+            }
+        }
+
         // Check if this parameter has sub parameter. If does not, we simply return this param.
         if (!param.sub_parameter){
             return param;
         }
        
         // This param has sub parameter. We need to checkout it. 
+
+        // Before checkout, we run preaction if it is set.
+        if (param.preaction && typeof param.preaction === "function"){
+            debug(`Preaction found. Performing..`)
+            await param.preaction(this.bot, this.event, this.context)
+        }
+
         // By checkout, current context will be save to _parent and sub parameters will be set to to_confirm and confirmed will be cleared.
         this.checkout_sub_parameter(param);
 

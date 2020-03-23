@@ -980,12 +980,16 @@ module.exports = class Flow {
         if (param.apply && typeof param.apply === "function"){
             debug(`Apply found. Performing..`)
             const value_to_apply = await param.apply(this.bot, this.event, this.context)
-            await bot.apply_parameter({
-                name: this.context.confirming,
-                value: value_to_apply,
-                implicit: true
-            })
-            return this.respond()
+            if (value_to_apply !== undefined && value_to_apply !== null){
+                await this.bot.apply_parameter({
+                    name: this.context.confirming,
+                    value: value_to_apply,
+                    implicit: true
+                })
+                return this.respond()
+            } else {
+                debug(`While performed apply, it did not return value so going to collect parameter as usual.`)
+            }
         }
 
         // Check if there is message_to_confirm.

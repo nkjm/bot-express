@@ -291,7 +291,7 @@ module.exports = class Flow {
         if (this.context._sub_parameter && this.context._parent_parameter.list && Array.isArray(parameters[param.name])){
             param_value = parameters[param.name][0];
         }
-        const applied_parameter = await this.apply_parameter(param.name, param_value);
+        const applied_parameter = await this.apply_parameter(param.name, param_value, true)
 
         // Take reaction.
         await this.bot.react(applied_parameter.error, applied_parameter.param_name, applied_parameter.param_value);
@@ -316,7 +316,7 @@ module.exports = class Flow {
     }
 
     async change_parameter(param_name, param_value){
-        return this.apply_parameter(param_name, param_value, true);
+        return this.apply_parameter(param_name, param_value, true)
     }
 
     /**
@@ -325,10 +325,10 @@ module.exports = class Flow {
      * @async
      * @param {String} param_name
      * @param {*} param_value
-     * @param {Boolean} is_change
+     * @param {Boolean} [implicit=false]
      * @return {Object}
      */
-    async apply_parameter(param_name, param_value, is_change = false){
+    async apply_parameter(param_name, param_value, implicit = false){
         debug(`Applying parameter.`);
 
         if (this.bot.check_parameter_type(param_name) === "not_applicable"){
@@ -359,7 +359,7 @@ module.exports = class Flow {
             debug(param_value);
     
             // Add parameter to context.
-            this.bot.add_parameter(param_name, param_value, is_change);
+            this.bot.add_parameter(param_name, param_value, implicit);
         }
 
         return {

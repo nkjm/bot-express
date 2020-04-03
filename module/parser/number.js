@@ -24,10 +24,18 @@ module.exports = class ParserNumber {
      * @param {Object} [policy]
      * @param {Number} [policy.min]
      * @param {Number} [policy.max]
+     * @param {String} [policy.type="float"] - Supported values are "float" and "integer".
      * @return {String} - Parsed value.
      */
     async parse(value, policy = {}){
-        let parsed_value = parseInt(value);
+        policy.type = policy.type || "float"
+
+        let parsed_value
+        if (policy.type == "integer"){
+            parsed_value = parseInt(value)
+        } else {
+            parsed_value = parseFloat(value)
+        }
 
         if (isNaN(parsed_value)){
             // Check if this is postback and numberable value is set in value.data.

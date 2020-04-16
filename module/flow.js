@@ -833,21 +833,6 @@ module.exports = class Flow {
         // Extract parameter by name
         let param = this.bot.get_parameter(this.context.to_confirm[0]);
 
-        // If this param depends on generator, we generate it.
-        if (param.generator){
-            const param_name = param.name
-            const param_type = param.type
-            if (!(param.generator.file && param.generator.method)){
-                throw Error(`Generator of ${param_name} is not correctly set.`)
-            }
-            const Generator = require(`${this.options.parameter_path}${param.generator.file}`)
-            const generator = new Generator()
-            if (!generator[param.generator.method]) throw Error(`${param.generator.file} does not have ${param.generator.method}`)
-            param = generator[param.generator.method](param.generator.options)
-            param.name = param_name
-            param.type = param_type
-        }
-        
         // If condition is defined, we test it.
         if (param.condition){
             // Check if condition is properly implemented.

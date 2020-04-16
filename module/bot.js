@@ -358,7 +358,7 @@ class Bot {
      * @return {Object} Parameter object.
      */
     get_parameter(param_name){
-        const param = {}
+        let param = {}
         param.name = param_name
         param.type = this.check_parameter_type(param.name)
 
@@ -369,6 +369,21 @@ class Bot {
         // Get parameter path to this sub parameter.
         const parameter_path = this.get_parameter_path(param_name)
         Object.assign(param, this.get_property_by_path(this._context.skill, parameter_path))
+
+        // If this param depends on generator, we generate it.
+        if (param.generator){
+            const param_name = param.name
+            const param_type = param.type
+            if (!(param.generator.file && param.generator.method)){
+                throw Error(`Generator of ${param_name} is not correctly set.`)
+            }
+            const Generator = require(`${this._options.parameter_path}${param.generator.file}`)
+            const generator = new Generator()
+            if (!generator[param.generator.method]) throw Error(`${param.generator.file} does not have ${param.generator.method}`)
+            param = generator[param.generator.method](param.generator.options)
+            param.name = param_name
+            param.type = param_type
+        }
 
         return param
     }

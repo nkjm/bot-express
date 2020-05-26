@@ -19,6 +19,7 @@ module.exports = class MessengerLine {
      * @param {Object|Array.<Object>} options
      * @param {String} options.channel_id
      * @param {String} options.channel_secret
+     * @param {String} [options.channel_access_token] - If this is set, we do not periodically refresh access token by channel id and secret.
      * @param {String} [options.endpoint="api.line.me"]
      * @param {String} [options.api_version="v2"]
      * @param {String} [options.token_store="memory-cache"] - Store to save access token. Supported values are "memory-cache" and "redis".
@@ -60,6 +61,7 @@ module.exports = class MessengerLine {
             const o = this._option_list[0]
             this._channel_id = o.channel_id
             this._channel_secret = o.channel_secret
+            this._channel_access_token = o.channel_access_token
             this._switcher_secret = o.switcher_secret
             this._token_retention = o.token_retention
             this._endpoint = o.endpoint || DEFAULT_ENDPOINT
@@ -99,6 +101,7 @@ module.exports = class MessengerLine {
                 debug(`Channel is "${o.channel_id}".`)
                 this._channel_id = o.channel_id
                 this._channel_secret = o.channel_secret
+                this._channel_access_token = o.channel_access_token
                 this._switcher_secret = o.switcher_secret
                 this._token_retention = o.token_retention
                 this._endpoint = o.endpoint || DEFAULT_ENDPOINT
@@ -128,7 +131,10 @@ module.exports = class MessengerLine {
     async refresh_token(force = false){
         const key = `${CACHE_PREFIX}${this._channel_id}_access_token`
         let access_token
-        if (this.token_store === "redis"){
+        if (this._channel_access_token){
+            debug(`Long term channel access token found.`)
+            access_token = this._channel_access_token
+        } else if (this.token_store === "redis"){
             access_token = await this.redis_client.get(key)
         } else {
             access_token = cache.get(key)

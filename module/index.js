@@ -38,6 +38,7 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {Object | Array.<Object>} [options.messenger.line] - Messenger configuration for LINE. You can support multiple channel by providing array of this object.
 @param {String} [options.messenger.line.channel_id] - Channel ID of Messaging API. Required when you use LINE as messenger.
 @param {String} [options.messenger.line.channel_secret] - Channel Secret of Messaging API. Required when you use LINE as messenger.
+@param {String} [options.messenger.line.channel_access_token] - Long term channle access token of Messaging API. This is not required since we use channel id and secret to issue access token.
 @param {String} [options.messenger.line.switcher_secret] - Switcher Secret of Messaging API. Required when you use Switcher API.
 @param {String} [options.messenger.line.token_retention=86400] - Channel Access Token retention in second.
 @param {String} [options.messenger.line.token_store="memory-cache"] - Datbase to store channel access token.

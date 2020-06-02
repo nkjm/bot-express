@@ -171,8 +171,8 @@ module.exports = class Flow {
             return skill;
         }
 
-        this.context.param_change_history.forEach((orig_log) => {
-            let log = JSON.parse(JSON.stringify(orig_log))
+        this.context.param_change_history.forEach(orig_log => {
+            const log = Object.assign({}, orig_log)
             if (log.param.message){
                 if (typeof log.param.message === "string"){
                     debug(`message is string. We try to make it function...`);
@@ -224,12 +224,12 @@ module.exports = class Flow {
             }
             if (skill[log.type][log.name] === undefined){
                 skill[log.type][log.name] = log.param;
-                return;
+                return
             }
-            Object.assign(skill[log.type][log.name], log.param);
+            Object.assign(skill[log.type][log.name], log.param)
         })
 
-        return skill;
+        return skill
     }
 
     /**

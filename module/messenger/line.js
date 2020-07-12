@@ -399,17 +399,9 @@ module.exports = class MessengerLine {
             headers: headers,
             data: body
         }).catch(async (e) => {
-            debug(JSON.stringify(e))
-            if (
-                e && 
-                e.status === 400 && 
-                e.data && 
-                e.data.message === `Invalid reply token` &&
-                event &&
-                event.source &&
-                event.source.userId
-            ){
+            if (e.message === `Failed. Status code: 400. Payload: {"message":"Invalid reply token"}`){
                 // Retry by using send().
+                debug(`Re-trying by send()..`)
                 return this.send(event, event.soruce.userId, messages)
             }
         })
@@ -958,8 +950,7 @@ module.exports = class MessengerLine {
         let response = await axios.request(options).catch(async (e) => {
             let error_message = `Failed.`
             if (e.response){
-                e.response.message = error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
-                debug(e.response.message)
+                error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
             }
 
             // If this is an error due to expiration of channel access token, we refresh and retry.
@@ -972,9 +963,8 @@ module.exports = class MessengerLine {
                 }
                 return this.request(options, false)
             }
-            
-            // throw Error(error_message)
-            throw Error(e.response || error_message)
+
+            throw Error(error_message)
         })
         return response.data
     }

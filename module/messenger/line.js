@@ -399,10 +399,13 @@ module.exports = class MessengerLine {
             headers: headers,
             data: body
         }).catch(async (e) => {
-            if (e.message === `Failed. Status code: 400. Payload: {"message":"Invalid reply token"}`){
+            if (
+                e.message === `Failed. Status code: 400. Payload: {"message":"Invalid reply token"}` &&
+                (event && event.source && event.source.userId)
+            ){
                 // Retry by using send().
                 debug(`Re-trying by send()..`)
-                return this.send(event, event.soruce.userId, messages)
+                return this.send(event, event.source.userId, messages)
             }
         })
     }

@@ -398,7 +398,7 @@ module.exports = class MessengerLine {
             url: url,
             headers: headers,
             data: body
-        }).catch(e => {
+        }).catch(async (e) => {
             debug(JSON.stringify(e))
             if (
                 e && 
@@ -959,6 +959,7 @@ module.exports = class MessengerLine {
             let error_message = `Failed.`
             if (e.response){
                 e.response.message = error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
+                debug(e.response.message)
             }
 
             // If this is an error due to expiration of channel access token, we refresh and retry.
@@ -971,6 +972,7 @@ module.exports = class MessengerLine {
                 }
                 return this.request(options, false)
             }
+            
             // throw Error(error_message)
             throw Error(e.response || error_message)
         })

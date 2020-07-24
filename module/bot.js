@@ -9,6 +9,7 @@ const Translator = require("./translator");
  * @prop {String} type - Type of messenger. The value can be "line","facebook" and "google".
  * @prop {String} language - ISO-639-1 based language code which is the mother language of this chatbot.
  * @prop {Object} builtin_parser - Instance of builtin parser. You can use builtin parser like follows. await bot.builtin_parser.PARSER_NAME(value, policy).
+ * @prop {Object} env - Runtime environment vars.
  */
 class Bot {
     /**
@@ -21,6 +22,7 @@ class Bot {
     constructor(options, slib, event, context){
         this.type = slib.messenger.type;
         this.language = options.language;
+        this.env = options.env;
         for (let messenger_type of Object.keys(slib.messenger.plugin)){
             this[messenger_type] = slib.messenger.plugin[messenger_type];
         }

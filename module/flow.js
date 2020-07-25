@@ -105,9 +105,12 @@ module.exports = class Flow {
         let skill;
 
         if (skill_name == "builtin_default"){
-            debug("Use built-in default skill.");
-            let Skill = require("./skill/default");
-            skill = new Skill(intent.config);
+            debug("Use built-in default skill.")
+            let Skill = require("./skill/default")
+            let skill_options = {}
+            skill_options.env = Object.assign({}, this.options.env)
+            skill_options = Object.assign(skill_options, intent.config)
+            skill = new Skill(skill_options)
         } else {
             debug(`Look for ${skill_name} skill.`);
             try {
@@ -119,7 +122,10 @@ module.exports = class Flow {
 
             debug(`Found skill: "${skill_name}".`);
             let Skill = require(`${this.options.skill_path}${skill_name}`);
-            skill = new Skill(intent.config);
+            let skill_options = {}
+            skill_options.env = Object.assign({}, this.options.env)
+            skill_options = Object.assign(skill_options, intent.config)
+            skill = new Skill(skill_options)
             skill.path = this.options.skill_path;
         }
 

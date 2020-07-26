@@ -15,7 +15,6 @@ const DEFAULT_LANGUAGE = "ja";
 const DEFAULT_PARALLEL_EVENT = "ignore";
 
 const express = require("express");
-const router = express.Router();
 const body_parser = require("body-parser");
 const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
@@ -26,8 +25,6 @@ const Memory = require("./memory");
 const Nlu = require("./nlu");
 const Parser = require("./parser");
 const Messenger = require("./messenger");
-
-router.use(body_parser.json());
 
 /**
 bot-express module. This module should be mounted on webhook URI and requires configuration as options parameter.
@@ -159,6 +156,9 @@ module.exports = (options) => {
     const nlu = new Nlu(options.nlu || {});
     const parser = new Parser(options.parser || {});
 
+    // Create router.
+    const router = express.Router()
+    router.use(body_parser.json())
 
     // Webhook Process
     router.post('/', async (req, res, next) => {

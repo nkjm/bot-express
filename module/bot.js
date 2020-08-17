@@ -599,8 +599,12 @@ class Bot {
 
         // At the same time, add the parameter name to previously confirmed list. The order of this list is newest first.
         if (!implicit){
-            this._context.previous.confirmed.unshift(param_name);
-            this._context.previous.processed.unshift(param_name);
+            if (this._context.previous.confirmed.indexOf(param_name) === -1){
+                this._context.previous.confirmed.unshift(param_name)
+            }
+            if (this._context.previous.processed.indexOf(param_name) === -1){
+                this._context.previous.processed.unshift(param_name)
+            }
         }
 
         // Remove item from to_confirm.

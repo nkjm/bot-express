@@ -730,8 +730,8 @@ class Bot {
      */
     modify_previous_parameter(){
         // We rewind twice since this is supposed to be used in reaction so by rewinding once, we collect current parameter again. By rewinding twice, we can go back to previous parameter.
-        this.rewind_confirming()
-        this.rewind_confirming()
+        this.rewind_confirmed()
+        this.rewind_confirmed()
     }
 
     /**

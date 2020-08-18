@@ -646,6 +646,9 @@ module.exports = class Flow {
      * @method
      */
     modify_previous_parameter(){
+        this.bot.rewind_confirmed()
+
+        /*
         // Check if there is previously processed parameter.
         if (!(this.context.previous && Array.isArray(this.context.previous.processed) && this.context.previous.processed.length > 0)){
             debug(`There is no processed parameter.`);
@@ -677,6 +680,7 @@ module.exports = class Flow {
                 return this.modify_previous_parameter();
             }
         }
+        */
     }
 
     /**

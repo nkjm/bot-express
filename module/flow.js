@@ -979,7 +979,8 @@ module.exports = class Flow {
                 await this.bot.apply_parameter({
                     name: this.context.confirming,
                     value: value_to_apply,
-                    implicit: true
+                    implicit: true,
+                    processed: true,
                 })
                 return this.respond()
             } else {

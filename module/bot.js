@@ -440,6 +440,7 @@ class Bot {
      * @param {Boolean} [options.parse=false] - Whether to run parser.
      * @param {Boolean} [options.react=true] - Whether to run reaction.
      * @param {Boolean} [options.implicit=false] - If true, we do not add this parameter to context.previous.confirmed[] and context.previous.processed[].
+     * @param {Boolean} [options.processed] - If true, we add this parameter to context.previous.processed[]. This is only valid in case that implict is true. This is used in apply() in skill.
      * @return {Object} result.accepted is false and error is set to result.error if options.parse is true and parser rejected. Otherwise, return result.accepted is true and result.error is undefined.
      */ 
     async apply_parameter(o){
@@ -475,7 +476,7 @@ class Bot {
 
         // Add parameter to context.
         if (!parse_error){
-            this.add_parameter(o.name, o.value, o.implicit)
+            this.add_parameter(o.name, o.value, o.implicit, o.processed)
         }
 
         // Take reaction.
@@ -568,8 +569,9 @@ class Bot {
      * @param {String} param_name 
      * @param {*} param_value 
      * @param {Boolean} [implicit]
+     * @param {Boolean} [processed] - Set true to record this parameter to previous.processed. This is used in bot.apply_parameter().
      */
-    add_parameter(param_name, param_value, implicit = false){
+    add_parameter(param_name, param_value, implicit = false, processed){
         const param = this.get_parameter(param_name);
 
         // Add the parameter to context.confirmed.
@@ -602,6 +604,10 @@ class Bot {
             if (this._context.previous.confirmed.indexOf(param_name) === -1){
                 this._context.previous.confirmed.unshift(param_name)
             }
+            if (this._context.previous.processed.indexOf(param_name) === -1){
+                this._context.previous.processed.unshift(param_name)
+            }
+        } else if (processed){
             if (this._context.previous.processed.indexOf(param_name) === -1){
                 this._context.previous.processed.unshift(param_name)
             }

@@ -92,4 +92,64 @@ describe("Test builtin phone parser", async function(){
             context.confirmed.length.should.equal("1234567890")
         })
     })
+
+    describe("Exceeds max configured by policy", async function(){
+        it("will be rejected.", async function(){
+            let context
+
+            context = await emu.launch("test-builtin-parser-phone", {
+                test_case: "max"
+            })
+            context.intent.name.should.equal("test-builtin-parser-phone")
+            context.confirming.should.equal("max")
+
+            context = await emu.say("12345678901")
+            context.confirming.should.equal("max")
+        })
+    })
+
+    describe("Up to max configured by policy", async function(){
+        it("will be accepted.", async function(){
+            let context
+
+            context = await emu.launch("test-builtin-parser-phone", {
+                test_case: "max"
+            })
+            context.intent.name.should.equal("test-builtin-parser-phone")
+            context.confirming.should.equal("max")
+
+            context = await emu.say("1234567890")
+            context.confirmed.max.should.equal("1234567890")
+        })
+    })
+
+    describe("Exceeds min configured by policy", async function(){
+        it("will be rejected.", async function(){
+            let context
+
+            context = await emu.launch("test-builtin-parser-phone", {
+                test_case: "min"
+            })
+            context.intent.name.should.equal("test-builtin-parser-phone")
+            context.confirming.should.equal("min")
+
+            context = await emu.say("123456789")
+            context.confirming.should.equal("min")
+        })
+    })
+
+    describe("Up to min configured by policy", async function(){
+        it("will be accepted.", async function(){
+            let context
+
+            context = await emu.launch("test-builtin-parser-phone", {
+                test_case: "min"
+            })
+            context.intent.name.should.equal("test-builtin-parser-phone")
+            context.confirming.should.equal("min")
+
+            context = await emu.say("1234567890")
+            context.confirmed.min.should.equal("1234567890")
+        })
+    })
 })

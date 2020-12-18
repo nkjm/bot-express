@@ -23,7 +23,9 @@ module.exports = class ParserPhone {
      * @method
      * @param {*} value
      * @param {Object} [policy]
-     * @param {String} [policy.length=40] - Maximum length excluding dash.
+     * @param {Number} [policy.min]
+     * @param {Number} [policy.max]
+     * @param {Number} [policy.length] - Deprecated. Just for backward compatibility. Should use max instead.
      * @return {String}
      */
     async parse(value, policy = {}){
@@ -45,9 +47,19 @@ module.exports = class ParserPhone {
             throw Error("be_parser__should_be_number_and_dash")
         }
 
-        // Check with policy.
-        if (phone.length > policy.length){
-            throw Error(`be_parser__too_long`)
+        // Check min length.
+        if (policy.min){
+            if (phone.length < policy.min){
+                throw new Error("be_parser__too_short")
+            }
+        }
+
+        // Check max length.
+        if (policy.max || policy.length){
+            const max = policy.max || policy.length
+            if (phone.length > max){
+                throw new Error("be_parser__too_long")
+            }
         }
 
         return phone

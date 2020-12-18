@@ -33,7 +33,32 @@ module.exports = class SkillTestBuiltinParserPhone {
                         length: 10
                     }
                 },
-            }
+            },
+            max: {
+                message: {
+                    type: "text",
+                    text: "dummy",
+                },
+                parser: {
+                    type: "phone",
+                    policy: {
+                        max: 10
+                    }
+                },
+            },
+            min: {
+                message: {
+                    type: "text",
+                    text: "dummy",
+                },
+                parser: {
+                    type: "phone",
+                    policy: {
+                        min: 10
+                    }
+                },
+            },
+
         }
     }
 

@@ -152,5 +152,53 @@ for (let messenger_option of messenger_options){
                 context.confirming.should.equal("a");
             })
         })
+
+        describe("Run bot.modify_previous_parameter in reaction without options", async function(){
+            it("asks previously confirmed parameter and retain confirmed value.", async function(){
+
+                let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-modify-previous-parameter"
+                    },
+                    language: "ja"
+                })}));
+
+                context.confirming.should.equal("a");
+                context = await emu.send(emu.create_message_event(user_id, "a"));
+
+                context.confirming.should.equal("b");
+                context.confirmed.a.should.equal("a");
+
+                context = await emu.send(emu.create_message_event(user_id, "modify_prev_param"));
+
+                context.confirming.should.equal("a");
+                context.confirmed.a.should.equal("a");
+            })
+        })
+
+        describe("Run bot.modify_previous_parameter in reaction with clear_confirmed: true", async function(){
+            it("asks previously confirmed parameter and clear confirmed value.", async function(){
+
+                let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-modify-previous-parameter"
+                    },
+                    language: "ja"
+                })}));
+
+                context.confirming.should.equal("a");
+                context = await emu.send(emu.create_message_event(user_id, "a"));
+
+                context.confirming.should.equal("b");
+                context.confirmed.a.should.equal("a");
+
+                context = await emu.send(emu.create_message_event(user_id, "modify_prev_param_and_clear"));
+
+                context.confirming.should.equal("a");
+                should.not.exist(context.confirmed.a);
+            })
+        })
     });
 }

@@ -733,18 +733,22 @@ class Bot {
     /**
      * Go back to previous parameter. Can only be used in reaction.
      * @method
+     * @param {Object} options
+     * @param {Boolean} [options.clear_confirmed]
      */
-    modify_previous_parameter(){
+    modify_previous_parameter(options = {}){
         // We rewind twice since this is supposed to be used in reaction so by rewinding once, we collect current parameter again. By rewinding twice, we can go back to previous parameter.
-        this.rewind_confirmed()
-        this.rewind_confirmed()
+        this.rewind_confirmed(options)
+        this.rewind_confirmed(options)
     }
 
     /**
      * Go back to previous parameter. This should be used by flow or bot-express internal feature only.
      * @method
+     * @param {Object} options
+     * @param {Boolean} [options.clear_confirmed]
      */
-    rewind_confirmed(){
+    rewind_confirmed(options = {}){
         // Check if there is previously processed parameter.
         if (!(this._context.previous && Array.isArray(this._context.previous.processed) && this._context.previous.processed.length > 0)){
             debug(`There is no processed parameter.`);
@@ -765,6 +769,11 @@ class Bot {
         // We remove this parameter from processed history.
         debug(`Removing ${param_name} from previous.processed.`);
         this._context.previous.processed.shift();
+
+        // Clear confirmed value if clear_confimred is true.
+        if (options.clear_confirmed && this._context.confirmed && this._context.confirmed[param_name] !== undefined){
+            delete this._context.confirmed[param_name]
+        }
 
         // We remove this parameter from confirmed history.
         if (Array.isArray(this._context.previous.confirmed) && this._context.previous.confirmed.length > 0){

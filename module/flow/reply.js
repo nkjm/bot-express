@@ -23,7 +23,7 @@ module.exports = class ReplyFlow extends Flow {
             // This is intent postback.
             const intent = JSON.parse(this.slib.messenger.extract_postback_payload(this.event)).intent;
             if (this.options.modify_previous_parameter_intent === intent.name){
-                super.modify_previous_parameter();
+                super.modify_previous_parameter(intent.parameters);
             } else if (this.context.intent.name === intent.name){
                 await super.restart_conversation(intent);
             } else {

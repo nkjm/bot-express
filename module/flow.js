@@ -644,43 +644,11 @@ module.exports = class Flow {
     /**
      * Modify previous parameter by changing context status.
      * @method
+     * @param {Object} options
+     * @param {Boolean} [options.clear_confirmed]
      */
-    modify_previous_parameter(){
-        this.bot.rewind_confirmed()
-
-        /*
-        // Check if there is previously processed parameter.
-        if (!(this.context.previous && Array.isArray(this.context.previous.processed) && this.context.previous.processed.length > 0)){
-            debug(`There is no processed parameter.`);
-            return;
-        }
-
-        const param_name = this.context.previous.processed[0]
-
-        // Check if there is corresponding parameter in skill just in case.
-        if (this.bot.check_parameter_type(param_name) == "not_applicable") {
-            debug(`"${param_name}" not found in skill.`);
-            return;
-        }
-
-        // Put previous parameter to to confirm queue. But this parameter may not be previously confirmed since condition might return false.
-        this.bot.collect(param_name);
-
-        // We remove this parameter from processed history.
-        debug(`Removing ${param_name} from previous.processed.`);
-        this.context.previous.processed.shift();
-
-        // We remove this parameter from confirmed history.
-        if (Array.isArray(this.context.previous.confirmed) && this.context.previous.confirmed.length > 0){
-            if (this.context.previous.confirmed[0] === param_name){
-                debug(`Removing ${param_name} from previous.confirmed.`);
-                this.context.previous.confirmed.shift();
-            } else {
-                debug(`We rewrind one more processed parameter since previously processed parameter has not been confirmed.`);
-                return this.modify_previous_parameter();
-            }
-        }
-        */
+    modify_previous_parameter(options = {}){
+        this.bot.rewind_confirmed(options)
     }
 
     /**

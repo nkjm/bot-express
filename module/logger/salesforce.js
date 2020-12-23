@@ -78,7 +78,7 @@ module.exports = class LoggerSalesforce {
         // Get jsforce connection.
         const conn = this._get_conn(channel_id)
         if (!conn){
-            debug(`jsforce connection not found. We could not save skill log to salesforce.`)
+            debug(`jsforce connection not found. We could not save skill status log to salesforce.`)
             return
         }
 
@@ -105,10 +105,15 @@ module.exports = class LoggerSalesforce {
             govtech__message__c: (message && typeof message === 'object') ? message.text || message.altText : null
         }
 
+        if (!chat.govtech__message__c){
+            debu(`message is empty so we skip saving chat log to salesforce.`)
+            return
+        }
+
         // Get jsforce connection.
         const conn = this._get_conn(channel_id)
         if (!conn){
-            debug(`jsforce connection not found. We could not save skill log to salesforce.`)
+            debug(`jsforce connection not found. We could not save chat log to salesforce.`)
             return
         }
 

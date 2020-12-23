@@ -58,11 +58,15 @@ module.exports = class LoggerSalesforce {
             if (payload.error){
                 skill_status.govtech__error_line_number__c = payload.error.lineNumber
                 skill_status.govtech__error_file_name__c = payload.error.fileName
-                skill_status.govtech__error_message__c = (payload.error.message) ? JSON.stringify(payload.error.message) : null
+                skill_status.govtech__error_message__c = (payload.error.message && typeof payload.error.message === "string") ? payload.error.message : null
                 skill_status.govtech__error_name__c = payload.error.name
                 skill_status.govtech__error_stack__c = payload.error.stack
             }
-            if (payload.context) skill_status.govtech__context__c = Context.remove_buffer(payload.context)
+            if (payload.context){
+                skill_status.govtech__context__c = Context.remove_buffer(payload.context)
+                delete skill_status.govtech__context__c.global
+                skill_status.govtech__context__c = JSON.stringify(skill_status.govtech__context__c)
+            }
         } else if (status === "switched"){
             // Add next intent and confirming.
             if (payload.intent && payload.intent.name) skill_status.govtech__intent__c = payload.intent.name
@@ -106,7 +110,7 @@ module.exports = class LoggerSalesforce {
         }
 
         if (!chat.govtech__message__c){
-            debu(`message is empty so we skip saving chat log to salesforce.`)
+            debug(`message is empty so we skip saving chat log to salesforce.`)
             return
         }
 

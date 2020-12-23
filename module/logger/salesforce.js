@@ -102,7 +102,7 @@ module.exports = class LoggerSalesforce {
             govtech__chat_id__c: chat_id,
             govtech__skill__c: skill,
             govtech__who__c: who,
-            govtech__message__c: message.text || message.altText || message
+            govtech__message__c: (message && typeof message === 'object') ? message.text || message.altText : null
         }
 
         // Get jsforce connection.

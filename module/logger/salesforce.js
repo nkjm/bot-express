@@ -1,6 +1,6 @@
 "use strict";
 
-const debug = require(`bot-express:logger`)
+const debug = require("debug")("bot-express:logger")
 const memory_cache = require("memory-cache")
 const Context = require("../context")
 

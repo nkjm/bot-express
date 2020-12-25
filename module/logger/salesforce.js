@@ -52,7 +52,7 @@ module.exports = class LoggerSalesforce {
             // No additional information.
         } else if (status === "aborted"){
             // Set confirming
-            if (paylaod.context && payload.context.confirming) skill_status.govtech__confirming__c = payload.context.confirming
+            if (payload.context && payload.context.confirming) skill_status.govtech__confirming__c = payload.context.confirming
         } else if (status === "abended"){
             // Add error and context.
             if (payload.error){

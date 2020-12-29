@@ -96,10 +96,11 @@ class Bot {
         const compiled_messages = await Promise.all(done_compile_messages);
 
         // Add delay if REPLY_DELAY is set.
-        if (this.env.REPLY_DELAY){
+        const reply_delay = parseInt(this.env.REPLY_DELAY)
+        if (reply_delay){
             const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-            debug(`We sleep ${this.env.REPLY_DELAY} ms since REPLY_DELAY is set.`)
-            await sleep(this.env.REPLY_DELAY)
+            debug(`We sleep ${reply_delay} ms since REPLY_DELAY is set.`)
+            await sleep(reply_delay)
         }
 
         let response;

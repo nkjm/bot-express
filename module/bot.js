@@ -95,6 +95,13 @@ class Bot {
 
         const compiled_messages = await Promise.all(done_compile_messages);
 
+        // Add delay if REPLY_DELAY is set.
+        if (this.env.REPLY_DELAY){
+            const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+            debug(`We sleep ${this.env.REPLY_DELAY} ms since REPLY_DELAY is set.`)
+            await sleep(this.env.REPLY_DELAY)
+        }
+
         let response;
         if (this._event.type == "bot-express:push"){
             response = await this._slib.messenger.send(this._event, this._event.to[`${this._event.to.type}Id`], compiled_messages);

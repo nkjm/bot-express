@@ -160,11 +160,21 @@ module.exports = class MessengerLine {
                 headers: headers,
                 data: params,
                 responseType: "json"
+            }, false).catch(async (e) => {
+                let error_message = `Unable to retrieve access_token.`
+                if (e && e.message){
+                    error_message += ` ${e.message}`
+                }
+                if (e && e.response){
+                    error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
+                }
+                throw Error(error_message)
             })
 
             if (!(response && response.access_token)){
-                throw Error(`Failed to retrieve access_token.`);
+                throw Error(`Failed to retrieve access token. Refresh succeeded but access token not found in response.`)
             }
+
             debug(`Retrieved access token.`)
 
             access_token = response.access_token;

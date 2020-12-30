@@ -967,10 +967,9 @@ module.exports = class MessengerLine {
                 debug(`Got error due to Rate Limit and going to retry..`)
 
                 // Wait for 1000 ms.
-                const reply_delay = 1000
+                const retry_delay = 1000
                 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-                debug(`We sleep ${reply_delay} ms since REPLY_DELAY is set.`)
-                await sleep(reply_delay)
+                await sleep(retry_delay)
                 
                 // Retry.
                 return this.request(options, false)

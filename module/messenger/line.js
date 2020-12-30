@@ -951,11 +951,6 @@ module.exports = class MessengerLine {
 
     async request(options, retry = true){
         let response = await axios.request(options).catch(async (e) => {
-            let error_message = `Failed.`
-            if (e.response){
-                error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
-            }
-
             // If this is an error due to expiration of channel access token, we refresh and retry.
             if (e.response.status === 401 && retry === true){
                 debug(e.response.data)
@@ -965,6 +960,25 @@ module.exports = class MessengerLine {
                     Authorization: `Bearer ${this._access_token}`
                 }
                 return this.request(options, false)
+            }
+
+            // If this is an error due to Rate Limit, we retry just once.
+            if (e.response.status === 429 && retry == true){
+                debug(`Got error due to Rate Limit and going to retry..`)
+
+                // Wait for 1000 ms.
+                const reply_delay = 1000
+                const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+                debug(`We sleep ${reply_delay} ms since REPLY_DELAY is set.`)
+                await sleep(reply_delay)
+                
+                // Retry.
+                return this.request(options, false)
+            }
+
+            let error_message = `Failed.`
+            if (e.response){
+                error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
             }
 
             throw Error(error_message)

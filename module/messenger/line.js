@@ -961,36 +961,41 @@ module.exports = class MessengerLine {
 
     async request(options, retry = true){
         let response = await axios.request(options).catch(async (e) => {
-            // If this is an error due to expiration of channel access token, we refresh and retry.
-            if (e.response.status === 401 && retry === true){
-                debug(e.response.data)
-                debug(`Going to refresh channel access token and retry..`)
-                await this.refresh_token(true)
-                options.headers = {
-                    Authorization: `Bearer ${this._access_token}`
-                }
-                return this.request(options, false)
-            }
-
-            // If this is an error due to Rate Limit, we retry just once.
-            if (e.response.status === 429 && retry == true){
-                debug(`Got error due to Rate Limit and going to retry..`)
-
-                // Wait for 3000 ms by default.
-                const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 3000
-                const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-                await sleep(retry_delay)
-                
-                // Retry.
-                return this.request(options, false)
-            }
-
-            let error_message = `Failed.`
             if (e.response){
-                error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
-            }
+                // If this is an error due to expiration of channel access token, we refresh and retry.
+                if (e.response.status === 401 && retry === true){
+                    debug(`Going to refresh channel access token and retry..`)
+                    await this.refresh_token(true)
+                    options.headers = {
+                        Authorization: `Bearer ${this._access_token}`
+                    }
+                    return this.request(options, false)
+                }
 
-            throw Error(error_message)
+                // If this is an error due to Rate Limit, we retry just once.
+                if (e.response.status === 429 && retry == true){
+                    debug(`Got error due to Rate Limit and going to retry..`)
+
+                    // Wait for 3000 ms by default.
+                    const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 3000
+                    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+                    await sleep(retry_delay)
+
+                    // Retry.
+                    return this.request(options, false)
+                }
+
+                const error_message = `Callout failed in messenger/line.js. Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
+                throw Error(error_message)
+            } else if (e.request){
+                throw Error(`Callout failed in messenger/line.js. Request was made but no response recieved. Method: ${e.request.method}, Host: ${e.request.host}, Path: ${e.request.path}`)
+            } else {
+                let error_message = `Callout failed in messenger/line.js.`
+                if (e && e.message){
+                    error_message += ` ${e.message}`
+                }
+                throw Error(error_message)
+            }
         })
         return response.data
     }

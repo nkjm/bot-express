@@ -62,10 +62,16 @@ module.exports = class LoggerSalesforce {
                 skill_status.govtech__error_name__c = payload.error.name
                 skill_status.govtech__error_stack__c = payload.error.stack
             }
+            if (typeof skill_status.govtech__error_message__c == `string`){
+                skill_status.govtech__error_message__c = skill_status.govtech__error_message__c.slice(0, 32768)
+            }
+            if (typeof skill_status.govtech__error_stack__c == `string`){
+                skill_status.govtech__error_stack__c = skill_status.govtech__error_stack__c.slice(0, 32768)
+            }
             if (payload.context){
                 skill_status.govtech__context__c = Context.remove_buffer(payload.context)
                 delete skill_status.govtech__context__c.global
-                skill_status.govtech__context__c = JSON.stringify(skill_status.govtech__context__c)
+                skill_status.govtech__context__c = JSON.stringify(skill_status.govtech__context__c).slice(0, 32768)
             }
         } else if (status === "switched"){
             // Add next intent and confirming.

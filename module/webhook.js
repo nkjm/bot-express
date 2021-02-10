@@ -51,12 +51,10 @@ class Webhook {
         // Log context.
         for (let context of context_list){
             if (typeof context === "object"){
-                debug("Updated context follows.");
                 const context_for_log = Context.remove_buffer(context)
                 if (!this.options.log_global){
                     delete context_for_log.global
                 }
-                debug(context_for_log)
             }
         }
 
@@ -73,8 +71,7 @@ class Webhook {
     @returns {Promise.<context>}
     */
     async process_event(event){
-        debug(`Processing following event.`);
-        debug(JSON.stringify(event));
+        debug(`Processing event..`);
 
         // If this is for webhook validation, we skip processing this.
         if (this.slib.messenger.type === "line" && (event.replyToken == "00000000000000000000000000000000" || event.replyToken == "ffffffffffffffffffffffffffffffff")){

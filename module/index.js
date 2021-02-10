@@ -184,7 +184,6 @@ module.exports = (options) => {
             }
             return;
         }
-        debug(`Messenger is ${messenger_type}`)
 
         // Check if corresponding messenger configuration has been set for this request.
         if (!options.messenger[messenger_type]){
@@ -197,7 +196,6 @@ module.exports = (options) => {
 
         // Instantiate messenger instance.
         const messenger = new Messenger(options.messenger, messenger_type);
-        debug("Messenger instantiated.");
 
         // Validate signature.
         if (!messenger.validate_signature(req)){
@@ -207,7 +205,6 @@ module.exports = (options) => {
             }
             return
         }
-        debug("Signature validation succeeded.");
 
         /*
         We need to uncomment below in case of google assistant.

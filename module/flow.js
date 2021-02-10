@@ -361,8 +361,7 @@ module.exports = class Flow {
         }
 
         if (parse_error === undefined){
-            debug(`Parser accepted the value. Parsed value for parameter: "${param_name}" follows.`);
-            debug(param_value);
+            debug(`Parser accepted the value.`);
     
             // Add parameter to context.
             this.bot.add_parameter(param_name, param_value, implicit);

@@ -1,10 +1,9 @@
 'use strict';
 
-const dialogflow = require("dialogflow");
+const dialogflow = require("@google-cloud/dialogflow");
 const debug = require("debug")("bot-express:nlu");
 const default_language = "ja";
 const required_options = ["project_id"];
-const cache = require("memory-cache");
 const structjson = require("./dialogflow/structjson");
 
 module.exports = class NluDialogflow {
@@ -25,15 +24,6 @@ module.exports = class NluDialogflow {
         }
         this._project_id = options.project_id;
         this._language = options.language || default_language;
-
-        // We reuse the sessions client from cache if possible.
-        /*
-        this._sessions_client = cache.get("dialogflow_sessions_client");
-        if (this._sessions_client){
-            debug("Dialogflow sessions client found in cache.");
-            return;
-        }
-        */
 
         let sessions_client_option = {
             projectId: options.project_id
@@ -74,7 +64,7 @@ module.exports = class NluDialogflow {
             }
         }
 
-        const session_path = this._sessions_client.sessionPath(this._project_id, options.session_id);
+        const session_path = this._sessions_client.projectAgentSessionPath(this._project_id, options.session_id);
 
         // The text query request.
         const request = {

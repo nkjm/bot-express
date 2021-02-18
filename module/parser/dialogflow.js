@@ -1,7 +1,7 @@
 "use strict";
 
 const debug = require("debug")("bot-express:parser");
-const dialogflow = require("dialogflow");
+const dialogflow = require("@google-cloud/dialogflow");
 const structjson = require("./dialogflow/structjson");
 const default_language = "ja";
 
@@ -43,7 +43,7 @@ module.exports = class ParserDialogflow {
         }
 
         this.sessions_client = new dialogflow.SessionsClient(sessions_client_option);
-        this.session_path = this.sessions_client.sessionPath(options.project_id, options.project_id);
+        this.session_path = this.sessions_client.projectAgentSessionPath(options.project_id, options.project_id);
     }
 
     /**

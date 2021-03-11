@@ -39,7 +39,7 @@ class Translator {
         this.enable_lang_detection = (options.enable_lang_detection === false) ? false : true;
         this.enable_translation = (options.enable_translation === true) ? true : false;
 
-        if (this.enable_lang_detection || this.enable_translation){
+        if (this.enable_lang_detection || this.enable_translation || this.type === "salesforce"){
             let scripts = fs.readdirSync(__dirname + "/translator");
             if (Array.isArray(scripts)){
                 const script = scripts.find(script => script === `${this.type}.js`);
@@ -102,17 +102,26 @@ class Translator {
             throw new Error(`${key} not found or no translation label is available.`);
         }
 
-        // Check if matched translation label exists.
-        if (this.label[key][this.sender_language] !== undefined){
-            // Check if optional data is provided.
-            if (options === undefined){
+        // Check if optional data is provided.
+        if (options === undefined){
+            // Translator service has own get_translation_label method, we try to use it first. Ex) TranslatorSalesforce has it.
+            if (this.service.get_translation_label){
+                const translation = await this.service.get_translation_label(key, this.sender_language)
+                if (translation){
+                    return translation
+                }
+            }
+
+            if (this.label[key][this.sender_language] !== undefined){
                 // No optional data so label should be string.
                 if (typeof this.label[key][this.sender_language] != "string"){
                     throw new Error(`Expecting translation being string but ${typeof this.label[key][this.sender_language]}`);
                 }
 
                 return this.label[key][this.sender_language];
-            } else {
+            }
+        } else {
+            if (this.label[key][this.sender_language] !== undefined){
                 // Optional data found so label shoud be function.
                 if (typeof this.label[key][this.sender_language] != "function"){
                     throw new Error(`Expecting translation being function but ${typeof this.label[key][this.sender_language]}`);

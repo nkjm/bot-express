@@ -29,6 +29,10 @@ class TranslatorSalesforce {
     }
 
     async translate(text, lang){
+        debug(`translate method is not supported in TranslatorSalesforce.`)
+    }
+
+    async get_translation_label(text, lang){
         return this.db.get_localization({
             label: text,
             lang,

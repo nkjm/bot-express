@@ -29,7 +29,7 @@ class TranslatorSalesforce {
     }
 
     async translate(text, lang){
-        return db.get_localization({
+        return this.db.get_localization({
             label: text,
             lang,
         })

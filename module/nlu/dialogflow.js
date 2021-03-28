@@ -77,7 +77,6 @@ module.exports = class NluDialogflow {
         } else {
             session_path = `projects/${this._project_id}/agent/sessions/${options.session_id}`
         }
-        debug(session_path)
 
         // The text query request.
         const request = {

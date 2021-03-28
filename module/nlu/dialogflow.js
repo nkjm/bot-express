@@ -43,9 +43,6 @@ module.exports = class NluDialogflow {
             throw new Error(`key_filename or (client_email and private_key) option is required forNluDialogflow.`);
         }
 
-        debug(`Creating dialogflow sessions client with following options.`)
-        debug(sessions_client_option)
-
         this._sessions_client = new dialogflow.SessionsClient(sessions_client_option);
         //cache.put("dialogflow_sessions_client", this._sessions_client);
     }

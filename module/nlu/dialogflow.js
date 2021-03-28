@@ -15,6 +15,7 @@ module.exports = class NluDialogflow {
     @param {String} [options.client_email] - The parameter you can find in .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
     @param {String} [options.private_key] - The parameter you can find in .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
     @param {String} [options.language] - The language to analyze.
+    @param {String} [options.location] - Region of the agent. Default is us.
     */
     constructor(options){
         for (let required_option of required_options){
@@ -24,9 +25,11 @@ module.exports = class NluDialogflow {
         }
         this._project_id = options.project_id;
         this._language = options.language || default_language;
+        this._location = options.location
 
         let sessions_client_option = {
-            projectId: options.project_id
+            projectId: options.project_id,
+            apiEndpoint: (options.location) ? `${options.location}-dialogflow.googleapis.com` : undefined
         }
 
         if (options.key_filename){
@@ -39,6 +42,9 @@ module.exports = class NluDialogflow {
         } else {
             throw new Error(`key_filename or (client_email and private_key) option is required forNluDialogflow.`);
         }
+
+        debug(`Creating dialogflow sessions client with following options.`)
+        debug(sessions_client_option)
 
         this._sessions_client = new dialogflow.SessionsClient(sessions_client_option);
         //cache.put("dialogflow_sessions_client", this._sessions_client);
@@ -64,7 +70,14 @@ module.exports = class NluDialogflow {
             }
         }
 
-        const session_path = this._sessions_client.projectAgentSessionPath(this._project_id, options.session_id);
+        // const session_path = this._sessions_client.projectAgentSessionPath(this._project_id, options.session_id);
+        let session_path
+        if (this._location){
+            session_path = `projects/${this._project_id}/locations/${this._location}/agent/sessions/${options.session_id}`
+        } else {
+            session_path = `projects/${this._project_id}/agent/sessions/${options.session_id}`
+        }
+        debug(session_path)
 
         // The text query request.
         const request = {

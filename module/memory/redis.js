@@ -8,6 +8,7 @@ class MemoryRedis {
      * @constructor
      * @param {Object} options
      * @param {Object} options.redis_client - Client instance of ioredis.
+     * @param {Number} options.retention - Retention in seconds.
      */
     constructor(o){
         if (o.redis_client){
@@ -19,6 +20,8 @@ class MemoryRedis {
         } else {
             throw Error(`options.redis_client not set and "redis_client" not found in cache while memory/redis is loaded.`)
         }
+
+        this.retention = o.retention || 7200
     }
 
     async get(key){
@@ -41,7 +44,8 @@ class MemoryRedis {
             context = JSON.stringify(context);
         }
 
-        return this.client.set(key, context);
+        // While retention is managed by memory-cache timer in parent class, we need to set retention to purge ghoast data just in case instance restart and timer does not work.
+        return this.client.set(key, context, "EX", this.retention)
     }
 
     async del(key){

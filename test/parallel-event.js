@@ -115,7 +115,7 @@ describe("Test parallel event from " + emu.messenger_type, function(){
     });
 
     describe("3 parallel events", function(){
-        it("should ignored second event but process third event.", function(){
+        it("should ignored second and third event.", function(){
             this.timeout(8000);
 
             return emu.clear_context(user_id).then(function(){
@@ -142,7 +142,7 @@ describe("Test parallel event from " + emu.messenger_type, function(){
                         num_of_ignored++;
                     }
                 }
-                num_of_ignored.should.equal(1);
+                num_of_ignored.should.equal(2);
             });
         });
     });

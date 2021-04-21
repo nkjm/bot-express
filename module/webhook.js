@@ -1,6 +1,8 @@
 "use strict";
 
 const Context = require("./context");
+const moment = require("moment")
+moment.locale("ja")
 
 // Debuggers
 const debug = require("debug")("bot-express:webhook");
@@ -97,8 +99,12 @@ class Webhook {
             this.options.parallel_event == "ignore" && 
             this.slib.messenger.identify_event_type(event) != "bot-express:push"
         ){
-            context._in_progress = false; // To avoid lock out, we ignore event only once.
-            await this.slib.memory.put(memory_id, context);
+            // If first event has timestamp and its older than 30 seconds, we clear in_progress flag.
+            if (context._in_progress.timestamp && moment(context._in_progress.timestamp).isBefore(moment().subtract(30, "seconds"))){
+                context._in_progress = false; 
+                await this.slib.memory.put(memory_id, context);
+            }
+
             debug(`Bot is currenlty processing another event from this user so ignore this event.`);
             return;
         }

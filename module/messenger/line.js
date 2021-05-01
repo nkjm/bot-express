@@ -12,6 +12,15 @@ const DEFAULT_TOKEN_STORE = "memory-cache"
 const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"]
 const CACHE_PREFIX = "be_messenger_line_"
 
+class BotExpressMessengerLineError extends Error {
+    constructor(o){
+        super(o.message)
+        this.name = "BotExpressMessengerLineError";
+        this.status = o.status
+        this.data = o.data
+    }
+}
+
 module.exports = class MessengerLine {
 
     /**
@@ -389,11 +398,10 @@ module.exports = class MessengerLine {
         debug(e)
 
         if (
-            e.response && 
-            e.response.status === 400 &&
-            e.response.data &&
-            Array.isArray(e.response.data.details) &&
-            e.response.data.details.find(d => d.message === `Invalid reply token`)
+            e.status === 400 &&
+            e.data &&
+            Array.isArray(e.data.details) &&
+            e.data.details.find(d => d.message === `Invalid reply token`)
         ){
             return true
         }
@@ -420,12 +428,14 @@ module.exports = class MessengerLine {
         }
         
         debug(`Running reply..`)
-        return this.request({
-            method: "post",
-            url: url,
-            headers: headers,
-            data: body
-        }).catch(async (e) => {
+        try {
+            return this.request({
+                method: "post",
+                url: url,
+                headers: headers,
+                data: body
+            })
+        } catch(e) {
             if (
                 MessengerLine.is_reply_token_timeout(e) &&
                 event &&
@@ -438,7 +448,7 @@ module.exports = class MessengerLine {
             }
 
             throw e
-        })
+        }
     }
 
     static extract_events(body){
@@ -1018,9 +1028,11 @@ module.exports = class MessengerLine {
                     return this.request(options, false)
                 }
 
-                debug(e)
-
-                return e
+                throw new BotExpressMessengerLineError({
+                    message: `Callout failed in messenger/line.js`,
+                    status: e.response.status,
+                    data: e.response.data
+                })                
             } else if (e.request){
                 if (e.code === `ECONNABORTED`){
                     if (retry){
@@ -1055,6 +1067,7 @@ module.exports = class MessengerLine {
                 throw Error(error_message)
             }
         })
+
         return response.data
     }
 }

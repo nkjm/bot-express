@@ -384,6 +384,20 @@ module.exports = class MessengerLine {
         return this.reply(event, messages);
     }
 
+    static is_reply_token_timeout(e){
+        if (
+            e.response && 
+            e.response.status === 400 &&
+            e.response.data &&
+            Array.isArray(e.response.data.details) &&
+            e.response.data.details.find(d => d.message === `Invalid reply token`)
+        ){
+            return true
+        }
+
+        return false
+    }
+
     async reply(event, messages){
         // If this is test, we will not actually issue call out.
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
@@ -410,13 +424,17 @@ module.exports = class MessengerLine {
             data: body
         }).catch(async (e) => {
             if (
-                e.message === `Failed. Status code: 400. Payload: {"message":"Invalid reply token"}` &&
-                (event && event.source && event.source.userId)
+                MessengerLine.is_reply_token_timeout(e) &&
+                event &&
+                event.source &&
+                event.source.userId
             ){
                 // Retry by using send().
                 debug(`Re-trying by send()..`)
                 return this.send(event, event.source.userId, messages)
             }
+
+            throw e
         })
     }
 
@@ -985,15 +1003,50 @@ module.exports = class MessengerLine {
                     return this.request(options, false)
                 }
 
-                const error_message = `Callout failed in messenger/line.js. Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
-                throw Error(error_message)
+                if (e.response.status === 500 && retry == true){
+                    debug(`Got internal server error and going to retry..`)
+
+                    // Wait for 1000 ms by default.
+                    const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 1000
+                    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+                    await sleep(retry_delay)
+
+                    // Retry.
+                    return this.request(options, false)
+                }
+
+                throw Error(e)
             } else if (e.request){
-                throw Error(`Callout failed in messenger/line.js. Request was made but no response recieved. Method: ${e.request.method}, Host: ${e.request.host}, Path: ${e.request.path}`)
+                if (e.code === `ECONNABORTED`){
+                    if (retry){
+                        debug(`Request timeout and going to retry..`)
+
+                        // Wait for 1000 ms by default.
+                        const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 1000
+                        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+                        await sleep(retry_delay)
+
+                        // Retry.
+                        return this.request(options, false)
+                    } else {
+                        let error_message = `Callout timeout in messenger/line.js. We give up retrying.`
+                        if (options.url) error_message += ` url: ${options.url}`
+                        if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
+                        throw Error(error_message)
+                    }
+                }
+
+                let error_message = `Callout failed in messenger/line.js. Request was made but no response recieved.`
+                if (options.url) error_message += ` url: ${options.url}`
+                if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
+                throw Error(error_message)
             } else {
                 let error_message = `Callout failed in messenger/line.js.`
                 if (e && e.message){
                     error_message += ` ${e.message}`
                 }
+                if (options.url) error_message += ` url: ${options.url}`
+                if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
                 throw Error(error_message)
             }
         })

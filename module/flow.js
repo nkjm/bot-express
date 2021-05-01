@@ -3,6 +3,7 @@
 const debug = require("debug")("bot-express:flow");
 const Bot = require("./bot"); // Libraries to be exposed to skill.
 const Context = require("./context");
+const clone = require("rfdc/default")
 
 module.exports = class Flow {
     constructor(options, slib, event, context){
@@ -264,7 +265,7 @@ module.exports = class Flow {
         if (!param){
             if (this.context._sub_parameter && this.context._parent_parameter.list){
                 // While there is no parameters to confirm, this is sub parameter. There is a chance to be able to apply some more parameter.
-                const parent_parameter = JSON.parse(JSON.stringify(this.context._parent_parameter));
+                const parent_parameter = clone(this.context._parent_parameter)
                 const sub_parameter_list = Object.keys(this.context.confirmed);
 
                 await this.apply_sub_parameters();
@@ -303,7 +304,7 @@ module.exports = class Flow {
         await this.bot.react(applied_parameter.error, applied_parameter.param_name, applied_parameter.param_value);
 
         // Delete processed parameter.
-        const updated_parameters = JSON.parse(JSON.stringify(parameters));
+        const updated_parameters = clone(parameters)
         // If this is sub parameter and parent parameter is list and input parameter is array, we remove element from array. 
         if (this.context._sub_parameter && this.context._parent_parameter.list && Array.isArray(updated_parameters[applied_parameter.param_name])){
             updated_parameters[applied_parameter.param_name].shift();
@@ -386,9 +387,9 @@ module.exports = class Flow {
 
         debug(`Saving sub parameters to parent parameter: "${this.context._parent_parameter.name}".`)
 
-        const collected_sub_parameters = JSON.parse(JSON.stringify(this.context.confirmed))
-        const collected_heard = JSON.parse(JSON.stringify(this.context.heard))
-        const message_queue = JSON.parse(JSON.stringify(this.context._message_queue))
+        const collected_sub_parameters = clone(this.context.confirmed)
+        const collected_heard = clone(this.context.heard)
+        const message_queue = clone(this.context._message_queue)
         delete parent_context.reason
         parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message)
         
@@ -750,9 +751,9 @@ module.exports = class Flow {
 
         // Take over previous parameters depending on the take_over_parameter config of skill.
         if (this.context.skill.take_over_parameter){
-            this.context.global = JSON.parse(JSON.stringify(context.archive[0].global))
-            this.context.confirmed = JSON.parse(JSON.stringify(context.archive[0].confirmed))
-            this.context.heard = JSON.parse(JSON.stringify(context.archive[0].heard))
+            this.context.global = clone(context.archive[0].global)
+            this.context.confirmed = clone(context.archive[0].confirmed)
+            this.context.heard = clone(context.archive[0].heard)
         }
 
         // At the very first time of the conversation, we identify to_confirm parameters by required_parameter in skill file.
@@ -871,7 +872,7 @@ module.exports = class Flow {
             this.context._parent = [];
         }
 
-        const parent_context = JSON.parse(JSON.stringify(this.context));
+        const parent_context = clone(this.context)
         const skill = {
             type: this.context.skill.type
         }
@@ -894,7 +895,7 @@ module.exports = class Flow {
         this.context.confirming = param.name
 
         // Save current context to _parent.
-        const parent_context = JSON.parse(JSON.stringify(this.context))
+        const parent_context = clone(this.context)
         delete parent_context.skill
         parent_context._message_queue = []
         parent_context.reason = "sub_parameter"
@@ -1063,7 +1064,7 @@ module.exports = class Flow {
                 // We got all the required sub parameters. Set them to parent parameter.
                 await this.apply_sub_parameters();
 
-                return await this.respond();
+                return this.respond();
             }
         }
 
@@ -1091,7 +1092,7 @@ module.exports = class Flow {
             debug("Found parameters to confirm. Going run respond() recursively.");
 
             // Re-run respond().
-            return await this.respond();
+            return this.respond();
         }
 
         // Log skill status.

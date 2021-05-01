@@ -217,6 +217,7 @@ module.exports = (options) => {
         let context;
         try {
             context = await webhook.run(req.body)
+            debug("Successful End of Webhook.");
         } catch(e){
             debug("Abnormal End of Webhook. Error follows.");
             debug(e);
@@ -231,8 +232,6 @@ module.exports = (options) => {
                 }
             }
         }
-
-        debug("Successful End of Webhook.");
 
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
             return res.json(context);

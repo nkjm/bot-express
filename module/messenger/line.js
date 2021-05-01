@@ -428,14 +428,17 @@ module.exports = class MessengerLine {
         }
         
         debug(`Running reply..`)
+        let res
         try {
-            return this.request({
+            res = await this.request({
                 method: "post",
                 url: url,
                 headers: headers,
                 data: body
             })
         } catch(e) {
+            debug(e)
+
             if (
                 MessengerLine.is_reply_token_timeout(e) &&
                 event &&
@@ -449,6 +452,8 @@ module.exports = class MessengerLine {
 
             throw e
         }
+
+        return res
     }
 
     static extract_events(body){

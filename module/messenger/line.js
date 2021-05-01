@@ -5,7 +5,8 @@ const crypto = require("crypto")
 const debug = require("debug")("bot-express:messenger")
 const bot_sdk = require("@line/bot-sdk")
 const cache = require("memory-cache")
-const secure_compare = require('secure-compare')
+const secure_compare = require('secure-compare');
+const Bot = require("../bot");
 const DEFAULT_ENDPOINT = "api.line.me"
 const DEFAULT_API_VERSION = "v2"
 const DEFAULT_TOKEN_STORE = "memory-cache"
@@ -399,13 +400,14 @@ module.exports = class MessengerLine {
         debug(e.status)
         debug(e.data)
 
-        if (
-            e.status === 400 &&
-            e.data &&
-            Array.isArray(e.data.details) &&
-            e.data.details.find(d => d.message === `Invalid reply token`)
-        ){
-            return true
+        if (e.status === 400 && e.data){
+            if (Array.isArray(e.data.details)){
+                if (e.data.details.find(d => d.message === `Invalid reply token`)){
+                    return true
+                }
+            } else if (e.data.message === `Invalid reply token`){
+                return true
+            }
         }
 
         return false
@@ -1054,14 +1056,18 @@ module.exports = class MessengerLine {
                         let error_message = `Callout timeout in messenger/line.js. We give up retrying.`
                         if (options.url) error_message += ` url: ${options.url}`
                         if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
-                        throw Error(error_message)
+                        throw new BotExpressMessengerLineError({
+                            message: error_message
+                        })
                     }
                 }
 
                 let error_message = `Callout failed in messenger/line.js. Request was made but no response recieved.`
                 if (options.url) error_message += ` url: ${options.url}`
                 if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
-                throw Error(error_message)
+                throw new BotExpressMessengerLineError({
+                    message: error_message
+                })
             } else {
                 let error_message = `Callout failed in messenger/line.js.`
                 if (e && e.message){
@@ -1069,7 +1075,9 @@ module.exports = class MessengerLine {
                 }
                 if (options.url) error_message += ` url: ${options.url}`
                 if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
-                throw Error(error_message)
+                throw new BotExpressMessengerLineError({
+                    message: error_message
+                })
             }
         })
 

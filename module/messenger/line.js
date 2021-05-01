@@ -998,6 +998,8 @@ module.exports = class MessengerLine {
     }
 
     async request(options, retry = true){
+        options.timeout = 7000
+
         let response = await axios.request(options).catch(async (e) => {
             if (e.response){
                 // If this is an error due to expiration of channel access token, we refresh and retry.
@@ -1043,11 +1045,6 @@ module.exports = class MessengerLine {
             } else if (e.request){
                 if (retry){
                     debug(`Retry requesting LINE Messaging API..`)
-                    
-                    // Wait for 1000 ms by default.
-                    const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 1000
-                    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-                    await sleep(retry_delay)
 
                     // Retry.
                     return this.request(options, false)

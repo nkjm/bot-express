@@ -1018,7 +1018,9 @@ module.exports = class MessengerLine {
                     return this.request(options, false)
                 }
 
-                throw Error(e)
+                debug(e)
+
+                return e
             } else if (e.request){
                 if (e.code === `ECONNABORTED`){
                     if (retry){

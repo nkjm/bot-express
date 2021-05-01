@@ -1041,33 +1041,24 @@ module.exports = class MessengerLine {
                     data: e.response.data
                 })                
             } else if (e.request){
-                if (e.code === `ECONNABORTED`){
-                    if (retry){
-                        debug(`Request timeout and going to retry..`)
+                if (retry){
+                    debug(`Retry requesting LINE Messaging API..`)
+                    
+                    // Wait for 1000 ms by default.
+                    const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 1000
+                    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+                    await sleep(retry_delay)
 
-                        // Wait for 1000 ms by default.
-                        const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 1000
-                        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-                        await sleep(retry_delay)
-
-                        // Retry.
-                        return this.request(options, false)
-                    } else {
-                        let error_message = `Callout timeout in messenger/line.js. We give up retrying.`
-                        if (options.url) error_message += ` url: ${options.url}`
-                        if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
-                        throw new BotExpressMessengerLineError({
-                            message: error_message
-                        })
-                    }
+                    // Retry.
+                    return this.request(options, false)
+                } else {
+                    let error_message = `Callout failed in messenger/line.js. No response received.`
+                    if (options.url) error_message += ` url: ${options.url}`
+                    if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
+                    throw new BotExpressMessengerLineError({
+                        message: error_message
+                    })
                 }
-
-                let error_message = `Callout failed in messenger/line.js. Request was made but no response recieved.`
-                if (options.url) error_message += ` url: ${options.url}`
-                if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
-                throw new BotExpressMessengerLineError({
-                    message: error_message
-                })
             } else {
                 let error_message = `Callout failed in messenger/line.js.`
                 if (e && e.message){

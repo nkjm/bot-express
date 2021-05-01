@@ -385,6 +385,9 @@ module.exports = class MessengerLine {
     }
 
     static is_reply_token_timeout(e){
+        debug(`Check if following error is due to reply token timeout.`)
+        debug(e)
+
         if (
             e.response && 
             e.response.status === 400 &&

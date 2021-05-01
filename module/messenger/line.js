@@ -395,7 +395,9 @@ module.exports = class MessengerLine {
 
     static is_reply_token_timeout(e){
         debug(`Check if following error is due to reply token timeout.`)
-        debug(e)
+        debug(e.message)
+        debug(e.status)
+        debug(e.data)
 
         if (
             e.status === 400 &&
@@ -437,8 +439,6 @@ module.exports = class MessengerLine {
                 data: body
             })
         } catch(e) {
-            debug(e)
-
             if (
                 MessengerLine.is_reply_token_timeout(e) &&
                 event &&

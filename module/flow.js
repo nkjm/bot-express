@@ -699,7 +699,9 @@ module.exports = class Flow {
         }
 
         // If we find some parameters from initial message, add them to the conversation.
-        await this.process_parameters(this.context.intent.parameters);
+        if (this.context.intent && this.context.intent.parameters){
+            await this.process_parameters(this.context.intent.parameters)
+        }
     }
 
     /**

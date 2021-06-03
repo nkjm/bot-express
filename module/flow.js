@@ -1029,9 +1029,11 @@ module.exports = class Flow {
     /**
      * @method
      * @async
+     * @param {Object} [options]
+     * @param {Boolean} [options.skip_process_parameters=false]
      * @return {context}
      */
-    async respond(){
+    async respond(o = {}){
         debug("Running respond()..");
 
         // If pause flag has been set, we stop processing remaining actions while keeping context.
@@ -1069,8 +1071,9 @@ module.exports = class Flow {
             }
         }
 
-        if (this.context.heard && Object.keys(this.context.heard).length > 0){
+        if (!o.skip_process_parameters && this.context.heard && Object.keys(this.context.heard).length > 0){
             await this.process_parameters(this.context.heard);
+            return this.respond({ skip_process_parameters: true })
         }
 
         if (this.context.to_confirm.length){
@@ -1093,7 +1096,7 @@ module.exports = class Flow {
             debug("Found parameters to confirm. Going run respond() recursively.");
 
             // Re-run respond().
-            return this.respond();
+            return this.respond()
         }
 
         // Log skill status.

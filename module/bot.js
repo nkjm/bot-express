@@ -2,7 +2,6 @@
 
 const debug = require("debug")("bot-express:bot");
 const Translator = require("./translator");
-const clone = require("rfdc/default")
 
 /**
  * Toolkit to be used by skill.
@@ -418,7 +417,7 @@ class Bot {
                 throw Error(`_parent or _parent_parameter not properly set while this is the context of sub_parameter.`)
             }
             // Set parent context to get parameter recursively. Since parent context does not have skill, we copy from current context.
-            const parent_context = clone(context._parent[0])
+            const parent_context = JSON.parse(JSON.stringify(context._parent[0]))
             parent_context.skill = context.skill
             parameter_path = this.get_parameter_path(context._parent_parameter.name, parent_context) + ".sub_parameter." + param_name
         } else {

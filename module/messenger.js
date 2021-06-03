@@ -2,7 +2,6 @@
 
 const debug = require("debug")("bot-express:messenger");
 const fs = require("fs");
-const clone = require("rfdc/default")
 
 /**
  * Messenger abstraction. *Context free
@@ -236,7 +235,7 @@ class Messenger {
             debug(`Compiled message is following.`);
             debug(compiled_message);
         } else {
-            compiled_message = clone(message)
+            compiled_message = JSON.parse(JSON.stringify(message))
             debug(`Compiled message is following.`);
             debug(compiled_message);
         }

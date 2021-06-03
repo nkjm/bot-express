@@ -1,7 +1,6 @@
 "use strict";
 
 const crypto = require("crypto");
-const clone = require("rfdc/default")
 
 module.exports = class Context {
     /**
@@ -59,7 +58,7 @@ module.exports = class Context {
             sender_language: context.sender_language,
             translation: context.transation
         })
-        return clone(context.archive)
+        return JSON.parse(JSON.stringify(context.archive))
     }
 
     static remove_buffer(obj){

@@ -2,7 +2,6 @@
 
 const memory_cache = require("memory-cache");
 const debug = require("debug")("bot-express:memory");
-const clone = require("rfdc/default")
 
 class MemoryMemoryCache {
     /**
@@ -15,12 +14,12 @@ class MemoryMemoryCache {
 
     async get(key){
         const context = this.client.get(key);
-        const copy = clone(context)
+        const copy = JSON.parse(JSON.stringify(context))
         return copy;
     }
 
     async put(key, context){
-        const copy = clone(context)
+        const copy = JSON.parse(JSON.stringify(context))
         return this.client.put(key, copy);
     }
 

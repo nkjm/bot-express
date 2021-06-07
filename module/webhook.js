@@ -51,14 +51,17 @@ class Webhook {
         const context_list = await Promise.all(done_process_events);
 
         // Log context.
+        /*
         for (let context of context_list){
             if (typeof context === "object"){
                 const context_for_log = Context.remove_buffer(context)
                 if (!this.options.log_global){
                     delete context_for_log.global
                 }
+                debug(context_for_log)
             }
         }
+        */
 
         if (context_list && context_list.length === 1){
             return context_list[0];

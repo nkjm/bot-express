@@ -3,6 +3,7 @@
 const prefix = `be`
 const memory_cache = require("memory-cache")
 const Context = require("../context")
+const clone = require("rfdc/default")
 
 module.exports = class LoggerFirestore {
     /**
@@ -83,7 +84,7 @@ module.exports = class LoggerFirestore {
             // No additional information.
         } else if (status === "aborted"){
             // Add error and context.
-            if (payload.context) skill_status.context = JSON.parse(JSON.stringify(payload.context))
+            if (payload.context) skill_status.context = clone(payload.context)
         } else if (status === "abended"){
             // Add error and context.
             if (payload.error) skill_status.error = {

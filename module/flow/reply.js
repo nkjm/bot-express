@@ -2,6 +2,7 @@
 
 const debug = require("debug")("bot-express:flow");
 const Flow = require("../flow");
+const clone = require("rfdc/default")
 
 module.exports = class ReplyFlow extends Flow {
 
@@ -60,7 +61,7 @@ module.exports = class ReplyFlow extends Flow {
                 // Parameter rejected.
                 
                 // Translate value if it's string and translator is available.
-                let translated_param_value = JSON.parse(JSON.stringify(param_value))
+                let translated_param_value = clone(param_value)
                 if (typeof param_value == "string"){
                     if (this.bot.translator && this.bot.translator.enable_translation && this.context.sender_language && this.options.language !== this.context.sender_language){
                         translated_param_value = await this.bot.translator.translate(param_value, this.options.language);

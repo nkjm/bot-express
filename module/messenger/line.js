@@ -423,7 +423,7 @@ module.exports = class MessengerLine {
         // If event is generated as bot-express:receive, we use send() instead.
         if (event.replyToken === `bot-express:receive`){
             debug(`This event is generated as bot-express:receive so we use send() method.`)
-            if (event && event.source && event.source.userId){
+            if (!(event && event.source && event.source.userId)){
                 throw Error(`event.source.userId not found.`)
             }
             return this.send(event, event.source.userId, messages)
@@ -432,7 +432,7 @@ module.exports = class MessengerLine {
         // If event type is bot-express:push, we use send() instead.
         if (MessengerLine.identify_event_type(event) === `bot-express:push`){
             debug(`This is bot-express:push event so we use send() method.`)
-            if (event && event.source && event.source.userId){
+            if (!(event && event.source && event.source.userId)){
                 throw Error(`event.source.userId not found.`)
             }
             return this.send(event, event.source.userId, messages)

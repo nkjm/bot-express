@@ -32,12 +32,20 @@ module.exports = class ParserString {
      * @param {Array.<String>} [policy.exclude] - List of values to be rejected.
      * @param {String} [policy.regex] - Regex expression to match value.
      * @param {Boolean} [policy.sanitize] - Sanitize string if true.
+     * @param {Boolean} [policy.required=true] - Set false to accept empty value.
      * @return {String} - Parsed value.
      */
     async parse(value, policy = {}){
+        policy.required = (policy.required === undefined) ? true : policy.required
+
         if (!value){
-            throw new Error("be_parser__should_be_set")
+            if (policy.required){
+                throw new Error("be_parser__should_be_set")
+            } else {
+                return value
+            }
         }
+
         if (typeof value !== "string"){
             throw new Error("be_parser__should_be_string")
         }

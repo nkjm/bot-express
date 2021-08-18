@@ -26,9 +26,20 @@ module.exports = class ParserPhone {
      * @param {Number} [policy.min]
      * @param {Number} [policy.max]
      * @param {Number} [policy.length] - Deprecated. Just for backward compatibility. Should use max instead.
+     * @param {Boolean} [policy.required=true] - Set false to accept empty value.
      * @return {String}
      */
     async parse(value, policy = {}){
+        policy.required = (policy.required === undefined) ? true : policy.required
+
+        if (!value){
+            if (policy.required){
+                throw new Error("be_parser__should_be_set")
+            } else {
+                return value
+            }
+        }
+
         policy.length = (policy.length === undefined) ? 40 : policy.length
 
         if (typeof policy.length !== "number"){

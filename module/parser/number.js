@@ -25,9 +25,20 @@ module.exports = class ParserNumber {
      * @param {Number} [policy.min]
      * @param {Number} [policy.max]
      * @param {String} [policy.type="float"] - Supported values are "float" and "integer".
+     * @param {Boolean} [policy.required=true] - Set false to accept empty value.
      * @return {String} - Parsed value.
      */
     async parse(value, policy = {}){
+        policy.required = (policy.required === undefined) ? true : policy.required
+
+        if (value === undefined || value === null){
+            if (policy.required){
+                throw new Error("be_parser__should_be_set")
+            } else {
+                return value
+            }
+        }
+
         policy.type = policy.type || "float"
 
         let parsed_value

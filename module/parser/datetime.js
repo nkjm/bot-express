@@ -25,11 +25,18 @@ module.exports = class ParserDatetime {
      * @param {Object} [policy]
      * @param {String} [policy.min] - Minimum date in format of YYYY-MM-DD HH:mm:ss or other format which can be parsed by moment.
      * @param {String} [policy.max] - Minimum date in format of YYYY-MM-DD HH:mm:ss or other format which can be parsed by moment.
+     * @param {Boolean} [policy.required=true] - Set false to accept empty value.
      * @return {String} - Parsed value in format of YYYY-MM-DDTHH:mm
      */
     async parse(value, policy = {}){
+        policy.required = (policy.required === undefined) ? true : policy.required
+
         if (!value){
-            throw new Error("be_parser__should_be_set")
+            if (policy.required){
+                throw new Error("be_parser__should_be_set")
+            } else {
+                return value
+            }
         }
 
         let datetime

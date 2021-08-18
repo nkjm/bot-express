@@ -22,11 +22,19 @@ module.exports = class ParserEmail {
      * @method
      * @param {String} value
      * @param {Object} [policy]
+     * @param {Boolean} [policy.required=true] - Set false to accept empty value.
      */
     async parse(value, policy = {}){
+        policy.required = (policy.required === undefined) ? true : policy.required
+
         if (!value){
-            throw new Error(`be_parser__should_be_set`)
+            if (policy.required){
+                throw new Error("be_parser__should_be_set")
+            } else {
+                return value
+            }
         }
+        
         if (typeof value !== "string"){
             throw new Error(`be_parser__should_be_string`)
         }

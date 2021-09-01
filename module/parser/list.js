@@ -34,7 +34,7 @@ module.exports = class ParserList {
             throw new Error()
         }
 
-        if (!value && !policy.required){
+        if (!policy.required && (!value || (Array.isArray(value) && value.length == 0))){
             return value
         }
     

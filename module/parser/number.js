@@ -31,7 +31,7 @@ module.exports = class ParserNumber {
     async parse(value, policy = {}){
         policy.required = (policy.required === undefined) ? true : policy.required
 
-        if (value === undefined || value === null){
+        if (value === undefined || value === null || value === ""){
             if (policy.required){
                 throw new Error("be_parser__should_be_set")
             } else {

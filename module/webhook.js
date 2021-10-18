@@ -176,6 +176,11 @@ class Webhook {
                 context = new Context({ flow: "push", event: event });
             }
             flow = new flows["push"](this.options, this.slib, event, context);
+        } else if (event_type == "postback" && event.postback && event.postback.params && event.postback.params.newRichMenuAliasId){
+            // Richmenu Switch Event. 
+            debug("This is richmenu switch event. We skip processing.")
+            context._in_progress = false
+            return
         } else if (!context || !context.intent){
             // Start Conversation Flow
             context = new Context({ flow: "start_conversation", event: event });

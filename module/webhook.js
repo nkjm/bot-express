@@ -179,9 +179,11 @@ class Webhook {
         } else if (event_type == "postback" && event.postback && event.postback.params && event.postback.params.newRichMenuAliasId){
             // Richmenu Switch Event. 
             debug("This is richmenu switch event. We skip processing.")
-            if (context && context._in_progress){
+            if (context){
                 context._in_progress = false
-                await this.slib.memory.put(memory_id, context);
+                await this.slib.memory.put(memory_id, context)
+            } else {
+                await this.slib.memory.put(memory_id, { _in_progress: false })
             }
             return
         } else if (!context || !context.intent){

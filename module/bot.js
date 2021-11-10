@@ -782,8 +782,15 @@ class Bot {
         this._context.previous.processed.shift();
 
         // Clear confirmed value if clear_confimred is true.
-        if (options.clear_confirmed && this._context.confirmed && this._context.confirmed[param_name] !== undefined){
-            delete this._context.confirmed[param_name]
+        if (options.clear_confirmed && this._context.confirmed){
+            // Clear value of current parameter.
+            if (this._context.confirming && this._context.confirmed[this._context.confirming] !== undefined){
+                delete this._context.confirmed[this._context.confirming]
+            }
+            // Clear value of parameter we're going back to.
+            if (this._context.confirmed[param_name] !== undefined){
+                delete this._context.confirmed[param_name]
+            }
         }
 
         // We remove this parameter from confirmed history.

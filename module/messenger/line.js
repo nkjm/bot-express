@@ -15,7 +15,15 @@ const CACHE_PREFIX = "be_messenger_line_"
 
 class BotExpressMessengerLineError extends Error {
     constructor(o){
-        super(o.message)
+        let message = o.message
+        if (o.data){
+            if (typeof o.data === `string`){
+                message += ` Response: ${o.data}`
+            } else if (typeof o.data === `object`){
+                message += ` Response: ${JSON.stringify(o.data)}`
+            }
+        }
+        super(message)
         this.name = "BotExpressMessengerLineError";
         this.status = o.status
         this.data = o.data

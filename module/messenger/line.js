@@ -1055,6 +1055,9 @@ module.exports = class MessengerLine {
                     return this.request(options, false)
                 }
 
+                debug(`Error response follows.`)
+                debug(e.response)
+
                 throw new BotExpressMessengerLineError({
                     message: `Callout failed in messenger/line.js`,
                     status: e.response.status,

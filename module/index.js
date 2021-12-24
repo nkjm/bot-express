@@ -15,7 +15,6 @@ const DEFAULT_LANGUAGE = "ja";
 const DEFAULT_PARALLEL_EVENT = "ignore";
 
 const express = require("express");
-// const body_parser = require("body-parser");
 const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
 
@@ -159,11 +158,15 @@ module.exports = (options) => {
     // Create router.
     const router = express.Router()
     router.use(express.json({
+        limit: "5mb",
         verify: (req, res, buf, encoding) => {
             req.raw_body = buf
-        }
+        },
     }))
-    router.use(express.urlencoded({ extended: true }))
+    router.use(express.urlencoded({ 
+        limit: "5mb",
+        extended: true 
+    }))
 
     // Webhook Process
     router.post('/', async (req, res, next) => {

@@ -57,7 +57,7 @@ module.exports = class ReplyFlow extends Flow {
                     // In case user run bot.checkout_parent_parameter in reaction, we cannot find parameter here.
                     debug(`Parameter ${applied_parameter.param_name} not found so we do not check "while" condition.`)
                 }
-                if (param.list && param.while && typeof param.while === "function"){
+                if (param && param.list && param.while && typeof param.while === "function"){
                     if (await param.while(this.bot, this.event, this.context)){
                         // Collect this parameter again.
                         this.bot.collect(applied_parameter.param_name)

@@ -385,7 +385,7 @@ module.exports = class Flow {
         const collected_sub_parameters = clone(this.context.confirmed)
 
         // Get back to parent context.
-        bot.checkout_parent_parameter()
+        this.bot.checkout_parent_parameter()
 
         debug(`Applying sub parameters to parent parameter: "${this.context.confirming}".`)
 

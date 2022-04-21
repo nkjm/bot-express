@@ -375,28 +375,19 @@ module.exports = class Flow {
         }
     }
 
+    /**
+     * Get parent parameter back to context and apply collected sub parameters as 1 object.
+     * @async
+     * @method
+     */
     async apply_sub_parameters(){
-        if (!(Array.isArray(this.context._parent) && this.context._parent.length > 0)){
-            throw new Error(`There is no parent context.`)
-        }
-
-        const parent_context = this.context._parent.shift()
-        if (this.context._parent_parameter.name !== parent_context.confirming){
-            throw new Error(`Parent parameter name defined in sub context differs from confirming of parent context.`)
-        }
-
-        debug(`Saving sub parameters to parent parameter: "${this.context._parent_parameter.name}".`)
-
+        // Keep confirmed sub parameters.
         const collected_sub_parameters = clone(this.context.confirmed)
-        const collected_heard = clone(this.context.heard)
-        const message_queue = clone(this.context._message_queue)
-        delete parent_context.reason
-        parent_context.previous.message = this.context.previous.message.concat(parent_context.previous.message)
-        
-        // Get parent context back while keeping object pointer by Object.assgin().
-        Object.assign(this.context, parent_context)
-        Object.assign(this.context.heard, collected_heard)
-        Object.assign(this.context._message_queue, message_queue)
+
+        // Get back to parent context.
+        bot.checkout_parent_parameter()
+
+        debug(`Applying sub parameters to parent parameter: "${this.context.confirming}".`)
 
         // Apply collected sub parameters to parent parameter.
         await this.bot.apply_parameter({

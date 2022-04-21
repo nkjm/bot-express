@@ -954,6 +954,34 @@ class Bot {
     }
 
     /**
+     * Exit sub parameter context and get back to parent.
+     * @method
+     * @returns 
+     */
+    checkout_parent_parameter(){
+        if (!(Array.isArray(this._context._parent) && this._context._parent.length > 0)){
+            throw new Error(`There is no parent context.`)
+        }
+
+        const parent_context = this._context._parent.shift()
+        if (this._context._parent_parameter.name !== parent_context.confirming){
+            throw new Error(`Parent parameter name defined in sub context differs from confirming of parent context.`)
+        }
+
+        debug(`Getting parent parameter back to context..`)
+
+        const collected_heard = clone(this._context.heard)
+        const message_queue = clone(this._context._message_queue)
+        delete parent_context.reason
+        parent_context.previous.message = this._context.previous.message.concat(parent_context.previous.message)
+        
+        // Get parent context back while keeping object pointer by Object.assgin().
+        Object.assign(this._context, parent_context)
+        Object.assign(this._context.heard, collected_heard)
+        Object.assign(this._context._message_queue, message_queue)
+    }
+
+    /**
      * Extract message of the event.
      * @method
      * @param {EventObject} event - Event to extract message.

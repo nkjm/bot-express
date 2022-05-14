@@ -96,7 +96,7 @@ module.exports = class StartConversationFlow extends Flow {
         if (!skip_identify_intent){
             const intent = await super.identify_intent_by_reaction(translated_message_text)
             if (intent && intent.name){
-                debug(`Identified intent by reaction corresponding to message: "${translated_message_text}.`)
+                debug(`Identified intent by reaction corresponding to message: "${translated_message_text}".`)
                 skip_identify_intent = true
                 this.context.intent = intent
             }

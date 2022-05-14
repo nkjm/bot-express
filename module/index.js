@@ -100,6 +100,13 @@ module.exports = (options) => {
     options.skill.default = options.skill.default || DEFAULT_SKILL;
     options.parallel_event = options.parallel_event || DEFAULT_PARALLEL_EVENT;
 
+    // Reaction is run in flow. So path should be relative path from flow.
+    if (options.reaction && options.reaction.path){
+        if (process.env.BOT_EXPRESS_ENV != "development"){
+            options.reaction.path = "../../../" + options.reaction.path
+        }
+    }
+
     // Skill will be required in flow. So path should be relative path from flow.
     if (options.skill_path){
         options.skill_path = "../../../" + options.skill_path;

@@ -84,6 +84,30 @@ module.exports = class Flow {
     }
 
     /**
+     * Identify intent by reaction.
+     * @async 
+     * @param {String} message_text 
+     * @returns {Object} Intent object.
+     */
+    async identify_intent_by_reaction(message_text){
+        if (!(this.options.reaction && this.options.reaction.path)){
+            return 
+        }
+
+        try {
+            require.resolve(this.options.reaction.path)
+            debug(`Found reaction: "${this.options.reaction.path}".`)
+        } catch (e){
+            debug(`Reaction: "${this.options.reaction.path}" not found.`)
+            return
+        }
+
+        const reaction = require(this.options.reaction.path)
+        const intent = await reaction(this.bot, this.event, this.context, message_text)
+        return intent
+    }
+
+    /**
      * Instantiate skill.
      * @param {intent} intent - Intent object.
      * @return {Object} Skill instance.

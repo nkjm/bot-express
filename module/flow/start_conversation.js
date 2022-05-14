@@ -91,14 +91,25 @@ module.exports = class StartConversationFlow extends Flow {
             translated_message_text = this.bot.extract_message_text();
         }
 
-        // Identify intent.
+        // Identify intent by reaction.
+        // If we find correspoding reaction, we skip identifying intent since it should contain intent.
+        if (!skip_identify_intent){
+            const intent = await super.identify_intent_by_reaction(translated_message_text)
+            if (intent && intent.name){
+                debug(`Identified intent by reaction corresponding to message: "${translated_message_text}.`)
+                skip_identify_intent = true
+                this.context.intent = intent
+            }
+        }
+
+        // Identify intent by NLU.
         if (!skip_identify_intent){
             debug(`Going to identify intent of ${translated_message_text}...`);
             this.context.intent = await this.slib.nlu.identify_intent(translated_message_text, {
                 session_id: this.bot.extract_session_id(),
                 channel_id: this.bot.extract_channel_id(),
                 language: this.context.sender_language
-            });
+            })
         }
 
         // If this is modify_previous_parameter, we make intent default_intent.

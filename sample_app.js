@@ -56,6 +56,9 @@ server.use('/bot/webhook', bot_express({
             project_id: process.env.GOOGLE_PROJECT_ID
         }
     },
+    reaction: {
+        path: "./sample_reaction.js"
+    },
     nlu: {
         type: "dialogflow",
         options: {

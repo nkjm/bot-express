@@ -73,6 +73,9 @@ module.exports = class MessengerLine {
             this._option_list = [options];
         }
 
+        this._access_token = null; // Will be set when this.refresh_token is called.
+        this.sdk = null; // Will be set when this.refresh_token is called.
+
         // Since we now support multi-channel, these should be set in validate_signature() but in case there is just 1 option, we set it now.
         // This is required when this class is instantiated in other than webhook.
         if (this._option_list.length === 1){
@@ -80,6 +83,7 @@ module.exports = class MessengerLine {
             this._channel_id = o.channel_id
             this._channel_secret = o.channel_secret
             this._channel_access_token = o.channel_access_token
+            this._access_token = this._channel_access_token || null
             this._switcher_secret = o.switcher_secret
             this._token_retention = o.token_retention
             this._endpoint = o.endpoint || DEFAULT_ENDPOINT
@@ -98,9 +102,6 @@ module.exports = class MessengerLine {
                 }
             }
         }
-
-        this._access_token = null; // Will be set when this.refresh_token is called.
-        this.sdk = null; // Will be set when this.refresh_token is called.
     }
 
     /**

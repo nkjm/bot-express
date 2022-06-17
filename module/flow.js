@@ -91,7 +91,13 @@ module.exports = class Flow {
      */
     async identify_intent_by_reaction(message_text){
         if (!(this.options.reaction && this.options.reaction.path)){
+            debug("Skip identifying intent by reactino since reaction is not set.")
             return 
+        }
+
+        if (!(message_text && typeof message_text == "string")){
+            debug("Skip identifying intent by reactino since messsage_text is not string.")
+            return
         }
 
         try {
@@ -489,12 +495,19 @@ module.exports = class Flow {
             }
         }
 
-        debug("Going to check if we can identify the intent.");
-        intent = await this.slib.nlu.identify_intent(payload, {
-            session_id: this.bot.extract_session_id(),
-            channel_id: this.bot.extract_channel_id(),
-            language: this.context.sender_language
-        });
+        // Try to identify intent by reaction.
+        debug("Going to check if we can identify the intent by reaction.")
+        intent = await this.identify_intent_by_reaction(payload)
+
+        // Try to identify intent by NLU.
+        if (!(intent && intent.name)){
+            debug("Going to check if we can identify the intent by NLU.");
+            intent = await this.slib.nlu.identify_intent(payload, {
+                session_id: this.bot.extract_session_id(),
+                channel_id: this.bot.extract_channel_id(),
+                language: this.context.sender_language
+            })
+        }
 
         if (this.options.modify_previous_parameter_intent && intent.name === this.options.modify_previous_parameter_intent){
             // This is modify previous parameter.

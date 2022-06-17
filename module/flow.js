@@ -87,9 +87,11 @@ module.exports = class Flow {
      * Identify intent by reaction.
      * @async 
      * @param {String} message_text 
+     * @param {Object} o
+     * @param {Boolean} [o.exclude_default] - If true, reaction should not return default fallback intent.
      * @returns {Object} Intent object.
      */
-    async identify_intent_by_reaction(message_text){
+    async identify_intent_by_reaction(message_text, o = {}){
         if (!(this.options.reaction && this.options.reaction.path)){
             debug("Skip identifying intent by reactino since reaction is not set.")
             return 
@@ -109,7 +111,7 @@ module.exports = class Flow {
         }
 
         const reaction = require(this.options.reaction.path)
-        const intent = await reaction(this.bot, this.event, this.context, message_text)
+        const intent = await reaction(this.bot, this.event, this.context, message_text, o)
         return intent
     }
 
@@ -497,7 +499,7 @@ module.exports = class Flow {
 
         // Try to identify intent by reaction.
         debug("Going to check if we can identify the intent by reaction.")
-        intent = await this.identify_intent_by_reaction(payload)
+        intent = await this.identify_intent_by_reaction(payload, { exclude_default: true })
 
         // Try to identify intent by NLU.
         if (!(intent && intent.name)){
@@ -508,11 +510,13 @@ module.exports = class Flow {
                     channel_id: this.bot.extract_channel_id(),
                     language: this.context.sender_language
                 })
-            } else {
-                // If nlu is unavailable, we set default intent.
-                intent = {
-                    name: this.options.default_intent
-                }
+            }
+        }
+
+        if (!(intent && intent.name)){
+            // If nlu is unavailable, we set default intent.
+            intent = {
+                name: this.options.default_intent
             }
         }
 

@@ -501,12 +501,19 @@ module.exports = class Flow {
 
         // Try to identify intent by NLU.
         if (!(intent && intent.name)){
-            debug("Going to check if we can identify the intent by NLU.");
-            intent = await this.slib.nlu.identify_intent(payload, {
-                session_id: this.bot.extract_session_id(),
-                channel_id: this.bot.extract_channel_id(),
-                language: this.context.sender_language
-            })
+            if (this.slib.nlu){
+                debug("Going to check if we can identify the intent by NLU.");
+                intent = await this.slib.nlu.identify_intent(payload, {
+                    session_id: this.bot.extract_session_id(),
+                    channel_id: this.bot.extract_channel_id(),
+                    language: this.context.sender_language
+                })
+            } else {
+                // If nlu is unavailable, we set default intent.
+                intent = {
+                    name: this.options.default_intent
+                }
+            }
         }
 
         if (this.options.modify_previous_parameter_intent && intent.name === this.options.modify_previous_parameter_intent){

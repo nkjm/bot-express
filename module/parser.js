@@ -36,11 +36,16 @@ class Parser {
             try {
                 this[parser] = new Parser_implementation(options.options);
             } catch(e){
-                debug(`Failed to instanticate parser implementation of "${parser}" so we skip this parser.`);
-                if (e && e.message){
-                    debug(e.message);
+                if (e.message === `required_option_not_set`){
+                    debug(`Skip instantiating parser: "${parser}" since required options not set.`)
+                    continue
+                } else {
+                    debug(`Failed to instanticate parser implementation of "${parser}" so we skip this parser.`);
+                    if (e && e.message){
+                        debug(e.message);
+                    }
+                    continue
                 }
-                continue;
             }
         }
     }

@@ -104,12 +104,20 @@ module.exports = class StartConversationFlow extends Flow {
 
         // Identify intent by NLU.
         if (!skip_identify_intent){
-            debug(`Going to identify intent of ${translated_message_text}...`);
-            this.context.intent = await this.slib.nlu.identify_intent(translated_message_text, {
-                session_id: this.bot.extract_session_id(),
-                channel_id: this.bot.extract_channel_id(),
-                language: this.context.sender_language
-            })
+            if (this.slib.nlu){
+                // If nlu is available, we identify intent by nlu.
+                debug(`Going to identify intent of ${translated_message_text}...`);
+                this.context.intent = await this.slib.nlu.identify_intent(translated_message_text, {
+                    session_id: this.bot.extract_session_id(),
+                    channel_id: this.bot.extract_channel_id(),
+                    language: this.context.sender_language
+                })
+            } else {
+                // If nlu is unavailable, we set default intent to launch defautl skill.
+                this.context.intent = {
+                    name: this.options.default_intent
+                }
+            }
         }
 
         // If this is modify_previous_parameter, we make intent default_intent.

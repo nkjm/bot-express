@@ -15,13 +15,13 @@ module.exports = class ParserDialogflow {
      * @param {String} [options.private_key] - The parameter you can find in .json key from the Google Developers Console. Either of key_filename or combination of client_email and private_key is required.
      * @param {String} [options.language] - The language to analyze.
      */
-    constructor(options){
+    constructor(options = {}){
         this.type = "dialogflow";
         this.required_options = ["project_id"];
 
         for (let required_option of this.required_options){
             if (!options[required_option]){
-                throw new Error(`Required option "${required_option}" of ParserDialogflow not set.`);
+                throw new Error(`required_option_not_set`);
             }
         }
 

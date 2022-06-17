@@ -161,8 +161,8 @@ module.exports = (options) => {
     // Instantiate request and context free classes so that we don't have to do it in every single requests.
     const logger = new Logger(options.logger || {});
     const memory = new Memory(options.memory || {}, logger);
-    const nlu = new Nlu(options.nlu || {});
-    const parser = new Parser(options.parser || {});
+    const parser = new Parser(options.parser);
+    const nlu = (options.nlu) ? new Nlu(options.nlu) : null
 
     // Create router.
     const router = express.Router()

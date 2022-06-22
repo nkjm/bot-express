@@ -16,11 +16,20 @@ const CACHE_PREFIX = "be_messenger_line_"
 class BotExpressMessengerLineError extends Error {
     constructor(o){
         let message = o.message
+        // Add response to error message.
         if (o.data){
             if (typeof o.data === `string`){
-                message += ` Response: ${o.data}`
+                message += `\nResponse: ${o.data}`
             } else if (typeof o.data === `object`){
-                message += ` Response: ${JSON.stringify(o.data)}`
+                message += `\nResponse: ${JSON.stringify(o.data)}`
+            }
+        }
+        // Add request to error message.
+        if (o.request){
+            if (typeof o.request === `string`){
+                message += `\nRequest: ${o.request}`
+            } else if (typeof o.data === `object`){
+                message += `\nRequest: ${JSON.stringify(o.request)}`
             }
         }
         super(message)
@@ -1068,8 +1077,9 @@ module.exports = class MessengerLine {
                 debug(e.response)
 
                 throw new BotExpressMessengerLineError({
-                    message: `Callout failed in messenger/line.js`,
+                    message: `Callout failed in messenger/line.js.`,
                     status: e.response.status,
+                    request: options,
                     data: e.response.data
                 })                
             } else if (e.request){

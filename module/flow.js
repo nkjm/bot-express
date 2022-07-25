@@ -383,7 +383,14 @@ module.exports = class Flow {
             if (e.name === "Error"){
                 // This should be intended exception in parser.
                 parse_error = e;
-                debug(`Parser rejected value for parameter: "${param_name}".`)
+                debug(`Parser rejected following value for parameter: "${param_name}".`)
+                if (typeof param_value === "string" || typeof param_value === "number"){
+                    debug(param_value)
+                } else if (typeof param_value === "object"){
+                    let param_value_str = JSON.stringify(param_value)
+                    if (param_value_str.length > 255) param_value_str = param_value_str.substring(0, 255)
+                    debug(param_value_str)
+                }
                 if (e.message){
                     debug(e.message);
                 }

@@ -49,7 +49,7 @@
     "chai-as-promised": "^7.1.1",
     "isemail": "^3.2.0",
     "mecabaas-client": "1.0.3",
-    "mocha": "^8.3.0",
+    "mocha": "^10.2.0",
     "moji": "*",
     "mongodb": "^3.1.8",
     "soap": "^0.36.0",

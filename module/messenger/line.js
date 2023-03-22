@@ -248,7 +248,7 @@ module.exports = class MessengerLine {
             method: "post",
             url: webhook,
             headers: {
-                "X-Line-Signature": signature
+                "x-line-signature": signature
             },
             data: data
         }

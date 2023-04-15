@@ -793,6 +793,34 @@ class Bot {
             }
         }
 
+        // Run rewind action if context.rewind has some action.
+        if (Array.isArray(this._context.rewind) && this._context.rewind.length > 0){
+            const updated_rewind = []
+            for (const action of this._context.rewind){
+                if (action.rewinding_parameter && action.rewinding_parameter == param_name){
+                    if (action.type == "apply"){
+                        if (!action.parameter_name){
+                            throw Error("parameter_name of rewind_action not set.")
+                        }
+                        if (this._context.confirmed){
+                            // Apply value to confirmed parameter.
+                            this._context.confirmed[action.parameter_name] = action.parameter_value
+
+                            // If value is undefined, delete parameter from confirmed.
+                            if (this._context.confirmed[action.parameter_name] === undefined){
+                                delete this._context.confirmed[action.parameter_name]
+                            }
+                        }
+                    }
+
+                    // Do not add this action to updated_rewinid not to run again.
+                    continue
+                }
+                updated_rewind.push(action)
+            }
+            this._context.rewind = updated_rewind
+        }
+
         // We remove this parameter from confirmed history.
         if (Array.isArray(this._context.previous.confirmed) && this._context.previous.confirmed.length > 0){
             if (this._context.previous.confirmed[0] === param_name){

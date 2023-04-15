@@ -43,7 +43,7 @@ server.use('/bot/webhook', bot_express({
             channel_id: process.env.LINE_CHANNEL_ID,
             channel_secret: process.env.LINE_CHANNEL_SECRET,
             token_retention: process.env.LINE_TOKEN_RETENTION,
-            token_store: "redis",
+            token_store: process.env.LINE_TOKEN_STORE || "redis",
             redis_client: redis_client
         }],
         facebook: {

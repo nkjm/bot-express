@@ -34,6 +34,7 @@ module.exports = class Context {
             message: []
         }
         this.archive = [] // To save history of previous context.
+        this.rewind = []
         this._flow = o.flow
         this._message_queue = []
         this._in_progress = false

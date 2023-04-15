@@ -5,8 +5,8 @@ Object which contains context information.
 @prop {Sting} confirming - Parameter name which Bot is now confirming.
 @prop {Object} confirmed - Object which contains confirmed parameters. If you want to retrieve confirmed value of "date" parameter, access confirmed.date.
 @prop {Object} heard - Object which contains heard parameters which are waiting for beging applied.
-@prop {Object} previous - Object which contains conversation history in the current context.
 @prop {Array.<Object>} archive - Array of previous context.
+@prop {Object} previous - Object which contains conversation history in the current context.
 @prop {Array.<String>} previous.confirmed - Previously confirmed parameter key. It does not include skipped parameter due to condition.
 @prop {Array.<String>} previous.processed - Previously processed parameter key. It includes skipped parameter due to condition.
 @prop {Array.<Object>} previous.message - Array of message object exchanged so far.
@@ -14,6 +14,7 @@ Object which contains context information.
 @prop {MessageObject} previous.message[].message - Message object sent or received.
 @prop {String} previous.message[].skill - Skill in which this message was sent.
 @prop {Object} previous.event - Previous event
+@prop {Array.<rewind_action>} rewind - Array of rewind_action object which defines actions on rewinding parameter.
 @prop {intent} intent - Intent object which contains various information about current intent based on response from NLP.
 @prop {Skill} skill - Skill object currelty applied.
 @prop {Array.<Object>} param_change_history - Change log to revive skill instance in the next event.
@@ -32,6 +33,15 @@ Object which contains context information.
 @prop {Boolean} _sub_skill - True if this is sub skill.
 @prop {Boolean} _sub_parameter - True if this is sub parameter.
 */
+
+/**
+Rewind action object.
+@typedef {Object} rewind_action
+@prop {String} type - Supported values are "apply".
+@prop {String} rewinding_parameter - On rewinding this parameter, we run the action.
+@prop {String} parameter_name - Parameter name to apply value.
+@prop {String} parameter_value - Value to apply.
+/*
 
 /**
 Object which contains intent and related information.

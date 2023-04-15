@@ -84,6 +84,23 @@ module.exports = class TestUtilEmulator {
     }
 
     /**
+     * @param {*} o 
+     * @param {Boolean} o.clear_confirmed
+     * @returns 
+     */
+    async modify_previous(o = {}){
+        return this.postback({
+            type: "intent",
+            intent: {
+                name: "modify-previous-parameter",
+                parameters: {
+                    clear_confirmed: o.clear_confirmed
+                }
+            }
+        })
+    }
+
+    /**
     Method to create message event.
     @method
     @param {String|Object} source - Source id or object.

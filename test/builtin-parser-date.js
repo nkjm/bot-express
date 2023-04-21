@@ -18,6 +18,21 @@ describe("Test builtin date parser", async function(){
         await emu.clear_context(process.env.TEST_USER_ID)
     })
 
+    describe("Invalid date", async function(){
+        it("will be rejected.", async function(){
+            let context
+
+            context = await emu.launch("test-builtin-parser-date", {
+                test_case: "minmax"
+            })
+            context.intent.name.should.equal("test-builtin-parser-date")
+            context.confirming.should.equal("minmax")
+
+            context = await emu.say("2019-11-32")
+            context.confirming.should.equal("minmax")
+        })
+    })
+
     describe("Before min", async function(){
         it("will be rejected.", async function(){
             let context

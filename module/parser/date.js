@@ -59,6 +59,11 @@ module.exports = class ParserDate {
             throw Error(`be_parser__should_be_yyyy_mm_dd`)
         }
 
+        // Validate by moment.
+        if (!moment(date).isValid()){
+            throw new Error(`be_parser__invalid_value`);
+        }
+
         // Check with policy.
         if (policy.min){
             if (!(policy.min.match(/^\d{4}-\d{2}-\d{2}$/))){

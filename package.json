@@ -22,7 +22,7 @@
     "postinstall": "node script/postinstall.js"
   },
   "engines": {
-    "node": "^14.x"
+    "node": "^18.x"
   },
   "author": "Kazuki Nakajima <nakajima@bot-express.com>",
   "dependencies": {

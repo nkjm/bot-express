@@ -10,3 +10,4 @@ bot-express-*.tgz
 *.key
 .DS_Store
 *.rdb
+dist/**/*

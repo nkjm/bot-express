@@ -17,7 +17,8 @@
     "facebook messenger"
   ],
   "scripts": {
-    "start": "node sample_app.js",
+    "start": "ts-node sample_app.js",
+    "dev": "ts-node-dev sample_app.js",
     "test": "mocha -t 60000 --exit",
     "postinstall": "node script/postinstall.js"
   },
@@ -44,6 +45,7 @@
     "wanakana": "^4.0.2"
   },
   "devDependencies": {
+    "@types/node": "^18.16.14",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
     "isemail": "^3.2.0",
@@ -51,6 +53,9 @@
     "mocha": "^10.2.0",
     "moji": "*",
     "mongodb": "^3.7.3",
-    "striptags": "^3.2.0"
+    "striptags": "^3.2.0",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.4"
   }
 }

@@ -62,7 +62,7 @@ module.exports = class SkillBroadcast {
         if (line_user_ids.length > 0){
             sent_messages.push(
                 bot.compile_message(orig_message, "line").then(
-                    (response) => {
+                    async (response) => {
                         debug("Going to multicast following message.");
                         debug(response);
                         await bot.line.multicast(event, line_user_ids, response);

@@ -795,34 +795,29 @@ class Bot {
 
         // Run rewind action if context.rewind has some action.
         let action_list = []
+        let updated_rewind = []
         if (Array.isArray(this._context.rewind) && this._context.rewind.length > 0){ 
             action_list = this._context.rewind.filter(action => action.rewinding_parameter && action.rewinding_parameter == param_name)
+            updated_rewind = this._context.rewind.filter(action => !(action.rewinding_parameter && action.rewinding_parameter == param_name))
         }
         if (action_list.length > 0){
-            const updated_rewind = []
             for (const action of action_list.reverse()){ // Reverse list to revert to earlier value.
-                if (action.rewinding_parameter && action.rewinding_parameter == param_name){
-                    if (action.type == "apply"){
-                        if (!action.parameter_name){
-                            throw Error("parameter_name of rewind_action not set.")
-                        }
-                        if (this._context.confirmed){
-                            // Apply value to confirmed parameter.
-                            this._context.confirmed[action.parameter_name] = action.parameter_value
-                            debug(`${action.parameter_name} is reverted to ${action.parameter_value} by rewinid.`)
+                if (action.type == "apply"){
+                    if (!action.parameter_name){
+                        throw Error("parameter_name of rewind_action not set.")
+                    }
+                    if (this._context.confirmed){
+                        // Apply value to confirmed parameter.
+                        this._context.confirmed[action.parameter_name] = action.parameter_value
+                        debug(`${action.parameter_name} is reverted to ${action.parameter_value} by rewinid.`)
 
-                            // If value is undefined, delete parameter from confirmed.
-                            if (this._context.confirmed[action.parameter_name] === undefined){
-                                delete this._context.confirmed[action.parameter_name]
-                                debug(`${action.parameter_name} is deleted by rewind.`)
-                            }
+                        // If value is undefined, delete parameter from confirmed.
+                        if (this._context.confirmed[action.parameter_name] === undefined){
+                            delete this._context.confirmed[action.parameter_name]
+                            debug(`${action.parameter_name} is deleted by rewind.`)
                         }
                     }
-
-                    // Do not add this action to updated_rewinid not to run again.
-                    continue
                 }
-                updated_rewind.push(action)
             }
             this._context.rewind = updated_rewind
         }

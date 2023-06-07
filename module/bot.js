@@ -794,9 +794,13 @@ class Bot {
         }
 
         // Run rewind action if context.rewind has some action.
-        if (Array.isArray(this._context.rewind) && this._context.rewind.length > 0){
+        let action_list = []
+        if (Array.isArray(this._context.rewind) && this._context.rewind.length > 0){ 
+            action_list = this._context.rewind.filter(action => action.rewinding_parameter && action.rewinding_parameter == param_name)
+        }
+        if (action_list.length > 0){
             const updated_rewind = []
-            for (const action of this._context.rewind){
+            for (const action of action_list.reverse()){ // Reverse list to revert to earlier value.
                 if (action.rewinding_parameter && action.rewinding_parameter == param_name){
                     if (action.type == "apply"){
                         if (!action.parameter_name){
@@ -805,10 +809,12 @@ class Bot {
                         if (this._context.confirmed){
                             // Apply value to confirmed parameter.
                             this._context.confirmed[action.parameter_name] = action.parameter_value
+                            debug(`${action.parameter_name} is reverted to ${action.parameter_value} by rewinid.`)
 
                             // If value is undefined, delete parameter from confirmed.
                             if (this._context.confirmed[action.parameter_name] === undefined){
                                 delete this._context.confirmed[action.parameter_name]
+                                debug(`${action.parameter_name} is deleted by rewind.`)
                             }
                         }
                     }

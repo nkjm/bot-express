@@ -82,7 +82,7 @@ class Bot {
     * @method
     * @async
     * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to reply.
-    * @return {Object} - Response from Messenger API.
+    * @return {Promise<Object>} - Response from Messenger API.
     */
     async reply(messages, to_collect = false){
         if (messages){

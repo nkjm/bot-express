@@ -164,6 +164,29 @@ module.exports = (options) => {
     const parser = new Parser(options.parser);
     const nlu = (options.nlu) ? new Nlu(options.nlu) : null
 
+    // Setup websocket
+    let onWebsocketMessage
+    if (options.messenger.web) {
+        onWebsocketMessage = async (message, userId) => {
+            console.log(`bot express received ${message} from ${userId}`)
+            const messenger = new Messenger(options.messenger, 'web');
+            // Validate signature. currently do nothing because it is authenticated on upgrade connection
+            if (!messenger.validate_signature(message)) {
+                return
+            }
+            const webhook = new Webhook(options, { logger, memory, nlu, parser, messenger });
+            try {
+                await webhook.run(message)
+                debug("Successful End of Webhook(Websocket).");
+            } catch (e) {
+                debug("Abnormal End of Webhook(Websocket). Error follows.");
+                debug(e);
+            }
+        }
+    } else {
+        onWebsocketMessage = null
+    }
+
     // Create router.
     const router = express.Router()
     router.use(express.json({
@@ -270,5 +293,9 @@ module.exports = (options) => {
         }
     });
 
-    return router;
+    if (onWebsocketMessage) {
+        return { router, onWebsocketMessage }
+    } else {
+        return router
+    }
 }

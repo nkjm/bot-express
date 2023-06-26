@@ -17,6 +17,7 @@ const DEFAULT_PARALLEL_EVENT = "ignore";
 const express = require("express");
 const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
+const path = require("node:path")
 
 // Context free libs
 const Logger = require("./logger");
@@ -103,13 +104,17 @@ module.exports = (options) => {
     // Reaction is run in flow. So path should be relative path from flow.
     if (options.reaction && options.reaction.path){
         if (process.env.BOT_EXPRESS_ENV != "development"){
-            options.reaction.path = "../../../" + options.reaction.path
-        }
+            if (!path.isAbsolute(options.reaction.path)) {
+                options.reaction.path = "../../../" + options.reaction.path
+            }
+        }   
     }
 
     // Skill will be required in flow. So path should be relative path from flow.
     if (options.skill_path){
-        options.skill_path = "../../../" + options.skill_path;
+        if (!path.isAbsolute(options.skill_path)) {
+            options.skill_path = "../../../" + options.skill_path;
+        }
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
         options.skill_path = "../sample_skill/";
@@ -119,7 +124,9 @@ module.exports = (options) => {
 
     // Message will be required in flow. So path should be relative path from flow.
     if (options.message_path){
-        options.message_path = "../../../" + options.message_path;
+        if (!path.isAbsolute(options.message_path)) {
+            options.message_path = "../../../" + options.message_path;
+        }
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
         options.message_path = "../sample_message/";
@@ -129,7 +136,9 @@ module.exports = (options) => {
 
     // Parameter will be required in flow. So path should be relative path from flow.
     if (options.parameter_path){
-        options.parameter_path = "../../../" + options.parameter_path;
+        if (!path.isAbsolute(options.parameter_path)) {
+            options.parameter_path = "../../../" + options.parameter_path;
+        }
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
         options.parameter_path = "../sample_parameter/";
@@ -140,7 +149,9 @@ module.exports = (options) => {
     // Translator will be required in bot. So path should be relative path from bot.
     options.translator = options.translator || {};
     if (options.translator.label_path){
-        options.translator.label_path = "../../../" + options.translator.label_path;
+        if (!path.isAbsolute(options.translator.label_path)) {
+            options.translator.label_path = "../../../" + options.translator.label_path;
+        }
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
         options.translator.label_path = "../sample_translation/label.js";

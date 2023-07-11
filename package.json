@@ -1,6 +1,7 @@
 {
   "description": "A development framework to develop tailor-made chatbot lightning fast.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": ["dist"],
   "name": "bot-express",
   "version": "0.8.32",
   "private": false,
@@ -20,7 +21,9 @@
     "start": "ts-node sample_app.js",
     "dev": "ts-node-dev sample_app.js",
     "test": "mocha -t 60000 --exit",
-    "postinstall": "node script/postinstall.js"
+    "build": "tsc",
+    "postinstall": "node script/postinstall.js",
+    "prepublishOnly": "npm run build"
   },
   "engines": {
     "node": "14.x"

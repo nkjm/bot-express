@@ -11,7 +11,7 @@ module.exports = class SkillTestRewindAction {
                 parser: {
                     type: "list",
                     policy: {
-                        list: ["revert", "delete", "no"]
+                        list: ["revert", "revert2", "delete", "no"]
                     }
                 }
             }, 
@@ -35,15 +35,25 @@ module.exports = class SkillTestRewindAction {
                 reaction: async (error, value, bot, event, context) => {
                     if (error) return
 
-                    if (["revert", "delete"].includes(context.confirmed.revert)){
+                    if (["revert", "revert2", "delete"].includes(context.confirmed.revert)){
                         context.rewind.push({
                             type: "apply",
                             rewinding_parameter: "num_of_seat",
                             parameter_name: "payment_amount",
-                            parameter_value: (context.confirmed.revert == "revert") ? context.confirmed.payment_amount : undefined
+                            parameter_value: (["revert", "revert2"].includes(context.confirmed.revert)) ? context.confirmed.payment_amount : undefined
                         })
                     }
                     context.confirmed.payment_amount = context.confirmed.payment_amount + (200 * value)
+
+                    if (["revert2"].includes(context.confirmed.revert)){
+                        context.rewind.push({
+                            type: "apply",
+                            rewinding_parameter: "num_of_seat",
+                            parameter_name: "payment_amount",
+                            parameter_value: context.confirmed.payment_amount
+                        })
+                        context.confirmed.payment_amount = context.confirmed.payment_amount + (200 * value)
+                    }
                 }
             },
             review: {

@@ -116,5 +116,40 @@ for (let messenger_option of messenger_options){
                 context.confirmed.payment_amount.should.equal(800)
             })
         })
+
+        describe("If there are multiple actions,", async function(){
+            it("revert to first value.", async function(){
+
+                let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
+                    _type: "intent",
+                    intent: {
+                        name: "test-rewind-action"
+                    },
+                    language: "ja"
+                })}))
+
+                context.confirming.should.equal("revert")
+                context = await emu.say("revert2")
+
+                context.confirming.should.equal("num_of_seat")
+                context.confirmed.payment_amount.should.equal(0)
+                context.rewind.should.have.lengthOf(0)
+                context = await emu.say("2")
+
+                context.confirming.should.equal("review")
+                context.confirmed.payment_amount.should.equal(800)
+                context.rewind.should.have.lengthOf(2)
+                context = await emu.modify_previous()
+
+                context.confirming.should.equal("num_of_seat")
+                context.confirmed.payment_amount.should.equal(0)
+                context.rewind.should.have.lengthOf(0)
+                context = await emu.say("2")
+
+                context.confirming.should.equal("review")
+                context.confirmed.payment_amount.should.equal(800)
+                context.rewind.should.have.lengthOf(2)
+            })
+        })
     })
 }

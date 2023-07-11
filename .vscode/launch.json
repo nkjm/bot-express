@@ -10,6 +10,21 @@
             "name": "bot-express",
             "program": "${workspaceFolder}/sample_app.js",
             "console": "externalTerminal"
+        },
+        {
+            "name": "Debug with ts-node-dev",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/ts-node-dev/lib/bin.js",
+            "args": [
+                "${workspaceFolder}/sample_app.js",
+                "--inspect"
+            ],
+            "restart": true,
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "sourceMaps": true,
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

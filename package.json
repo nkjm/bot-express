@@ -3,7 +3,7 @@
   "main": "dist/index.js",
   "files": ["dist"],
   "name": "bot-express",
-  "version": "0.8.32",
+  "version": "0.9.0",
   "private": false,
   "repository": {
     "type": "git",

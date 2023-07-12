@@ -11,3 +11,4 @@ bot-express-*.tgz
 .DS_Store
 *.rdb
 dist/**/*
+*.tsbuildinfo

@@ -1,9 +1,8 @@
 {
   "description": "A development framework to develop tailor-made chatbot lightning fast.",
   "main": "dist/index.js",
-  "files": ["dist"],
   "name": "bot-express",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "private": false,
   "repository": {
     "type": "git",
@@ -18,11 +17,11 @@
     "facebook messenger"
   ],
   "scripts": {
-    "start": "ts-node sample_app.js",
-    "dev": "ts-node-dev sample_app.js",
-    "test": "mocha -t 60000 --exit",
+    "start": "ts-node src/sample_app.js",
+    "dev": "ts-node-dev src/sample_app.js",
+    "test": "mocha -r ts-node/register -t 60000 --exit src/test",
     "build": "tsc",
-    "postinstall": "node script/postinstall.js",
+    "postinstall": "node dist/script/postinstall.js",
     "prepublishOnly": "npm run build"
   },
   "engines": {

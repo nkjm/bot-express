@@ -1,6 +1,11 @@
 {
   "description": "A development framework to develop tailor-made chatbot lightning fast.",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./module/*": "./dist/module/*.js",
+    "./module/messenger/*": "./dist/module/messenger/*.js"
+  },
   "name": "bot-express",
   "version": "0.9.1",
   "private": false,

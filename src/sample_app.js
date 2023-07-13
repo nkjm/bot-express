@@ -57,7 +57,7 @@ server.use('/bot/webhook', bot_express({
         }
     },
     reaction: {
-        path: "reaction"
+        path: "./sample_reaction.js"
     },
     nlu: {
         type: "dialogflow",

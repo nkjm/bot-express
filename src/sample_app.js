@@ -59,24 +59,24 @@ server.use('/bot/webhook', bot_express({
     reaction: {
         path: "reaction"
     },
-    // nlu: {
-    //     type: "dialogflow",
-    //     options: {
-    //         project_id: process.env.GOOGLE_PROJECT_ID,
-    //         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    //         private_key: process.env.GOOGLE_PRIVATE_KEY,
-    //         language: "ja"
-    //     }
-    // },
-    // parser: [{
-    //     type: "dialogflow",
-    //     options: {
-    //         project_id: process.env.GOOGLE_PROJECT_ID,
-    //         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    //         private_key: process.env.GOOGLE_PRIVATE_KEY,
-    //         language: "ja"
-    //     }
-    // }],
+    nlu: {
+        type: "dialogflow",
+        options: {
+            project_id: process.env.GOOGLE_PROJECT_ID,
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY,
+            language: "ja"
+        }
+    },
+    parser: [{
+        type: "dialogflow",
+        options: {
+            project_id: process.env.GOOGLE_PROJECT_ID,
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY,
+            language: "ja"
+        }
+    }],
     memory: {
         type: process.env.MEMORY_TYPE, // memory-cache | redis 
         retention: Number(process.env.MEMORY_RETENTION),
@@ -95,8 +95,13 @@ server.use('/bot/webhook', bot_express({
     },
     translator: {
         type: "google",
-        enable_lang_detection: false,
+        enable_lang_detection: true,
         enable_translation: false,
+        options: {
+            project_id: process.env.GOOGLE_PROJECT_ID,
+            client_email: process.env.GOOGLE_CLIENT_EMAIL,
+            private_key: process.env.GOOGLE_PRIVATE_KEY
+        }
     },
     skill: {
         beacon: {

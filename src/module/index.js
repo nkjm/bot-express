@@ -5,10 +5,10 @@ require("dotenv").config();
 const REQUIRED_OPTIONS = {
     common: []
 }
-const DEFAULT_SKILL_PATH = "../../../skill/";
-const DEFAULT_TRANSLATION_LABEL_PATH = "../../../translation/label.js";
-const DEFAULT_MESSAGE_PATH = "../../../message/";
-const DEFAULT_PARAMETER_PATH = "../../../parameter/";
+const DEFAULT_SKILL_PATH = "../../../../skill/";
+const DEFAULT_TRANSLATION_LABEL_PATH = "../../../../translation/label.js";
+const DEFAULT_MESSAGE_PATH = "../../../../message/";
+const DEFAULT_PARAMETER_PATH = "../../../../parameter/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
 const DEFAULT_LANGUAGE = "ja";
@@ -105,7 +105,7 @@ module.exports = (options) => {
     if (options.reaction && options.reaction.path){
         if (process.env.BOT_EXPRESS_ENV != "development"){
             if (!path.isAbsolute(options.reaction.path)) {
-                options.reaction.path = "../../../" + options.reaction.path
+                options.reaction.path = "../../../../" + options.reaction.path
             }
         }   
     }
@@ -113,7 +113,7 @@ module.exports = (options) => {
     // Skill will be required in flow. So path should be relative path from flow.
     if (options.skill_path){
         if (!path.isAbsolute(options.skill_path)) {
-            options.skill_path = "../../../" + options.skill_path;
+            options.skill_path = "../../../../" + options.skill_path;
         }
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
@@ -125,7 +125,7 @@ module.exports = (options) => {
     // Message will be required in flow. So path should be relative path from flow.
     if (options.message_path){
         if (!path.isAbsolute(options.message_path)) {
-            options.message_path = "../../../" + options.message_path;
+            options.message_path = "../../../../" + options.message_path;
         }
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
@@ -137,7 +137,7 @@ module.exports = (options) => {
     // Parameter will be required in flow. So path should be relative path from flow.
     if (options.parameter_path){
         if (!path.isAbsolute(options.parameter_path)) {
-            options.parameter_path = "../../../" + options.parameter_path;
+            options.parameter_path = "../../../../" + options.parameter_path;
         }
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.
@@ -150,7 +150,7 @@ module.exports = (options) => {
     options.translator = options.translator || {};
     if (options.translator.label_path){
         if (!path.isAbsolute(options.translator.label_path)) {
-            options.translator.label_path = "../../../" + options.translator.label_path;
+            options.translator.label_path = "../../../../" + options.translator.label_path;
         }
     } else if (process.env.BOT_EXPRESS_ENV == "development"){
         // This is for Bot Express development environment only.

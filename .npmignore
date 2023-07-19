@@ -11,10 +11,14 @@ docs
 deprecated
 Procfile
 sample_app.js
+sample_app.js.map
 deploy.sh
 material
 sample_skill
 sample_service
 sample_translation
 sample_message
+sample_parameter
 *.rdb
+tsconfig.*
+/src

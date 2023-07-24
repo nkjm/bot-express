@@ -7,7 +7,7 @@
     "./module/messenger/*": "./dist/module/messenger/*.js"
   },
   "name": "bot-express",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "private": false,
   "repository": {
     "type": "git",

@@ -179,7 +179,6 @@ module.exports = (options) => {
     let onWebsocketMessage
     if (options.messenger.web) {
         onWebsocketMessage = async (message, userId) => {
-            console.log(`bot express received ${message} from ${userId}`)
             const messenger = new Messenger(options.messenger, 'web');
             // Validate signature. currently do nothing because it is authenticated on upgrade connection
             if (!messenger.validate_signature(message)) {

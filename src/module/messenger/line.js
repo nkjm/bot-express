@@ -931,6 +931,32 @@ module.exports = class MessengerLine {
         return compiled_message;
     }
 
+    static create_switch_skill_event(event, intent, language) {
+        if (event.type === "bot-express:push"){
+            return {
+                type: "bot-express:push",
+                to: event.to,
+                timestamp: Date.now(),
+                intent: intent,
+                language: language
+            }
+        } else {
+            return {
+                type: "postback",
+                replyToken: event.replyToken,
+                source: event.source,
+                timestamp: Date.now(),
+                postback: {
+                    data: JSON.stringify({
+                        type: "intent",
+                        intent: intent,
+                        language: language
+                    })
+                }
+            }
+        }
+    }
+    
     /**
     @deprecated
     */

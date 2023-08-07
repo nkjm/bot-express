@@ -118,9 +118,6 @@ class Messenger {
     * @returns {String}
     */
     extract_to_id(event){
-        if (event.type == "bot-express:push"){
-            return event.to[`${event.to.type}Id`];
-        }
         return this.Messenger_classes[this.type].extract_to_id(event);
     }
 
@@ -144,6 +141,17 @@ class Messenger {
     */
     identify_message_type(message){
         return this.Messenger_classes[this.type].identify_message_type(message);
+    }
+
+    /**
+     * Create a switch skill event.
+     * @param {EventObject} event 
+     * @param {string} intent 
+     * @param {string} sender_language 
+     * @returns 
+     */
+    create_switch_skill_event(event, intent, sender_language) {
+        return this.Messenger_classes[this.type].create_switch_skill_event(event, intent, sender_language);
     }
 
     get_secret(){

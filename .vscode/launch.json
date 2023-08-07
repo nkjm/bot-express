@@ -17,7 +17,7 @@
             "request": "launch",
             "runtimeExecutable": "${workspaceFolder}/node_modules/ts-node-dev/lib/bin.js",
             "args": [
-                "${workspaceFolder}/sample_app.js",
+                "${workspaceFolder}/src/sample_app.js",
                 "--inspect"
             ],
             "restart": true,
@@ -25,6 +25,30 @@
             "internalConsoleOptions": "neverOpen",
             "sourceMaps": true,
             "cwd": "${workspaceFolder}"
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Current File",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "--require",
+                "ts-node/register",
+                "--timeout",
+                "999999",
+                "--colors",
+                "${file}",
+                "--exit"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": [
+                "<node_internals>/**/*.js"
+            ],
+            "env": {
+                "DEBUG": "bot-express:*",
+                "BOT_EXPRESS_ENV": "development",
+            }
+        },
     ]
 }

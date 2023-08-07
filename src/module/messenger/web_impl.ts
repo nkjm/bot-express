@@ -3,7 +3,7 @@ import MessengerLine from "./line";
 
 type Body = Event
 
-type Event = (MessageEvent | EnterEvent | PostbackEvent) & SenderIdHolder
+type Event = (MessageEvent | EnterEvent | PostbackEvent | BotExpressPushEvent) & SenderIdHolder
 
 type SenderIdHolder = {
     userId: SenderId
@@ -20,7 +20,7 @@ type PostbackEvent = {
 
 type PostbackData = {
     data: string,
-    params: object
+    params?: object
 }
 
 type EnterEvent = {
@@ -30,6 +30,12 @@ type EnterEvent = {
 type MessageEvent = {
     type: 'message'
     message: IncomingMessage
+}
+
+type BotExpressPushEvent = {
+    type: 'bot-express:push'
+    intent: string
+    language?: string
 }
 
 type IncomingMessage = IncomingMessageText | IncomingMessageImage | IncomingMessageLocation
@@ -145,7 +151,7 @@ export default class MessengerWeb implements StaticImplements<MessengerStatic<Bo
     }
 
     static extract_to_id(event: Event): string {
-        throw new Error("Method not implemented.");
+        return event.userId
     }
 
     static identify_event_type(event: Event): string {
@@ -166,6 +172,31 @@ export default class MessengerWeb implements StaticImplements<MessengerStatic<Bo
             return MessengerLine._compile_message_from_facebook_format(messageType, message)
         } else {
             throw Error(`unsupported format ${format} given to web messenger`)
+        }
+    }
+
+    static create_switch_skill_event(event: Event, intent: string, language?: string): Event {
+        if (event.type === 'bot-express:push'){
+            return {
+                type: "bot-express:push",
+                channelId: event.channelId,
+                userId: event.userId,
+                intent: intent,
+                language: language
+            }
+        } else {
+            return {
+                type: "postback",
+                channelId: event.channelId,
+                userId: event.userId,
+                postback: {
+                    data: JSON.stringify({
+                        type: "intent",
+                        intent: intent,
+                        language: language
+                    })
+                }
+            }
         }
     }
 

@@ -37,4 +37,5 @@ export interface MessengerStatic<Body, Event> {
     identify_event_type(event: Event): string;
     identify_message_type(message: MessageObject): string;
     compile_message(format: MessengerType, messageType: string, message: MessageObject): Promise<MessageObject>
+    create_switch_skill_event(event: Event, intent: string, language?: string): Event;
 }

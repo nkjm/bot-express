@@ -1041,6 +1041,16 @@ class Bot {
     }
 
     /**
+    * Extract to_id used in bot-express:push
+    * @method
+    * @param {EventObject} event - Event to extract message text.
+    * @returns {String} - Extracted sender's user id.
+    */
+    extract_to_id(event = this._event){
+        return this._slib.messenger.extract_to_id(event);
+    }
+
+    /**
     * Extract session id.
     * @method
     * @param {EventObject} event - Event to extract message text.

@@ -1056,8 +1056,8 @@ module.exports = class Flow {
         // Send message to user by using reply or push depending on flow type.
         if (this.context._flow == "push"){
             debug("We use send method to collect parameter since this is push flow.");
-            debug("Reciever userId is " + this.event.to[`${this.event.to.type}Id`]);
-            await this.bot.send(this.event.to[`${this.event.to.type}Id`], message, this.context.sender_language);
+            debug("Receiver userId is " + this.bot.extract_to_id());
+            await this.bot.send(this.bot.extract_to_id(), message, this.context.sender_language);
         } else {
             debug("We use reply method to collect parameter.");
             try {

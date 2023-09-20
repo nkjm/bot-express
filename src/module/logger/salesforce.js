@@ -71,6 +71,9 @@ module.exports = class LoggerSalesforce {
             if (payload.context){
                 skill_status.govtech__context__c = Context.remove_buffer(payload.context)
                 delete skill_status.govtech__context__c.global
+                if (skill_status.govtech__context__c.skill && skill_status.govtech__context__c.skill.env){
+                    delete skill_status.govtech__context__c.skill.env
+                }
                 skill_status.govtech__context__c = JSON.stringify(skill_status.govtech__context__c).slice(0, 32768)
             }
         } else if (status === "switched"){

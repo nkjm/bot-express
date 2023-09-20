@@ -388,7 +388,12 @@ module.exports = class MessengerLine {
             return;
         }
 
-        //return this.sdk.pushMessage(to, messages);
+        // Truncate altText
+        for(const message of messages) {
+            if ('altText' in message) {
+                message.altText = this._truncate_alt_text(message.altText)
+            }
+        }
 
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/push`;
         let headers = {
@@ -454,6 +459,13 @@ module.exports = class MessengerLine {
                 throw Error(`event.source.userId not found.`)
             }
             return this.send(event, event.source.userId, messages)
+        }
+
+        // Truncate altText
+        for(const message of messages) {
+            if ('altText' in message) {
+                message.altText = this._truncate_alt_text(message.altText)
+            }
         }
 
         //return this.sdk.replyMessage(event.replyToken, messages);
@@ -1136,5 +1148,22 @@ module.exports = class MessengerLine {
         })
 
         return response.data
+    }
+
+    /**
+     * @method
+     * @param {string | null | undefined} alt_text
+     * @returns {string | null | undefined} Truncated alt_text
+     */
+    _truncate_alt_text(alt_text) {
+        const ending = '…'
+        if (alt_text == null) {
+            return alt_text
+        }
+        if (alt_text.length > 400) {
+            return alt_text.slice(0, 400 - ending.length) + ending
+        } else {
+            return alt_text
+        }
     }
 }

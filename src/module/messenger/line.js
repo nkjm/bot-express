@@ -337,6 +337,13 @@ module.exports = class MessengerLine {
             return;
         }
 
+        // Truncate altText
+        for(const message of messages) {
+            if ('altText' in message) {
+                message.altText = this._truncate_alt_text(message.altText)
+            }
+        }
+
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/broadcast`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`
@@ -361,8 +368,13 @@ module.exports = class MessengerLine {
             return;
         }
 
-        // return this.sdk.multicast(to, messages);
-
+        // Truncate altText
+        for(const message of messages) {
+            if ('altText' in message) {
+                message.altText = this._truncate_alt_text(message.altText)
+            }
+        }
+        
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/multicast`;
         let headers = {
             Authorization: `Bearer ${this._access_token}`

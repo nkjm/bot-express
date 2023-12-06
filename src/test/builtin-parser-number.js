@@ -15,7 +15,7 @@ const emu = new Emulator(messenger_option.name, messenger_option.options);
 
 chai.use(chaiAsPromised);
 const should = chai.should();
-const user_d = "dummy_user_id";
+const user_id = "dummy_user_id";
 const ParserNumber = require("../module/parser/number")
 const parser = new ParserNumber()
 

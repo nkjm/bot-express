@@ -60,14 +60,14 @@ module.exports = class ParserNumber {
             }
         }
 
-        if (policy.min){
+        if (policy.min != null){
             if (parsed_value < policy.min){
                 throw new Error("be_parser__too_small");
             }
         }
 
-        if (policy.max){
-            if (parsed_value> policy.max){
+        if (policy.max != null){
+            if (parsed_value > policy.max){
                 throw new Error("be_parser__too_large");
             }
         }

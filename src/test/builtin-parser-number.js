@@ -16,6 +16,8 @@ const emu = new Emulator(messenger_option.name, messenger_option.options);
 chai.use(chaiAsPromised);
 const should = chai.should();
 const user_id = "dummy_user_id";
+const ParserNumber = require("../module/parser/number")
+const parser = new ParserNumber()
 
 describe("Test builtin number parser", async function(){
 
@@ -190,4 +192,28 @@ describe("Test builtin number parser", async function(){
             context.confirming.should.equal("no_policy");
         });
     });
+
+    describe("0 as max and provide 1", async function(){
+        it("will be rejected.", async function(){
+            let e_message
+            try {
+                await parser.parse(1, { max: 0 })
+            } catch(e){
+                e_message = e.message
+            }
+            e_message.should.equal("be_parser__too_large")
+        })
+    })
+
+    describe("0 as min and provide -1", async function(){
+        it("will be rejected.", async function(){
+            let e_message
+            try {
+                await parser.parse(-1, { min: 0 })
+            } catch(e){
+                e_message = e.message
+            }
+            e_message.should.equal("be_parser__too_small")
+        })
+    })
 });

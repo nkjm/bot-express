@@ -39,7 +39,7 @@ module.exports = class ParserEmail {
             throw new Error(`be_parser__should_be_string`)
         }
 
-        const regex = new RegExp(/^[a-zA-Z0-9_+-]+(.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/)
+        const regex = new RegExp(/^[a-zA-Z0-9_+-]+(\.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/)
         if (!value.match(regex)){
             throw new Error(`be_parser__should_be_email_format`)
         }

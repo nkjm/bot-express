@@ -19,7 +19,7 @@ const messenger_option = {
 const emu = new Emulator(messenger_option.name, messenger_option.options, user_id);
 
 
-describe.only("Test generating sub parameter", async function(){
+describe("Test generating sub parameter", async function(){
 
     describe("Enter 1 record", async function(){
         it("will be stored in list parameter.", async function(){

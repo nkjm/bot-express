@@ -108,7 +108,7 @@ class Bot {
 
         let response;
         if (this._event.type == "bot-express:push"){
-            response = await this._slib.messenger.send(this._event, this._event.to[`${this._event.to.type}Id`], compiled_messages);
+            response = await this._slib.messenger.send(this._event, this.extract_to_id(), compiled_messages);
         } else if (to_collect || this._context._digging){
             response = await this._slib.messenger.reply_to_collect(this._event, compiled_messages);
         } else {

@@ -236,6 +236,7 @@ export default class MessengerWeb implements StaticImplements<MessengerStatic<Bo
     }
 
     pass_through(webhook: String, secret: String, event: Event) {
-        throw new Error("Unsupported operation");
+        // This is for LINE only but it could be called.
+        // NOP.
     }
 }

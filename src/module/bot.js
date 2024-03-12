@@ -385,19 +385,25 @@ class Bot {
 
         // If this param depends on generator, we generate it.
         if (param.generator){
-            const param_name = param.name
-            const param_type = param.type
-            if (!(param.generator.file && param.generator.method)){
-                throw Error(`Generator of ${param_name} is not correctly set.`)
-            }
-            const Generator = require(`${this._options.parameter_path}${param.generator.file}`)
-            const generator = new Generator()
-            if (!generator[param.generator.method]) throw Error(`${param.generator.file} does not have ${param.generator.method}`)
-            param = generator[param.generator.method](param.generator.options)
-            param.name = param_name
-            param.type = param_type
+            param = this.generate_parameter(param)
         }
 
+        return param
+    }
+
+    generate_parameter(param){
+        const param_name = param.name;
+        const param_type = param.type;
+        if (!(param.generator.file && param.generator.method)) {
+            throw Error(`Generator of ${param_name} is not correctly set.`);
+        }
+        const Generator = require(`${this._options.parameter_path}${param.generator.file}`);
+        const generator = new Generator();
+        if (!generator[param.generator.method])
+            throw Error(`${param.generator.file} does not have ${param.generator.method}`);
+        param = generator[param.generator.method](param.generator.options);
+        param.name = param_name;
+        param.type = param_type;
         return param
     }
 
@@ -433,9 +439,18 @@ class Bot {
         let result = object
         const path_array = path.split('.')
         for (let i = 0; i <= path_array.length - 1; i += 1) {
-            if (path_array[i] === '' ) return undefined
-            if (typeof result[path_array[i]] === 'undefined') return undefined
-            result = result[path_array[i]]
+            if (path_array[i] === ''){
+                return undefined
+            } else if (typeof result[path_array[i]] === 'undefined' && !result.generator){
+                return undefined
+            } else if (typeof result[path_array[i]] === 'undefined' && result.generator){
+                const param = this.generate_parameter(result)
+                if (param[path_array[i]]){
+                    result = param[path_array[i]]
+                }
+            } else {
+                result = result[path_array[i]]
+            }
         }
         return result
     }

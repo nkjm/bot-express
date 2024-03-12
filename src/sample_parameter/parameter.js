@@ -73,7 +73,7 @@ module.exports = class Parameter {
                     throw new Error("invalid_type");
                 }
                 let phone = value.replace(/[\B-]/g, "");
-                if (!zip_code.match(/^[0-9]{11}$/)){
+                if (!phone.match(/^[0-9]{11}$/)){
                     throw new Error("violates_regex");
                 }
                 return phone;
@@ -81,6 +81,37 @@ module.exports = class Parameter {
         }
         if (o.condition) param.condition = o.condition
         if (o.reaction) param.reaction = o.reaction
+        return param
+    }
+
+    contact_list() {
+        const param = {
+            list: {
+                order: "old"
+            },
+            sub_parameter: {
+                "phone": {
+                    generator: {
+                        file: "parameter",
+                        method: "phone",
+                        options: {
+                            message_text: "電話番号をお願いします。"
+                        }
+                    }
+                },
+                "zip_code": {
+                    generator: {
+                        file: "parameter",
+                        method: "zip_code",
+                        options: {
+                            message_text: "郵便番号をお願いします。"
+                        }
+                    }
+                },
+
+            }
+        } 
+
         return param
     }
 }

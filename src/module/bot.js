@@ -1015,6 +1015,7 @@ class Bot {
         debug(`Getting parent parameter back to context..`)
 
         const collected_heard = clone(this._context.heard)
+        const global = clone(this._context.global)
         const message_queue = clone(this._context._message_queue)
         delete parent_context.reason
         parent_context.previous.message = this._context.previous.message.concat(parent_context.previous.message)
@@ -1022,6 +1023,7 @@ class Bot {
         // Get parent context back while keeping object pointer by Object.assgin().
         Object.assign(this._context, parent_context)
         Object.assign(this._context.heard, collected_heard)
+        Object.assign(this._context.global, global)
         Object.assign(this._context._message_queue, message_queue)
     }
 

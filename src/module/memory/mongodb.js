@@ -26,10 +26,13 @@ class MemoryMongodb {
             return this.db.collection('bot-express').updateOne({_id:key}, value, {upsert:true});
         });
     }
-
-    async del(key){
+    async put_if_absent(key, value, expire) {
+        throw new Error("Method not implemented.");
+    }
+    
+    async del(key) {
         return this.connected.then((response) => {
-            return this.db.collection('bot-express').deleteOne({_id: key});
+            return this.db.collection('bot-express').deleteOne({ _id: key });
         });
     }
 }

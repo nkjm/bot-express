@@ -22,11 +22,17 @@ class MemoryMemoryCache {
         const copy = JSON.parse(JSON.stringify(context))
         return this.client.put(key, copy);
     }
-
-    async del(key){
+    async put_if_absent(key, value, expire) {
+        const value = this.client.get(key);
+        if (value) {
+            return undefined
+        }
+        const copy = JSON.parse(JSON.stringify(context));
+        return this.client.put(key, copy);
+    }
+    async del(key) {
         return this.client.del(key);
     }
-
     /**
      * @deprecated
      */

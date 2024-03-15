@@ -38,6 +38,9 @@ class MemoryRedis {
         });
 
     }
+    async put_if_absent(key, value, expire) {
+        return this.client.set(key, value, "EX", expire, "NX");
+    }
 
     async put(key, context){
         if (context){

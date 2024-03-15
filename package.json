@@ -52,6 +52,7 @@
     "wanakana": "^4.0.2"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.42",
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/cookie": "^0.5.1",

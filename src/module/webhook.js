@@ -214,9 +214,9 @@ class Webhook {
             // Save intent to switch before clean up.
             const intent = updated_context._switch_intent;
             if (updated_context._clear) {
+                debug("Clearing context");
                 await this.slib.memory.del(memory_id);
-            }
-            else {
+            } else {
                 // Turn off all flag to cleanup context for next skill.
                 debug("Turn off all flag to cleanup context for next skill.");
                 updated_context._pause = false;

@@ -37,7 +37,6 @@ module.exports = class Context {
         this.rewind = []
         this._flow = o.flow
         this._message_queue = []
-        this._in_progress = false
         this._pause = false
         this._exit = false
         this._init = false
@@ -119,7 +118,6 @@ module.exports = class Context {
         return {
             _flow: flow,
             _message_queue: [],
-            _in_progress: false,
             _pause: false,
             _exit: false,
             _init: false,

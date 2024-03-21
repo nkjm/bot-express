@@ -7,7 +7,7 @@ const memory_cache = require("memory-cache"); // Not as memory store but as time
 const prefix_context = "be_context_";
 const prefix_session = "be_session_";
 const prefix_timer = "be_timer_";
-
+const prefix_processing_flag = "be_processing_";
 /**
  * Memory to store context. *Context free
  * @class
@@ -118,6 +118,15 @@ class Memory {
         // Save context.
         await this.store.put(`${prefix_context}${key}`, context)
     }
+
+    async put_processing_key_if_absent(key, expire) {
+        const timestamp = String(new Date().getTime())
+        return this.store.put_if_absent(`${prefix_processing_flag}${key}`, timestamp, expire);
+    }
+
+    async del_processing_key(key) {
+        return this.store.del(`${prefix_processing_flag}${key}`);
+    }   
 
     /**
      * Get session.

@@ -781,7 +781,12 @@ class Bot {
             return;
         }
 
-        const param_name = this._context.previous.processed[0]
+        // If we're in sub parameter and collect first child question, we need to go back to previous parameter.
+        if (this._context._sub_parameter && Object.keys(this._context.confirmed).length === 0) {
+            this.checkout_parent_parameter()
+        }
+
+        const param_name = this._context.previous.processed[0];
 
         // Check if there is corresponding parameter in skill just in case.
         if (this.check_parameter_type(param_name) == "not_applicable") {

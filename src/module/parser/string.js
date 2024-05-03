@@ -22,7 +22,7 @@ module.exports = class ParserString {
 
     /**
      * @method
-     * @asnyc
+     * @async
      * @param {*} value
      * @param {Object} [policy]
      * @param {Number} [policy.min]

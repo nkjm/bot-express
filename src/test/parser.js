@@ -64,7 +64,7 @@ describe("Test parser", async function(){
         });
     })
 
-    describe("Unexpected error ocurrs", async function(){
+    describe("Unexpected error occurred", async function(){
         it("throws exception.", async function(){
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({

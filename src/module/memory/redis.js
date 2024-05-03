@@ -47,7 +47,7 @@ class MemoryRedis {
             context = JSON.stringify(context);
         }
 
-        // While retention is managed by memory-cache timer in parent class, we need to set retention to purge ghoast data just in case instance restart and timer does not work.
+        // While retention is managed by memory-cache timer in parent class, we need to set retention to purge ghost data just in case instance restart and timer does not work.
         return this.client.set(key, context, "EX", this.retention)
     }
 

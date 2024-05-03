@@ -122,7 +122,7 @@ class Translator {
             }
         } else {
             if (this.label[key][this.sender_language] !== undefined){
-                // Optional data found so label shoud be function.
+                // Optional data found so label should be function.
                 if (typeof this.label[key][this.sender_language] != "function"){
                     throw new Error(`Expecting translation being function but ${typeof this.label[key][this.sender_language]}`);
                 }
@@ -147,7 +147,7 @@ class Translator {
                 }
                 first_label = this.label[key][Object.keys(this.label[key])[0]];
             } else {
-                // Optional data found so label shoud be function.
+                // Optional data found so label should be function.
                 if (typeof this.label[key][Object.keys(this.label[key])[0]] != "function"){
                     throw new Error(`Expecting translation being function but ${typeof this.label[key][Object.keys(this.label[key])[0]]}`);
                 }

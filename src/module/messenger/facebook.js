@@ -171,7 +171,7 @@ module.exports = class MessengerFacebook {
                 // This is Text Message
                 param_value = event.message.text;
             } else if (event.message.attachments){
-                // This is Attachemnt
+                // This is Attachment
                 param_value = event.message;
             }
         } else if (event.postback){
@@ -270,7 +270,7 @@ module.exports = class MessengerFacebook {
     }
 
     static _compile_message_from_line_format(message_type, message){
-        // Facebook format has Text, Audio, Image, Video, File, Button Template, Generic Template, List Template, Open Graph Template, Receipt Template, Airline Boarding Ticket Template, Airline Checkin Template, Airline Itinerary Tempalte, Airline Fight Update Template.
+        // Facebook format has Text, Audio, Image, Video, File, Button Template, Generic Template, List Template, Open Graph Template, Receipt Template, Airline Boarding Ticket Template, Airline Checkin Template, Airline Itinerary Template, Airline Fight Update Template.
         // quick_replies may be included in any Content-Type.
         // buttons may be included in Templates.
 
@@ -311,7 +311,7 @@ module.exports = class MessengerFacebook {
         // -> location: to location *NEED TEST
         // -> sticker: to unsupported text
         // -> imagemap: to unsupported text
-        // -> buttons template: to text(w quick reply) or button tempalte
+        // -> buttons template: to text(w quick reply) or button template
         // -> confirm template: to text(w quick reply) or button template
         // -> carousel template: to generic template
 
@@ -397,7 +397,7 @@ module.exports = class MessengerFacebook {
                 }
                 break;
             }
-            case "buttons_template": {// -> to text(w quick reply) or button tempalte
+            case "buttons_template": {// -> to text(w quick reply) or button template
                 let uri_included = false;
                 let datetimepicker_included = false;
 
@@ -487,7 +487,7 @@ module.exports = class MessengerFacebook {
                 }
                 break;
             }
-            case "confirm_template": {// -> to text(w quick reply) or button tempalte
+            case "confirm_template": {// -> to text(w quick reply) or button template
                 let uri_included = false;
                 let datetimepicker_included = false;
 
@@ -603,9 +603,9 @@ module.exports = class MessengerFacebook {
                     if (uri_included){
                         if (column.actions.length > 3){
                             // Not supported since facebook does not allow template message including more than 3 buttons. line's threshold is 3, too.
-                            debug(`Compiling template messege including more than 3 buttons including uri button from line format to facebook format is not supported.`);
+                            debug(`Compiling template message including more than 3 buttons including uri button from line format to facebook format is not supported.`);
                             compiled_message = {
-                                text: message.altText + " *Compiling template messege including more than 3 buttons including uri button from line format to facebook format is not supported."
+                                text: message.altText + " *Compiling template message including more than 3 buttons including uri button from line format to facebook format is not supported."
                             }
                             break;
                         }
@@ -658,7 +658,7 @@ module.exports = class MessengerFacebook {
     /**
     @deprecated
     */
-    static translate_message(translater, message_type, message, sender_language){
+    static translate_message(translator, message_type, message, sender_language){
         switch(message_type){
             case "text": {
                 let source_texts = [message.text];
@@ -670,7 +670,7 @@ module.exports = class MessengerFacebook {
                         }
                     }
                 }
-                return translater.translate(source_texts, sender_language).then(
+                return translator.translate(source_texts, sender_language).then(
                     (response) => {
                         if (source_texts.length == 1){
                             message.text = response[0];
@@ -703,7 +703,7 @@ module.exports = class MessengerFacebook {
                         source_texts.push(button.title);
                     }
                 }
-                return translater.translate(source_texts, sender_language).then(
+                return translator.translate(source_texts, sender_language).then(
                     (response) => {
                         message.attachment.payload.text = response[0][0];
                         let offset = 1;
@@ -732,7 +732,7 @@ module.exports = class MessengerFacebook {
                         }
                     }
                 }
-                return translater.translate(source_texts, sender_language).then(
+                return translator.translate(source_texts, sender_language).then(
                     (response) => {
                         let offset = 0;
                         for (let element of message.attachment.payload.elements){
@@ -766,7 +766,7 @@ module.exports = class MessengerFacebook {
     async request(options){
         let response = await axios.request(options).catch(e => {
             let error_message = `Failed.`
-            if (e.resopnse){
+            if (e.response){
                 error_message += ` Status code: ${e.response.status}. Payload: ${JSON.stringify(e.response.data)}`;
             }
             throw Error(error_message)

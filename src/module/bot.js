@@ -169,7 +169,7 @@ class Bot {
     * Send(Push) messages to multiple users.
     * @method
     * @async
-    * @param {Array.<String>} recipient_ids - Array of recipent user id.
+    * @param {Array.<String>} recipient_ids - Array of recipient user id.
     * @param {MessageObject|Array.<MessageObject>} messages - Message object[s] to send.
     * @param {String} language - ISO-639-1 based language code to translate to.
     * @return {Object} - Response from Messenger API.
@@ -376,7 +376,7 @@ class Bot {
         param.type = this.check_parameter_type(param.name)
 
         if (param.type === "not_applicable"){
-            throw new Error(`Paramter: "${param.name}" not found in skill.`)
+            throw new Error(`Parameter: "${param.name}" not found in skill.`)
         }
 
         // Get parameter path to this sub parameter.
@@ -408,7 +408,7 @@ class Bot {
     }
 
     /**
-     * Returns parameter path to specifined parameter name. It would be like "required_parameter.family_list.fullname".
+     * Returns parameter path to specified parameter name. It would be like "required_parameter.family_list.fullname".
      * @method
      * @param {String} param_name 
      * @param {context} context 
@@ -466,7 +466,7 @@ class Bot {
      * @param {Boolean} [options.parse=false] - Whether to run parser.
      * @param {Boolean} [options.react=true] - Whether to run reaction.
      * @param {Boolean} [options.implicit=false] - If true, we do not add this parameter to context.previous.confirmed[] and context.previous.processed[].
-     * @param {Boolean} [options.processed] - If true, we add this parameter to context.previous.processed[]. This is only valid in case that implict is true. This is used in apply() in skill.
+     * @param {Boolean} [options.processed] - If true, we add this parameter to context.previous.processed[]. This is only valid in case that implicit is true. This is used in apply() in skill.
      * @return {Object} result.accepted is false and error is set to result.error if options.parse is true and parser rejected. Otherwise, return result.accepted is true and result.error is undefined.
      */ 
     async apply_parameter(o){
@@ -528,7 +528,7 @@ class Bot {
      * @async
      * @param {String} param_name - Parameter name.
      * @param {*} param_value - Value to validate.
-     * @param {Boolean} [strict=false] - If true, reject if parser does not exist. This option is for imternal use.
+     * @param {Boolean} [strict=false] - If true, reject if parser does not exist. This option is for internal use.
      * @returns {*}
     */
     async parse_parameter(param_name, param_value, strict = false){
@@ -801,7 +801,7 @@ class Bot {
         debug(`Removing ${param_name} from previous.processed.`);
         this._context.previous.processed.shift();
 
-        // Clear confirmed value if clear_confimred is true.
+        // Clear confirmed value if clear_confirmed is true.
         if (options.clear_confirmed && this._context.confirmed){
             // Clear value of current parameter.
             if (this._context.confirming && this._context.confirmed[this._context.confirming] !== undefined){
@@ -829,7 +829,7 @@ class Bot {
                     if (this._context.confirmed){
                         // Apply value to confirmed parameter.
                         this._context.confirmed[action.parameter_name] = action.parameter_value
-                        debug(`${action.parameter_name} is reverted to ${action.parameter_value} by rewinid.`)
+                        debug(`${action.parameter_name} is reverted to ${action.parameter_value} by rewind.`)
 
                         // If value is undefined, delete parameter from confirmed.
                         if (this._context.confirmed[action.parameter_name] === undefined){
@@ -915,7 +915,7 @@ class Bot {
     }
 
     /**
-     * Make the specified skill paramter being collected next.
+     * Make the specified skill parameter being collected next.
      * @method
      * @param {String|Skill#skill_parameter_container} arg - Name of the skill parameter or skill_parameter_container object to collect.
      * @param {Object} [options] - Option object.
@@ -1025,7 +1025,7 @@ class Bot {
         delete parent_context.reason
         parent_context.previous.message = this._context.previous.message.concat(parent_context.previous.message)
         
-        // Get parent context back while keeping object pointer by Object.assgin().
+        // Get parent context back while keeping object pointer by Object.assign().
         Object.assign(this._context, parent_context)
         Object.assign(this._context.heard, collected_heard)
         Object.assign(this._context.global, global)

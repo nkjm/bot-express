@@ -23,7 +23,7 @@ describe("Test on_abend", async function(){
         await emu.clear_context(user_id);
     });
 
-    describe("If error occured in begin", async function(){
+    describe("If error occurred in begin", async function(){
         it("run on_abend.", async function(){
             let context
             try {
@@ -45,7 +45,7 @@ describe("Test on_abend", async function(){
         })
     })
 
-    describe("If error occured in reaction", async function(){
+    describe("If error occurred in reaction", async function(){
         it("run on_abend.", async function(){
             let context
             context = await emu.send(emu.create_postback_event(user_id, {
@@ -68,7 +68,7 @@ describe("Test on_abend", async function(){
         })
     })
 
-    describe("If error occured in finish", async function(){
+    describe("If error occurred in finish", async function(){
         it("run on_abend.", async function(){
             let context
             context = await emu.send(emu.create_postback_event(user_id, {

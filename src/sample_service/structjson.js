@@ -14,7 +14,7 @@
  */
 
 /**
- * @fileoverview Utilities for converting between JSON and goog.protobuf.Struct
+ * @file overview Utilities for converting between JSON and goog.protobuf.Struct
  * proto.
  */
 

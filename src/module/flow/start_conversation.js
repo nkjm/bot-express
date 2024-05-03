@@ -92,7 +92,7 @@ module.exports = class StartConversationFlow extends Flow {
         }
 
         // Identify intent by reaction.
-        // If we find correspoding reaction, we skip identifying intent since it should contain intent.
+        // If we find corresponding reaction, we skip identifying intent since it should contain intent.
         if (!skip_identify_intent){
             const intent = await super.identify_intent_by_reaction(translated_message_text)
             if (intent && intent.name){
@@ -113,7 +113,7 @@ module.exports = class StartConversationFlow extends Flow {
                     language: this.context.sender_language
                 })
             } else {
-                // If nlu is unavailable, we set default intent to launch defautl skill.
+                // If nlu is unavailable, we set default intent to launch default skill.
                 this.context.intent = {
                     name: this.options.default_intent
                 }

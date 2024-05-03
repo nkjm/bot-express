@@ -70,7 +70,7 @@ describe("Test collect", async function(){
     });
 
     describe("collect optional parameter using collect_by_parameter_obj()", async function(){
-        it("will collect optional parameter with overriden message.", async function(){
+        it("will collect optional parameter with overridden message.", async function(){
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",
@@ -93,7 +93,7 @@ describe("Test collect", async function(){
     });
 
     describe("collect required parameter using collect_by_parameter_obj()", async function(){
-        it("will collect required parameter with overriden message.", async function(){
+        it("will collect required parameter with overridden message.", async function(){
             let event = emu.create_postback_event(user_id, {
                 data: JSON.stringify({
                     _type: "intent",

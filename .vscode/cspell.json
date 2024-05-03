@@ -1,0 +1,61 @@
+{
+    "words":[
+        "dialogflow",
+        "rfdc",
+        "wanakana",
+        "postback",
+        "datetime",
+        "datetimepicker",
+        "dedup",
+        "preaction",
+        "preact",
+        "hwid",
+        "unfollow",
+        "slib",
+        "fullname",
+        "optin", //facebook
+        "imagemap",
+        "checkin",
+        "confirming",
+        "postbacks", //facebook
+        "keyspace",
+        "uncollect",
+        "boardingpass", //facebook
+        "abended",
+        "firestore",
+        "appspot",
+        "jsforce",
+        "govtech",
+        "sobject",
+        "richmenu",
+        "structjson",
+        "protobuf",
+        "zenkaku",
+        "abend",
+        "juminhyo",
+        "honseki",
+        "ondemand",
+        "hankaku"
+    ],
+    "ignoreWords": [
+        "nakajima",
+        "kazuki",
+        "tsbuildinfo",
+        "codepaths",
+        "nkjm",
+        "indexjs",
+        "hoge",
+        "himitsu",
+        "hogehoge",
+        "yakiniku",
+        "ฉันต้องการสั่งพิซซ่า",
+        "ichiro",
+        "jiro",
+        "hanako",
+        "yoshiko",
+        "ddthh"
+    ],
+    "ignorePaths": [
+        "package.json", "deprecated", "docs", "dist", "node_modules/*", "sample_message/*", "sample_parameter/*", "sample_service/*", "sample_skill", "sample_translation/*"
+    ]
+}

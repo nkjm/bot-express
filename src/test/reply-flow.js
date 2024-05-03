@@ -117,7 +117,7 @@ for (let messenger_option of messenger_options){
         });
 
         describe("Change parameter in the middle of the conversation", async function(){
-            it("will rejected and bot asks for same parameter. *Will be accepted in the futer.", async function(){
+            it("will rejected and bot asks for same parameter. *Will be accepted in the further.", async function(){
                 let context = await emu.send(emu.create_message_event(user_id, "ピザを注文したいのですが"));
 
                 context = await emu.send(emu.create_message_event(user_id, "マルゲリータで"));

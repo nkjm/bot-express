@@ -663,13 +663,13 @@ module.exports = class MessengerLine {
         // -> altText has to be up to 400 chars.
         // -> title has to be up to 40 chars.
         // -> text has to be 160 chars. In case we have title or thumbnailImageUrl, it has to be up to 60 chars.
-        // -> acitons has to be up to 4.
+        // -> actions has to be up to 4.
         // -> each button must follow button threshold.
 
         // ### Threshold for Confirm Template ###
         // -> altText has to be up to 400 chars.
         // -> text has to be 240 chars.
-        // -> acitons has to be 2.
+        // -> actions has to be 2.
         // -> each button must follow button threshold.
 
         // ### Threshold for Carousel Template ###
@@ -677,7 +677,7 @@ module.exports = class MessengerLine {
         // -> columns has to be up to 5.
         // -> column title has to be up to 40 chars.
         // -> column text has to be up to 120 chars. In case we have title or thumbnailImageUrl, it has to be up to 60 chars.
-        // -> acitons has to be 3.
+        // -> actions has to be 3.
         // -> each button must follow button threshold.
 
         // ### Compile Rule Overview ###
@@ -687,13 +687,13 @@ module.exports = class MessengerLine {
         // => video: to video
         // => file: to unsupported text
         // => button template: to button template
-        // => generic tempalte: to carousel template
+        // => generic template: to carousel template
         // => list Template: to carousel template
         // => open graph template: to unsupported text
         // => receipt template: to unsupported text
         // => airline boarding ticket template: to unsupported text
         // => airline checkin template: to unsupported text
-        // => airline itinerary tempalte: to unsupported text
+        // => airline itinerary template: to unsupported text
         // => airline fight update template: to unsupported text
 
         let compiled_message;
@@ -808,10 +808,10 @@ module.exports = class MessengerLine {
                         });
                     } else {
                         // Not supported since line does not have corresponding template.
-                        debug(`Compiling template messege including ${button.type} button from facebook format to line format is not supported since line does not have corresponding template.`);
+                        debug(`Compiling template message including ${button.type} button from facebook format to line format is not supported since line does not have corresponding template.`);
                         compiled_message = {
                             type: "text",
-                            text: `*Compiling template messege including ${button.type} button from facebook format to line format is not supported since line does not have corresponding template.`
+                            text: `*Compiling template message including ${button.type} button from facebook format to line format is not supported since line does not have corresponding template.`
                         }
                         break;
                     }
@@ -821,7 +821,7 @@ module.exports = class MessengerLine {
                 // Upper threshold of generic template elements is 10 and 5 in line. So we have to care about it.
                 compiled_message = {
                     type: "template",
-                    altText: "Carousel Template", // This is a dummy text since facebook does not have corresponiding property.
+                    altText: "Carousel Template", // This is a dummy text since facebook does not have corresponding property.
                     template: {
                         type: "carousel",
                         columns: []
@@ -856,10 +856,10 @@ module.exports = class MessengerLine {
                             });
                         } else {
                             // Not supported since line does not have corresponding template.
-                            debug(`Compiling template messege including ${button.type} button from facebook format to line format is not supported since line does not have corresponding button.`);
+                            debug(`Compiling template message including ${button.type} button from facebook format to line format is not supported since line does not have corresponding button.`);
                             return compiled_message = {
                                 type: "text",
-                                text: `*Compiling template messege including ${button.type} button from facebook format to line format is not supported since line does not have corresponding button.`
+                                text: `*Compiling template message including ${button.type} button from facebook format to line format is not supported since line does not have corresponding button.`
                             }
                         }
                     }
@@ -870,7 +870,7 @@ module.exports = class MessengerLine {
                 // Upper threshold of list template elements is 4 and 5 in line. This is safe.
                 compiled_message = {
                     type: "template",
-                    altText: "Carousel Template", // This is a dummy text since facebook does not have corresponiding property.
+                    altText: "Carousel Template", // This is a dummy text since facebook does not have corresponding property.
                     template: {
                         type: "carousel",
                         columns: []
@@ -906,10 +906,10 @@ module.exports = class MessengerLine {
                             });
                         } else {
                             // Not supported since line does not have corresponding template.
-                            debug(`Compiling template messege including ${button.type} button from facebook format to line format is not supported since line does not have corresponding template.`);
+                            debug(`Compiling template message including ${button.type} button from facebook format to line format is not supported since line does not have corresponding template.`);
                             return compiled_message = {
                                 type: "text",
-                                text: `*Compiling template messege including ${button.type} button from facebook format to line format is not supported since line does not have corresponding template.`
+                                text: `*Compiling template message including ${button.type} button from facebook format to line format is not supported since line does not have corresponding template.`
                             }
                         }
                     }
@@ -984,10 +984,10 @@ module.exports = class MessengerLine {
     /**
     @deprecated
     */
-    static async translate_message(translater, message_type, message, sender_language){
+    static async translate_message(translator, message_type, message, sender_language){
         switch(message_type){
             case "text": {
-                return translater.translate(message.text, sender_language).then(
+                return translator.translate(message.text, sender_language).then(
                     (response) => {
                         message.text = response[0];
                         debug("Translated message follows.");
@@ -1006,7 +1006,7 @@ module.exports = class MessengerLine {
                         source_texts.push(action.text);
                     }
                 }
-                return translater.translate(source_texts, sender_language).then(
+                return translator.translate(source_texts, sender_language).then(
                     (response) => {
                         message.altText = response[0][0];
                         message.template.text = response[0][1];
@@ -1043,7 +1043,7 @@ module.exports = class MessengerLine {
                         }
                     }
                 }
-                return translater.translate(source_texts, sender_language).then(
+                return translator.translate(source_texts, sender_language).then(
                     (response) => {
                         message.altText = response[0][0];
 

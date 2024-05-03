@@ -93,12 +93,12 @@ module.exports = class Flow {
      */
     async identify_intent_by_reaction(message_text, o = {}){
         if (!(this.options.reaction && this.options.reaction.path)){
-            debug("Skip identifying intent by reactino since reaction is not set.")
+            debug("Skip identifying intent by reaction since reaction is not set.")
             return 
         }
 
         if (!(message_text && typeof message_text == "string")){
-            debug("Skip identifying intent by reactino since messsage_text is not string.")
+            debug("Skip identifying intent by reaction since message_text is not string.")
             return
         }
 
@@ -975,7 +975,7 @@ module.exports = class Flow {
         // Check condition. If condition is undefined or returns true, we collect this parameter.
         // If condition returns false, we skip this parameter.
         const param = await this.pop_parameter_to_collect();
-        // If there is no parameter to collect, we recursively run respond() to evaluate corrent context.
+        // If there is no parameter to collect, we recursively run respond() to evaluate current context.
         if (!param){
             return this.respond()
         }
@@ -1110,7 +1110,7 @@ module.exports = class Flow {
             return this.context;
         }
 
-        // If we're now confiming sub parameters, check if we got all the required parameters. 
+        // If we're now confirming sub parameters, check if we got all the required parameters. 
         if (this.context._sub_parameter){
             if (Array.isArray(this.context.to_confirm) && this.context.to_confirm.length === 0){
                 // We got all the required sub parameters. Set them to parent parameter.

@@ -1030,6 +1030,7 @@ class Bot {
         Object.assign(this._context.heard, collected_heard)
         Object.assign(this._context.global, global)
         Object.assign(this._context._message_queue, message_queue)
+        Object.assign(this._context.previous.processed, parent_context.previous.processed)
     }
 
     /**

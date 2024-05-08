@@ -449,11 +449,9 @@ module.exports = class MessengerLine {
     }
 
     static is_monthly_limit(e){
-        debug(`Check if following error is due to monthly limit.`)
         if(!e.response || !e.response.data){
             return false;
         }
-        debug(e.response.data)
 
         if (e.response.data.details){
             if (e.response.data.details.find((d) => d.message.includes(`You have reached your monthly limit`))){

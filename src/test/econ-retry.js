@@ -38,7 +38,8 @@ describe('Test for retry with ECONNRESET', async function () {
 			});
 			console.log(ret);
 		} catch (e) {
-			console.log(e);
-		}
+            console.log(e.toString());
+            e.toString().should.includes("BotExpressMessengerLineError");
+        }
 	});
 });

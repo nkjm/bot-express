@@ -775,15 +775,15 @@ class Bot {
      * @param {Boolean} [options.clear_confirmed]
      */
     rewind_confirmed(options = {}){
+        // If we're in sub parameter and collect first child question, we need to go back to previous parameter.
+        if (this._context._sub_parameter && Object.keys(this._context.confirmed).length === 0) {
+            this.checkout_parent_parameter()
+        }
+
         // Check if there is previously processed parameter.
         if (!(this._context.previous && Array.isArray(this._context.previous.processed) && this._context.previous.processed.length > 0)){
             debug(`There is no processed parameter.`);
             return;
-        }
-
-        // If we're in sub parameter and collect first child question, we need to go back to previous parameter.
-        if (this._context._sub_parameter && Object.keys(this._context.confirmed).length === 0) {
-            this.checkout_parent_parameter()
         }
 
         const param_name = this._context.previous.processed[0];
@@ -1030,6 +1030,7 @@ class Bot {
         Object.assign(this._context.heard, collected_heard)
         Object.assign(this._context.global, global)
         Object.assign(this._context._message_queue, message_queue)
+        Object.assign(this._context.previous.processed, parent_context.previous.processed)
     }
 
     /**

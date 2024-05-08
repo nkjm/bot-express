@@ -49,11 +49,15 @@ describe('Test for retry with ECONNRESET', async function () {
 			channel_access_token: 'dummy',
 			endpoint: `http://localhost:${port}`,
 		});
-		try {
+        let headers = {
+            Authorization: `Bearer test`,
+            'X-Line-Retry-Key': line.generate_retry_key(),
+        }
+        try {
 			const ret = await line.request({
 				method: 'post',
 				url: `http://localhost:${port}/v2/bot/message/reply`,
-				headers: '',
+				headers: headers,
 				data: 'test',
 			});
 			console.log(ret);
@@ -70,10 +74,14 @@ describe('Test for retry with ECONNRESET', async function () {
 			endpoint: `http://localhost:${port}`,
 		});
 		try {
-			const ret = await line.request({
+            let headers = {
+                Authorization: `Bearer test`,
+                'X-Line-Retry-Key': line.generate_retry_key(),
+            }
+            const ret = await line.request({
 				method: 'post',
 				url: `http://localhost:${port}/v2/bot/message/multicast`,
-				headers: '',
+				headers: headers,
 				data: 'test',
 			});
 			console.log(ret);

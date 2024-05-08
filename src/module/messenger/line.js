@@ -346,7 +346,8 @@ module.exports = class MessengerLine {
 
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/broadcast`;
         let headers = {
-            Authorization: `Bearer ${this._access_token}`
+            Authorization: `Bearer ${this._access_token}`,
+            'X-Line-Retry-Key': this.generate_retry_key(),
         }
         let body = {
             messages: messages
@@ -377,7 +378,8 @@ module.exports = class MessengerLine {
         
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/multicast`;
         let headers = {
-            Authorization: `Bearer ${this._access_token}`
+            Authorization: `Bearer ${this._access_token}`,
+            'X-Line-Retry-Key': this.generate_retry_key(),
         }
         let body = {
             to: to,
@@ -409,7 +411,8 @@ module.exports = class MessengerLine {
 
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/push`;
         let headers = {
-            Authorization: `Bearer ${this._access_token}`
+            Authorization: `Bearer ${this._access_token}`,
+            'X-Line-Retry-Key': this.generate_retry_key(),
         }
         let body = {
             to: to,
@@ -498,7 +501,7 @@ module.exports = class MessengerLine {
 
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/reply`;
         let headers = {
-            Authorization: `Bearer ${this._access_token}`
+            Authorization: `Bearer ${this._access_token}`,
         }
         let body = {
             replyToken: event.replyToken,
@@ -570,6 +573,11 @@ module.exports = class MessengerLine {
 
     static extract_to_id(event){
         return event.to[`${event.to.type}Id`];
+    }
+
+    generate_retry_key(){
+        // generate hexadecimal UUID
+        return crypto.randomBytes(36).toString('hex');
     }
 
     static extract_param_value(event){
@@ -1136,9 +1144,9 @@ module.exports = class MessengerLine {
                 // If this is an error due to Rate Limit, we retry just once.
                 if (e.response.status === 429 && retry == true) {
                     debug(`Got error due to Rate Limit and going to retry..`);
-                    // sleep and retry with
+                    // sleep and retry with only once.
                     await this.sleep();
-                    return this.request(options, false, retry_count + 1);
+                    return this.request(options, false);
 
                 }
                 if (e.response.status === 500 && retry == true) {

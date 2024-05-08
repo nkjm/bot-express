@@ -11,6 +11,7 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 const server = http.createServer((req, res) => {
+    console.log(req);
 	// Reproduction ECONNRESET
 	res.socket.end();
 });

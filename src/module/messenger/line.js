@@ -448,6 +448,22 @@ module.exports = class MessengerLine {
         return false
     }
 
+    static is_monthly_limit(e){
+        debug(`Check if following error is due to monthly limit.`)
+        if(!e.response || !e.response.data){
+            return false;
+        }
+        debug(e.response.data)
+
+        if (e.response.data.details){
+            if (e.response.data.details.find((d) => d.message.includes(`You have reached your monthly limit`))){
+				return true
+			}
+        }
+
+        return false
+    }
+
     async reply(event, messages){
         // If this is test, we will not actually issue call out.
         if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
@@ -1093,6 +1109,14 @@ module.exports = class MessengerLine {
         const max_retry = 3;
         options.timeout = 7000;
         let response = await axios.request(options).catch(async (e) => {
+            if (MessengerLine.is_monthly_limit(e)) {
+				throw new BotExpressMessengerLineError({
+					message: `Callout failed in messenger/line.js bacasuse of monthly limit exceeded.`,
+					status: e.response ? e.response.status : '',
+					request: options,
+					data: e.response && e.response.data ? e.response.data : '',
+				});
+			}
             if (e.code) {
                 if( (e.code === 'ECONNRESET' || e.code === 'ECONNREFUSED' || e.code === 'ETIMEDOUT') && retry === true) {
                     debug(`Got error due to network issue and going to retry (reason: ${e.code})..`);
@@ -1114,9 +1138,9 @@ module.exports = class MessengerLine {
                 // If this is an error due to Rate Limit, we retry just once.
                 if (e.response.status === 429 && retry == true) {
                     debug(`Got error due to Rate Limit and going to retry..`);
-                    // sleep and retry with incremented retry_count until max_retry
+                    // sleep and retry with
                     await this.sleep();
-                    return this.request(options, max_retry > retry_count, retry_count + 1);
+                    return this.request(options, false, retry_count + 1);
 
                 }
                 if (e.response.status === 500 && retry == true) {

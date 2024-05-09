@@ -1142,14 +1142,14 @@ module.exports = class MessengerLine {
                     return this.request(options, false);
                 }
                 // If this is an error due to Rate Limit, we retry just once.
-                if (e.response.status === 429 && retry == true) {
+                if (e.response.status === 429 && retry === true) {
                     debug(`Got error due to Rate Limit and going to retry..`);
                     // sleep and retry with only once.
                     await this.sleep();
                     return this.request(options, false);
 
                 }
-                if (e.response.status === 500 && retry == true) {
+                if (e.response.status === 500 && retry === true) {
                     debug(`Got internal server error and going to retry..`);
                     // sleep and retry with incremented retry_count until max_retry
                     await this.sleep();

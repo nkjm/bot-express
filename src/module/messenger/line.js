@@ -346,7 +346,8 @@ module.exports = class MessengerLine {
 
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/broadcast`;
         let headers = {
-            Authorization: `Bearer ${this._access_token}`
+            Authorization: `Bearer ${this._access_token}`,
+            'X-Line-Retry-Key': this.generate_retry_key(),
         }
         let body = {
             messages: messages
@@ -377,7 +378,8 @@ module.exports = class MessengerLine {
         
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/multicast`;
         let headers = {
-            Authorization: `Bearer ${this._access_token}`
+            Authorization: `Bearer ${this._access_token}`,
+            'X-Line-Retry-Key': this.generate_retry_key(),
         }
         let body = {
             to: to,
@@ -409,7 +411,8 @@ module.exports = class MessengerLine {
 
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/push`;
         let headers = {
-            Authorization: `Bearer ${this._access_token}`
+            Authorization: `Bearer ${this._access_token}`,
+            'X-Line-Retry-Key': this.generate_retry_key(),
         }
         let body = {
             to: to,
@@ -443,6 +446,20 @@ module.exports = class MessengerLine {
             } else if (e.data.message === `Invalid reply token`){
                 return true
             }
+        }
+
+        return false
+    }
+
+    static is_monthly_limit(e){
+        if(!e.response || !e.response.data){
+            return false;
+        }
+
+        if (e.response.data.details){
+            if (e.response.data.details.find((d) => d.message.includes(`You have reached your monthly limit`))){
+				return true
+			}
         }
 
         return false
@@ -484,7 +501,7 @@ module.exports = class MessengerLine {
 
         let url = `https://${this._endpoint}/${this._api_version}/bot/message/reply`;
         let headers = {
-            Authorization: `Bearer ${this._access_token}`
+            Authorization: `Bearer ${this._access_token}`,
         }
         let body = {
             replyToken: event.replyToken,
@@ -556,6 +573,11 @@ module.exports = class MessengerLine {
 
     static extract_to_id(event){
         return event.to[`${event.to.type}Id`];
+    }
+
+    generate_retry_key(){
+        // generate hexadecimal UUID
+        return crypto.randomBytes(36).toString('hex');
     }
 
     static extract_param_value(event){
@@ -1083,83 +1105,97 @@ module.exports = class MessengerLine {
         }
     }
 
-    async request(options, retry = true){
-        options.timeout = 7000
-
+    async sleep() {
+        // Wait for 3000 ms by default.
+        const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 3000;
+        const _sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        await _sleep(retry_delay);
+    }
+    async request(options, retry = true, retry_count = 1) {
+        const max_retry = 3;
+        options.timeout = 7000;
         let response = await axios.request(options).catch(async (e) => {
-            if (e.response){
+            if (MessengerLine.is_monthly_limit(e)) {
+				throw new BotExpressMessengerLineError({
+					message: `Callout failed in messenger/line.js bacasuse of monthly limit exceeded.`,
+					status: e.response ? e.response.status : '',
+					request: options,
+					data: e.response && e.response.data ? e.response.data : '',
+				});
+			}
+            if (e.code) {
+                if( (e.code === 'ECONNRESET' || e.code === 'ECONNREFUSED' || e.code === 'ETIMEDOUT') && retry === true) {
+                    debug(`Got error due to network issue and going to retry (reason: ${e.code})..`);
+                    // sleep and retry with incremented retry_count until max_retry
+                    await this.sleep();
+                    return this.request(options, max_retry > retry_count, retry_count + 1);
+                }
+            }
+            if (e.response) {
                 // If this is an error due to expiration of channel access token, we refresh and retry.
-                if (e.response.status === 401 && retry === true){
-                    debug(`Going to refresh channel access token and retry..`)
-                    await this.refresh_token(true)
+                if (e.response.status === 401 && retry === true) {
+                    debug(`Going to refresh channel access token and retry..`);
+                    await this.refresh_token(true);
                     options.headers = {
                         Authorization: `Bearer ${this._access_token}`
-                    }
-                    return this.request(options, false)
+                    };
+                    return this.request(options, false);
                 }
-
                 // If this is an error due to Rate Limit, we retry just once.
-                if (e.response.status === 429 && retry == true){
-                    debug(`Got error due to Rate Limit and going to retry..`)
+                if (e.response.status === 429 && retry === true) {
+                    debug(`Got error due to Rate Limit and going to retry..`);
+                    // sleep and retry with only once.
+                    await this.sleep();
+                    return this.request(options, false);
 
-                    // Wait for 3000 ms by default.
-                    const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 3000
-                    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-                    await sleep(retry_delay)
-
-                    // Retry.
-                    return this.request(options, false)
                 }
-
-                if (e.response.status === 500 && retry == true){
-                    debug(`Got internal server error and going to retry..`)
-
-                    // Wait for 1000 ms by default.
-                    const retry_delay = parseInt(process.env.LINE_RETRY_DELAY) || 1000
-                    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-                    await sleep(retry_delay)
-
-                    // Retry.
-                    return this.request(options, false)
+                if (e.response.status === 500 && retry === true) {
+                    debug(`Got internal server error and going to retry..`);
+                    // sleep and retry with incremented retry_count until max_retry
+                    await this.sleep();
+                    return this.request(options, max_retry > retry_count, retry_count + 1);
                 }
-
-                debug(`Error response follows.`)
-                debug(e.response)
-
+                debug(`Error response follows.`);
+                debug(e.response);
                 throw new BotExpressMessengerLineError({
                     message: `Callout failed in messenger/line.js.`,
                     status: e.response.status,
                     request: options,
                     data: e.response.data
-                })                
-            } else if (e.request){
-                if (retry){
-                    debug(`Retry requesting LINE Messaging API..`)
-
+                });
+            }
+            else if (e.request) {
+                if (retry) {
+                    debug(`Retry requesting LINE Messaging API..`);
                     // Retry.
-                    return this.request(options, false)
-                } else {
-                    let error_message = `Callout failed in messenger/line.js. No response received.`
-                    if (options.url) error_message += ` url: ${options.url}`
-                    if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
+                    return this.request(options, false);
+                }
+                else {
+                    let error_message = `Callout failed in messenger/line.js. No response received.`;
+                    if (options.url)
+                        error_message += ` url: ${options.url}`;
+                    if (options.data)
+                        error_message += ` data: ${JSON.stringify(options.data)}`;
                     throw new BotExpressMessengerLineError({
                         message: error_message
-                    })
+                    });
                 }
-            } else {
-                let error_message = `Callout failed in messenger/line.js.`
-                if (e && e.message){
-                    error_message += ` ${e.message}`
+            }
+            else {
+                let error_message = `Callout failed in messenger/line.js.`;
+                if (e && e.message) {
+                    error_message += ` ${e.message}`;
                 }
-                if (options.url) error_message += ` url: ${options.url}`
-                if (options.data) error_message += ` data: ${JSON.stringify(options.data)}`
+                if (options.url)
+                    error_message += ` url: ${options.url}`;
+                if (options.data)
+                    error_message += ` data: ${JSON.stringify(options.data)}`;
                 throw new BotExpressMessengerLineError({
                     message: error_message
-                })
+                });
             }
-        })
-
-        return response.data
+        });
+        return response.data;
     }
 
     /**

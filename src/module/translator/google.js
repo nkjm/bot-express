@@ -49,7 +49,7 @@ class TranslatorGoogle {
             throw new Error(`key_filename or (client_email and private_key) option is required for TranslatorGoogle.`);
         }
 
-        // Instantiates a translater
+        // Instantiates a translator
         this.translator = new Translate(google_options);
     }
 

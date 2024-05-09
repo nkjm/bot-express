@@ -19,7 +19,7 @@ let emu = new Emulator(messenger_option.name, messenger_option.options);
 
 let user_id = "dummy_user_id";
 
-describe("Unexistent skill in start conversation flow", function(){
+describe("Inexistent skill in start conversation flow", function(){
     it("should be ignored.", async function(){
         this.timeout(15000);
 
@@ -38,7 +38,7 @@ describe("Unexistent skill in start conversation flow", function(){
     });
 });
 
-describe("Unexistent skill in reply flow", function(){
+describe("Inexistent skill in reply flow", function(){
     it("should be ignored.", async function(){
         this.timeout(15000);
 
@@ -65,7 +65,7 @@ describe("Unexistent skill in reply flow", function(){
     });
 });
 
-describe("Unexistent skill in btw flow", function(){
+describe("Inexistent skill in btw flow", function(){
     it("should be ignored.", async function(){
         this.timeout(15000);
 
@@ -90,7 +90,7 @@ describe("Unexistent skill in btw flow", function(){
     });
 });
 
-describe("Unexistent skill in push flow", function(){
+describe("Inexistent skill in push flow", function(){
     it("should be ignored.", async function(){
         this.timeout(15000);
 

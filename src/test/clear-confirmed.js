@@ -25,7 +25,7 @@ for (let messenger_option of messenger_options){
         })
 
         describe("If modify previous,", async function(){
-            it("auto applied value should be cleard", async function(){
+            it("auto applied value should be cleared", async function(){
 
                 let context = await emu.send(emu.create_postback_event(user_id, {data: JSON.stringify({
                     _type: "intent",

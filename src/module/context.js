@@ -59,7 +59,7 @@ module.exports = class Context {
             to_confirm: context.to_confirm,
             heard: context.heard, 
             sender_language: context.sender_language,
-            translation: context.transation
+            translation: context.translation
         })
         return clone(context.archive)
     }

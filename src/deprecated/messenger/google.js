@@ -421,12 +421,12 @@ module.exports = class MessengerGoogle {
     /**
     @deprecated
     */
-    static translate_message(translater, message_type, message, sender_language){
+    static translate_message(translator, message_type, message, sender_language){
         throw new Error("This method is not supported.");
         /*
         switch(message_type){
             case "text": {
-                return translater.translate(message.text, sender_language).then(
+                return translator.translate(message.text, sender_language).then(
                     (response) => {
                         message.text = response[0];
                         debug("Translated message follows.");
@@ -445,7 +445,7 @@ module.exports = class MessengerGoogle {
                         source_texts.push(action.text);
                     }
                 }
-                return translater.translate(source_texts, sender_language).then(
+                return translator.translate(source_texts, sender_language).then(
                     (response) => {
                         message.altText = response[0][0];
                         message.template.text = response[0][1];
@@ -482,7 +482,7 @@ module.exports = class MessengerGoogle {
                         }
                     }
                 }
-                return translater.translate(source_texts, sender_language).then(
+                return translator.translate(source_texts, sender_language).then(
                     (response) => {
                         message.altText = response[0][0];
 

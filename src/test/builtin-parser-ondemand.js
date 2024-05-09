@@ -23,7 +23,7 @@ describe("Test builtin parser on demand usage", function(){
     })
 
     describe("dialogflow", async function(){
-        it("will use builin dialogflow parser.", async function(){
+        it("will use builtin dialogflow parser.", async function(){
             let context;
 
             context = await emu.send(emu.create_postback_event(user_id, {
@@ -48,7 +48,7 @@ describe("Test builtin parser on demand usage", function(){
     });
 
     describe("list", async function(){
-        it("will use builin list parser.", async function(){
+        it("will use builtin list parser.", async function(){
             let context;
 
             context = await emu.send(emu.create_postback_event(user_id, {

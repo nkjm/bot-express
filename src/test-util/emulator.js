@@ -19,8 +19,8 @@ module.exports = class TestUtilEmulator {
     constructor(messenger_type, options, line_user_id){
         this.messenger_type = messenger_type;
 
-        let scritps = fs.readdirSync(__dirname + "/messenger");
-        for (let script of scritps){
+        let scripts = fs.readdirSync(__dirname + "/messenger");
+        for (let script of scripts){
             if (script.replace(".js", "") == messenger_type){
                 debug("Found plugin for specified messenger. Loading " + script + "...");
                 let Messenger = require("./messenger/" + messenger_type);

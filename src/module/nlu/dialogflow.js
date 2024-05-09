@@ -57,7 +57,7 @@ module.exports = class NluDialogflow {
     */
     async identify_intent(sentence, options){
         if (!options.session_id){
-            throw new Error(`Required option "session_id" for NluDialogflow.indentify_intent() not set.`);
+            throw new Error(`Required option "session_id" for NluDialogflow.identify_intent() not set.`);
         }
 
         if (this._bytes(sentence) > 256){

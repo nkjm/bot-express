@@ -25,7 +25,7 @@ class Parser {
             const parser = script.replace(".js", "");
             
             // Import parser implementation and identify corresponding options.
-            debug("Loading parser implementaion: " + script + "...");
+            debug("Loading parser implementation: " + script + "...");
             let Parser_implementation= require("./parser/" + script);
             let options = options_list.find(options => options.type === script.replace(".js", ""));
             if (!options){
@@ -40,7 +40,7 @@ class Parser {
                     debug(`Skip instantiating parser: "${parser}" since required options not set.`)
                     continue
                 } else {
-                    debug(`Failed to instanticate parser implementation of "${parser}" so we skip this parser.`);
+                    debug(`Failed to instantiate parser implementation of "${parser}" so we skip this parser.`);
                     if (e && e.message){
                         debug(e.message);
                     }

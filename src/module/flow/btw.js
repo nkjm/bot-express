@@ -54,7 +54,7 @@ module.exports = class BtwFlow extends Flow {
 
                     if (postback_payload.intent && postback_payload.intent.name == this.context.intent.name){
                         // This is restart conversation.
-                        debug(`We conluded that user has in mind to restart conversation.`);
+                        debug(`We concluded that user has in mind to restart conversation.`);
                         skip_translate = true;
                         skip_identify_mind = true;
                         mind = {
@@ -63,7 +63,7 @@ module.exports = class BtwFlow extends Flow {
                         };
                     } else if (postback_payload.intent && postback_payload.intent.name != this.context.intent.name){
                         // This is change intent.
-                        debug(`We conluded that user has in mind to change intent.`);
+                        debug(`We concluded that user has in mind to change intent.`);
                         skip_translate = true;
                         skip_identify_mind = true;
                         mind = {

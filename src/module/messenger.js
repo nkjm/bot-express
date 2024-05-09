@@ -113,7 +113,7 @@ class Messenger {
     }
 
     /**
-    * Extract reciever's user/room/group id.
+    * Extract receiver's user/room/group id.
     * @param {EventObject} event - Event to extract message text.
     * @returns {String}
     */
@@ -203,7 +203,7 @@ class Messenger {
 
     /**
     * Push messages to multiple users.
-    * @param {Array.<String>} recipient_ids - The array of recipent user id.
+    * @param {Array.<String>} recipient_ids - The array of recipient user id.
     * @param {Array.<MessageObject>} messages - The array of message objects.
     * @returns {Array.<Promise>}
     */

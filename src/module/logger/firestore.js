@@ -9,7 +9,7 @@ module.exports = class LoggerFirestore {
     /**
      * @constructor 
      * @param {Object} options 
-     * @param {Object} [instnce] - Firestore instance created by firebase_admin.firestore() of firebase admin sdk.
+     * @param {Object} [instance] - Firestore instance created by firebase_admin.firestore() of firebase admin sdk.
      * @param {String} [project_id] - Firebase project id.
      * @param {String} [client_email] - Firebase client email.
      * @param {String} [private_key] - Firebase private key.

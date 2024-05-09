@@ -4,6 +4,7 @@ const debug = require("debug")("bot-express:memory");
 const default_store = "memory-cache";
 const fs = require("fs");
 const memory_cache = require("memory-cache"); // Not as memory store but as timer.
+const { getDefault } = require("./utils");
 const prefix_context = "be_context_";
 const prefix_session = "be_session_";
 const prefix_timer = "be_timer_";
@@ -103,7 +104,7 @@ class Memory {
                     // Run on_abort function.
                     if (!skip_on_abort){
                         debug("Running on_abort function..");
-                        const Skill = require(`${context.skill.path}${context.skill.type}`);
+                        const Skill = getDefault(require(`${context.skill.path}${context.skill.type}`));
                         const skill = new Skill();
                         if (typeof skill.on_abort === "function" && timer_value.bot){
                             await skill.on_abort(timer_value.bot, context.event, context);

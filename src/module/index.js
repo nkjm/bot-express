@@ -3,12 +3,13 @@
 require("dotenv").config();
 
 const REQUIRED_OPTIONS = {
-    common: []
-}
+  common: [],
+};
 const DEFAULT_SKILL_PATH = "../../../../skill/";
 const DEFAULT_TRANSLATION_LABEL_PATH = "../../../../translation/label.js";
 const DEFAULT_MESSAGE_PATH = "../../../../message/";
 const DEFAULT_PARAMETER_PATH = "../../../../parameter/";
+const DEFAULT_LOGGER_PATH = "../../../../logger/";
 const DEFAULT_INTENT = "input.unknown";
 const DEFAULT_SKILL = "builtin_default";
 const DEFAULT_LANGUAGE = "ja";
@@ -17,7 +18,7 @@ const DEFAULT_PARALLEL_EVENT = "ignore";
 const express = require("express");
 const debug = require("debug")("bot-express:index");
 const Webhook = require("./webhook");
-const path = require("node:path")
+const path = require("node:path");
 
 // Context free libs
 const Logger = require("./logger");
@@ -92,220 +93,257 @@ bot-express module. This module should be mounted on webhook URI and requires co
 @param {String} [options.pass_through_webhook] - Webhook URL to pass event through.
 */
 module.exports = (options) => {
-    debug("\nBot Express\n");
+  debug("\nBot Express\n");
 
-    // Set optional options.
-    options.language = options.language || DEFAULT_LANGUAGE;
-    options.default_intent = options.default_intent || DEFAULT_INTENT;
-    options.skill = options.skill || {};
-    options.skill.default = options.skill.default || DEFAULT_SKILL;
-    options.parallel_event = options.parallel_event || DEFAULT_PARALLEL_EVENT;
+  // Set optional options.
+  options.language = options.language || DEFAULT_LANGUAGE;
+  options.default_intent = options.default_intent || DEFAULT_INTENT;
+  options.skill = options.skill || {};
+  options.skill.default = options.skill.default || DEFAULT_SKILL;
+  options.parallel_event = options.parallel_event || DEFAULT_PARALLEL_EVENT;
 
-    // Reaction is run in flow. So path should be relative path from flow.
-    if (options.reaction && options.reaction.path){
-        if (process.env.BOT_EXPRESS_ENV != "development"){
-            if (!path.isAbsolute(options.reaction.path)) {
-                options.reaction.path = "../../../../" + options.reaction.path
-            }
-        }   
+  // Reaction is run in flow. So path should be relative path from flow.
+  if (options.reaction && options.reaction.path) {
+    if (process.env.BOT_EXPRESS_ENV != "development") {
+      if (!path.isAbsolute(options.reaction.path)) {
+        options.reaction.path = "../../../../" + options.reaction.path;
+      }
+    }
+  }
+
+  // Skill will be required in flow. So path should be relative path from flow.
+  if (options.skill_path) {
+    if (!path.isAbsolute(options.skill_path)) {
+      options.skill_path = "../../../../" + options.skill_path;
+    }
+  } else if (process.env.BOT_EXPRESS_ENV == "development") {
+    // This is for Bot Express development environment only.
+    options.skill_path = "../sample_skill/";
+  } else {
+    options.skill_path = DEFAULT_SKILL_PATH;
+  }
+
+  // Message will be required in flow. So path should be relative path from flow.
+  if (options.message_path) {
+    if (!path.isAbsolute(options.message_path)) {
+      options.message_path = "../../../../" + options.message_path;
+    }
+  } else if (process.env.BOT_EXPRESS_ENV == "development") {
+    // This is for Bot Express development environment only.
+    options.message_path = "../sample_message/";
+  } else {
+    options.message_path = DEFAULT_MESSAGE_PATH;
+  }
+
+  // Parameter will be required in flow. So path should be relative path from flow.
+  if (options.parameter_path) {
+    if (!path.isAbsolute(options.parameter_path)) {
+      options.parameter_path = "../../../../" + options.parameter_path;
+    }
+  } else if (process.env.BOT_EXPRESS_ENV == "development") {
+    // This is for Bot Express development environment only.
+    options.parameter_path = "../sample_parameter/";
+  } else {
+    options.parameter_path = DEFAULT_PARAMETER_PATH;
+  }
+
+  // Logger will be required in flow. So path should be relative path from flow.
+  if (options.logger_path) {
+    if (!path.isAbsolute(options.logger_path)) {
+      options.logger_path = "../../../../" + options.logger_path;
+    }
+  } else if (process.env.BOT_EXPRESS_ENV == "development") {
+    // This is for Bot Express development environment only.
+    options.logger_path = "../sample_logger/";
+  } else {
+    options.logger_path = DEFAULT_LOGGER_PATH;
+  }
+
+  // Translator will be required in bot. So path should be relative path from bot.
+  options.translator = options.translator || {};
+  if (options.translator.label_path) {
+    if (!path.isAbsolute(options.translator.label_path)) {
+      options.translator.label_path =
+        "../../../../" + options.translator.label_path;
+    }
+  } else if (process.env.BOT_EXPRESS_ENV == "development") {
+    // This is for Bot Express development environment only.
+    options.translator.label_path = "../sample_translation/label.js";
+  } else {
+    options.translator.label_path = DEFAULT_TRANSLATION_LABEL_PATH;
+  }
+
+  options.facebook_verify_token =
+    options.facebook_verify_token || options.facebook_app_secret;
+
+  // Check if common required options are set.
+  for (let req_opt of REQUIRED_OPTIONS["common"]) {
+    if (typeof options[req_opt] == "undefined") {
+      throw new Error(`Required option: "${req_opt}" not set`);
+    }
+  }
+  debug("Common required options all set.");
+
+  // Instantiate request and context free classes so that we don't have to do it in every single requests.
+  const logger = new Logger(options.logger_path, options.logger || {});
+  const memory = new Memory(options.memory || {}, logger);
+  const parser = new Parser(options.parser);
+  const nlu = options.nlu ? new Nlu(options.nlu) : null;
+
+  // Setup websocket
+  let onWebsocketMessage;
+  if (options.messenger.web) {
+    onWebsocketMessage = async (message, userId) => {
+      const messenger = new Messenger(options.messenger, "web");
+      // Validate signature. currently do nothing because it is authenticated on upgrade connection
+      if (!messenger.validate_signature(message)) {
+        return;
+      }
+      const webhook = new Webhook(options, {
+        logger,
+        memory,
+        nlu,
+        parser,
+        messenger,
+      });
+      try {
+        await webhook.run(message);
+        debug("Successful End of Webhook(Websocket).");
+      } catch (e) {
+        debug("Abnormal End of Webhook(Websocket). Error follows.");
+        debug(e);
+      }
+    };
+  } else {
+    onWebsocketMessage = null;
+  }
+
+  // Create router.
+  const router = express.Router();
+  router.use(
+    express.json({
+      limit: "5mb",
+      verify: (req, res, buf, encoding) => {
+        req.raw_body = buf;
+      },
+    })
+  );
+  router.use(
+    express.urlencoded({
+      limit: "5mb",
+      extended: true,
+    })
+  );
+
+  // Webhook Process
+  router.post("/", async (req, res, next) => {
+    // If this is production environment and request is not from google, we return 200 OK.
+    if (!["development", "test"].includes(process.env.BOT_EXPRESS_ENV)) {
+      if (!req.get("google-actions-api-version")) {
+        res.sendStatus(200);
+      }
     }
 
-    // Skill will be required in flow. So path should be relative path from flow.
-    if (options.skill_path){
-        if (!path.isAbsolute(options.skill_path)) {
-            options.skill_path = "../../../../" + options.skill_path;
-        }
-    } else if (process.env.BOT_EXPRESS_ENV == "development"){
-        // This is for Bot Express development environment only.
-        options.skill_path = "../sample_skill/";
+    // Check header and identify which platform this request comes from.
+    let messenger_type;
+    if (req.get("X-Line-Signature") && req.body.events) {
+      messenger_type = "line";
+    } else if (req.get("X-Hub-Signature") && req.body.object == "page") {
+      messenger_type = "facebook";
+    } else if (req.get("google-actions-api-version")) {
+      messenger_type = "google";
     } else {
-        options.skill_path = DEFAULT_SKILL_PATH;
+      debug(
+        `This event comes from unsupported message platform. Skip processing.`
+      );
+      if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)) {
+        res.sendStatus(200);
+      }
+      return;
     }
 
-    // Message will be required in flow. So path should be relative path from flow.
-    if (options.message_path){
-        if (!path.isAbsolute(options.message_path)) {
-            options.message_path = "../../../../" + options.message_path;
-        }
-    } else if (process.env.BOT_EXPRESS_ENV == "development"){
-        // This is for Bot Express development environment only.
-        options.message_path = "../sample_message/";
-    } else {
-        options.message_path = DEFAULT_MESSAGE_PATH;
+    // Check if corresponding messenger configuration has been set for this request.
+    if (!options.messenger[messenger_type]) {
+      debug(
+        `bot-express has not been configured to handle message from ${messenger_type} so we skip this event.`
+      );
+      if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)) {
+        res.sendStatus(200);
+      }
+      return;
     }
 
-    // Parameter will be required in flow. So path should be relative path from flow.
-    if (options.parameter_path){
-        if (!path.isAbsolute(options.parameter_path)) {
-            options.parameter_path = "../../../../" + options.parameter_path;
-        }
-    } else if (process.env.BOT_EXPRESS_ENV == "development"){
-        // This is for Bot Express development environment only.
-        options.parameter_path = "../sample_parameter/";
-    } else {
-        options.parameter_path = DEFAULT_PARAMETER_PATH;
+    // Instantiate messenger instance.
+    const messenger = new Messenger(options.messenger, messenger_type);
+
+    // Validate signature.
+    if (!messenger.validate_signature(req)) {
+      debug(`Signature validation failed.`);
+      if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)) {
+        res.sendStatus(200);
+      }
+      return;
     }
 
-    // Translator will be required in bot. So path should be relative path from bot.
-    options.translator = options.translator || {};
-    if (options.translator.label_path){
-        if (!path.isAbsolute(options.translator.label_path)) {
-            options.translator.label_path = "../../../../" + options.translator.label_path;
-        }
-    } else if (process.env.BOT_EXPRESS_ENV == "development"){
-        // This is for Bot Express development environment only.
-        options.translator.label_path = "../sample_translation/label.js";
-    } else {
-        options.translator.label_path = DEFAULT_TRANSLATION_LABEL_PATH;
-    }
-
-    options.facebook_verify_token = options.facebook_verify_token || options.facebook_app_secret;
-
-    // Check if common required options are set.
-    for (let req_opt of REQUIRED_OPTIONS["common"]){
-        if (typeof options[req_opt] == "undefined"){
-            throw new Error(`Required option: "${req_opt}" not set`);
-        }
-    }
-    debug("Common required options all set.");
-
-    // Instantiate request and context free classes so that we don't have to do it in every single requests.
-    const logger = new Logger(options.logger || {});
-    const memory = new Memory(options.memory || {}, logger);
-    const parser = new Parser(options.parser);
-    const nlu = (options.nlu) ? new Nlu(options.nlu) : null
-
-    // Setup websocket
-    let onWebsocketMessage
-    if (options.messenger.web) {
-        onWebsocketMessage = async (message, userId) => {
-            const messenger = new Messenger(options.messenger, 'web');
-            // Validate signature. currently do nothing because it is authenticated on upgrade connection
-            if (!messenger.validate_signature(message)) {
-                return
-            }
-            const webhook = new Webhook(options, { logger, memory, nlu, parser, messenger });
-            try {
-                await webhook.run(message)
-                debug("Successful End of Webhook(Websocket).");
-            } catch (e) {
-                debug("Abnormal End of Webhook(Websocket). Error follows.");
-                debug(e);
-            }
-        }
-    } else {
-        onWebsocketMessage = null
-    }
-
-    // Create router.
-    const router = express.Router()
-    router.use(express.json({
-        limit: "5mb",
-        verify: (req, res, buf, encoding) => {
-            req.raw_body = buf
-        },
-    }))
-    router.use(express.urlencoded({ 
-        limit: "5mb",
-        extended: true 
-    }))
-
-    // Webhook Process
-    router.post('/', async (req, res, next) => {
-        // If this is production environment and request is not from google, we return 200 OK.
-        if (!["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-            if (!req.get("google-actions-api-version")){
-                res.sendStatus(200);
-            }
-        }
-
-        // Check header and identify which platform this request comes from.
-        let messenger_type;
-        if (req.get("X-Line-Signature") && req.body.events){
-            messenger_type = "line";
-        } else if (req.get("X-Hub-Signature") && req.body.object == "page"){
-            messenger_type = "facebook";
-        } else if (req.get("google-actions-api-version")){
-            messenger_type = "google";
-        } else {
-            debug(`This event comes from unsupported message platform. Skip processing.`);
-            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                res.sendStatus(200);
-            }
-            return;
-        }
-
-        // Check if corresponding messenger configuration has been set for this request.
-        if (!options.messenger[messenger_type]){
-            debug(`bot-express has not been configured to handle message from ${messenger_type} so we skip this event.`)
-            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                res.sendStatus(200)
-            }
-            return
-        }
-
-        // Instantiate messenger instance.
-        const messenger = new Messenger(options.messenger, messenger_type);
-
-        // Validate signature.
-        if (!messenger.validate_signature(req)){
-            debug(`Signature validation failed.`)
-            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                res.sendStatus(200)
-            }
-            return
-        }
-
-        /*
+    /*
         We need to uncomment below in case of google assistant.
         options.req = req;
         options.res = res;
         */
 
-        const webhook = new Webhook(options, { logger, memory, nlu, parser, messenger });
-
-        let context;
-        try {
-            context = await webhook.run(req.body)
-            debug("Successful End of Webhook.");
-        } catch(e){
-            debug("Abnormal End of Webhook. Error follows.");
-            debug(e);
-            if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-                if (e && e.name && e.message){
-                    return res.status(400).json({
-                        name: e.name,
-                        message: e.message,
-                    });
-                } else {
-                    return res.sendStatus(400);
-                }
-            }
-        }
-
-        if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)){
-            return res.json(context);
-        }
+    const webhook = new Webhook(options, {
+      logger,
+      memory,
+      nlu,
+      parser,
+      messenger,
     });
 
-    // Verify Facebook Webhook
-    router.get("/", (req, res, next) => {
-        if (!options.facebook_verify_token){
-            debug("Failed validation. facebook_verify_token not set.");
-            return res.sendStatus(403);
-        }
-        if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === options.facebook_verify_token) {
-            debug("Validating webhook");
-            return res.status(200).send(req.query['hub.challenge']);
+    let context;
+    try {
+      context = await webhook.run(req.body);
+      debug("Successful End of Webhook.");
+    } catch (e) {
+      debug("Abnormal End of Webhook. Error follows.");
+      debug(e);
+      if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)) {
+        if (e && e.name && e.message) {
+          return res.status(400).json({
+            name: e.name,
+            message: e.message,
+          });
         } else {
-            debug("Failed validation. Make sure the validation tokens match.");
-            return res.sendStatus(403);
+          return res.sendStatus(400);
         }
-    });
-
-    if (onWebsocketMessage) {
-        return { router, onWebsocketMessage }
-    } else {
-        return router
+      }
     }
-}
+
+    if (["development", "test"].includes(process.env.BOT_EXPRESS_ENV)) {
+      return res.json(context);
+    }
+  });
+
+  // Verify Facebook Webhook
+  router.get("/", (req, res, next) => {
+    if (!options.facebook_verify_token) {
+      debug("Failed validation. facebook_verify_token not set.");
+      return res.sendStatus(403);
+    }
+    if (
+      req.query["hub.mode"] === "subscribe" &&
+      req.query["hub.verify_token"] === options.facebook_verify_token
+    ) {
+      debug("Validating webhook");
+      return res.status(200).send(req.query["hub.challenge"]);
+    } else {
+      debug("Failed validation. Make sure the validation tokens match.");
+      return res.sendStatus(403);
+    }
+  });
+
+  if (onWebsocketMessage) {
+    return { router, onWebsocketMessage };
+  } else {
+    return router;
+  }
+};

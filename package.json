@@ -49,6 +49,7 @@
     "rfdc": "^1.3.0",
     "sanitize-html": "^2.10.0",
     "secure-compare": "^3.0.1",
+    "uuid": "^9.0.1",
     "wanakana": "^4.0.2"
   },
   "devDependencies": {

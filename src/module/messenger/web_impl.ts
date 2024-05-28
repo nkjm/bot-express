@@ -1,5 +1,5 @@
 import { MessengerStatic, MessengerType, StaticImplements } from "../messenger_type";
-import MessengerLine from "./line";
+const MessengerLine = require("./line");
 
 type Body = Event
 

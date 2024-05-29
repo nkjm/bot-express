@@ -2,8 +2,7 @@
 
 const debug = require("debug")("bot-express:bot");
 const Translator = require("./translator");
-const clone = require("rfdc/default");
-const { getDefault } = require("./utils");
+const clone = require("rfdc/default")
 
 /**
  * Toolkit to be used by skill.
@@ -398,7 +397,7 @@ class Bot {
         if (!(param.generator.file && param.generator.method)) {
             throw Error(`Generator of ${param_name} is not correctly set.`);
         }
-        const Generator = getDefault(require(`${this._options.parameter_path}${param.generator.file}`));
+        const Generator = require(`${this._options.parameter_path}${param.generator.file}`);
         const generator = new Generator();
         if (!generator[param.generator.method])
             throw Error(`${param.generator.file} does not have ${param.generator.method}`);

@@ -4,7 +4,6 @@ const debug = require("debug")("bot-express:translator");
 const default_service = "google";
 const default_sender_language = "ja";
 const fs = require("fs");
-const { getDefault } = require("./utils");
 
 /**
  * Translator Abstraction Class
@@ -30,7 +29,7 @@ class Translator {
         // Try to require translation label.
         try {
             require.resolve(options.label_path);
-            this.label = getDefault(require(options.label_path));
+            this.label = require(options.label_path);
         } catch (e){
             debug(`Translation label not found in ${options.label_path}.`)
         }
@@ -46,7 +45,7 @@ class Translator {
                 const script = scripts.find(script => script === `${this.type}.js`);
                 if (script){
                     debug(`Found plugin for specified translator service. Loading ${script}..`);
-                    let Service = getDefault(require(`./translator/${this.type}`));
+                    let Service = require(`./translator/${this.type}`);
                     this.service = new Service(options.options);
                 } else {
                     debug(`Specified translator type not found. We disable automatic lang detection and translation.`);

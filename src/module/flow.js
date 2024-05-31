@@ -958,6 +958,7 @@ module.exports = class Flow {
         this.context.to_confirm = Object.keys(param.sub_parameter)
         // Clear confirmed.
         this.context.confirmed = {}
+        this.context.previous.confirmed = []
         this.context.previous.processed = []
         // Set parent information.
         this.context._parent_parameter = {

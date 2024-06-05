@@ -315,7 +315,7 @@ module.exports = class Flow {
             return;
         }
 
-        if (parameters[param.name] === undefined || parameters[param.name] === [] || parameters[param.name] === ""){
+        if (parameters[param.name] === undefined || Array.isArray(parameters[param.name]) && parameters[param.name].length === 0 || parameters[param.name] === ""){
             debug(`Input parameters does not contain "${param.name}" which we should process now. We save the rest of input parameters as heard in context and exit process parameters.`);
             Object.assign(this.context.heard, parameters);
             return;

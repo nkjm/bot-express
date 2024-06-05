@@ -34,8 +34,8 @@
   },
   "author": "Kazuki Nakajima <nakajima@bot-express.com>",
   "dependencies": {
-    "@google-cloud/dialogflow": "^3.5.0",
-    "@google-cloud/translate": "^6.3.1",
+    "@google-cloud/dialogflow": "^6.7.0",
+    "@google-cloud/translate": "^8.3.0",
     "@line/bot-sdk": "^7.5.2",
     "axios": "^0.21.4",
     "body-parser": "^1.20.2",

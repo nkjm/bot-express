@@ -777,7 +777,7 @@ class Bot {
     rewind_confirmed(options = {}){
         // If we're in sub parameter and collect first child question, we need to go back to previous parameter.
         if (this._context._sub_parameter && Object.keys(this._context.confirmed).length === 0) {
-            this.checkout_parent_parameter()
+            this.checkout_parent_parameter(true)
         }
 
         // Check if there is previously processed parameter.
@@ -1007,7 +1007,7 @@ class Bot {
      * @method
      * @returns 
      */
-    checkout_parent_parameter(){
+    checkout_parent_parameter(rewind = false){
         if (!(Array.isArray(this._context._parent) && this._context._parent.length > 0)){
             throw new Error(`There is no parent context.`)
         }
@@ -1031,6 +1031,16 @@ class Bot {
         Object.assign(this._context.global, global)
         Object.assign(this._context._message_queue, message_queue)
         Object.assign(this._context.previous.processed, parent_context.previous.processed)
+        
+        if (rewind) {
+            const param_name = this._context.previous.confirmed[0];
+            debug(`Rewinding in checkout_parent_parameter: ${param_name}..`);
+            if (this._context.confirmed.hasOwnProperty(param_name)) {
+                debug(`We track the value of ${param_name} to rewind.`);
+                delete this._context.confirmed[param_name];
+                this._context.to_confirm = [];
+            }   
+        }
     }
 
     /**

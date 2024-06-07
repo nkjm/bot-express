@@ -1031,15 +1031,15 @@ class Bot {
         Object.assign(this._context.global, global)
         Object.assign(this._context._message_queue, message_queue)
         Object.assign(this._context.previous.processed, parent_context.previous.processed)
-        
+
         if (rewind) {
+            debug(`Rewinding context.to_confirm in checkout_parent_parameter..`)
             const param_name = this._context.previous.confirmed[0];
             debug(`Rewinding in checkout_parent_parameter: ${param_name}..`);
             if (this._context.confirmed.hasOwnProperty(param_name)) {
-                debug(`We track the value of ${param_name} to rewind.`);
-                delete this._context.confirmed[param_name];
-                this._context.to_confirm = [];
-            }   
+                debug(`We track ${param_name} to rewind.`);
+                this._context.to_confirm = this._context.to_confirm.filter((element) => element !== param_name && element !== this._context.confirming);
+            }
         }
     }
 

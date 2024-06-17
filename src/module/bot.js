@@ -776,7 +776,7 @@ class Bot {
      */
     rewind_confirmed(options = {}){
         // If we're in sub parameter and collect first child question, we need to go back to previous parameter.
-        if (this._context._sub_parameter && Object.keys(this._context.confirmed).length === 0) {
+        if (this._context._sub_parameter && this._context.previous.confirmed.length === 0) {
             this.checkout_parent_parameter()
         }
 

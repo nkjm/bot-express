@@ -1,9 +1,7 @@
 "use strict";
 
-module.exports = class LoggerStdout {
-  constructor() {
-    this.name = "test-logger";
-  }
+module.exports = class LoggerTest {
+  constructor() {}
 
   /**
    * @method

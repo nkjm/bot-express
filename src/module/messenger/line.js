@@ -12,6 +12,7 @@ const DEFAULT_API_VERSION = "v2"
 const DEFAULT_TOKEN_STORE = "memory-cache"
 const REQUIRED_PARAMETERS = ["channel_id", "channel_secret"]
 const CACHE_PREFIX = "be_messenger_line_"
+import { v4 as uuidv4 } from 'uuid';
 
 class BotExpressMessengerLineError extends Error {
     constructor(o){
@@ -577,7 +578,7 @@ module.exports = class MessengerLine {
 
     generate_retry_key(){
         // generate hexadecimal UUID
-        return crypto.randomBytes(36).toString('hex');
+        return uuidv4()
     }
 
     static extract_param_value(event){

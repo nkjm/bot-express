@@ -4,7 +4,6 @@ const debug = require("debug")("bot-express:flow");
 const Bot = require("./bot"); // Libraries to be exposed to skill.
 const Context = require("./context");
 const clone = require("rfdc/default")
-const { getDefault } = require('./utils')
 
 module.exports = class Flow {
     constructor(options, slib, event, context){
@@ -111,7 +110,7 @@ module.exports = class Flow {
             return
         }
 
-        const reaction = getDefault(require(this.options.reaction.path))
+        const reaction = require(this.options.reaction.path)
         const intent = await reaction(this.bot, this.event, this.context, message_text, o)
         return intent
     }
@@ -155,7 +154,7 @@ module.exports = class Flow {
             }
 
             debug(`Found skill: "${skill_name}".`);
-            let Skill = getDefault(require(`${this.options.skill_path}${skill_name}`));
+            let Skill = require(`${this.options.skill_path}${skill_name}`);
             let skill_options = {}
             skill_options.env = Object.assign({}, this.options.env)
             skill_options = Object.assign(skill_options, intent.config)
@@ -174,7 +173,7 @@ module.exports = class Flow {
             return skill;
         }
         debug(`Message "${message_script}" found. Loading..`);
-        const Message = getDefault(require(`${this.options.message_path}${message_script}`));
+        const Message = require(`${this.options.message_path}${message_script}`);
         this.bot.m = new Message(this.bot.translator);
 
         return skill;
@@ -257,7 +256,7 @@ module.exports = class Flow {
                 if (!(log.param.generator.file && log.param.generator.method)){
                     throw Error(`Generator of ${log.name} is not correctly set.`)
                 }
-                const Generator = getDefault(require(`${this.options.parameter_path}${log.param.generator.file}`))
+                const Generator = require(`${this.options.parameter_path}${log.param.generator.file}`)
                 const generator = new Generator()
                 if (!generator[log.param.generator.method]) throw Error(`${log.param.generator.file} does not have ${log.param.generator.method}`)
                 log.param = generator[log.param.generator.method](log.param.generator.options)
@@ -316,7 +315,7 @@ module.exports = class Flow {
             return;
         }
 
-        if (parameters[param.name] === undefined || parameters[param.name] === [] || parameters[param.name] === ""){
+        if (parameters[param.name] === undefined || Array.isArray(parameters[param.name]) && parameters[param.name].length === 0 || parameters[param.name] === ""){
             debug(`Input parameters does not contain "${param.name}" which we should process now. We save the rest of input parameters as heard in context and exit process parameters.`);
             Object.assign(this.context.heard, parameters);
             return;
@@ -959,6 +958,7 @@ module.exports = class Flow {
         this.context.to_confirm = Object.keys(param.sub_parameter)
         // Clear confirmed.
         this.context.confirmed = {}
+        this.context.previous.confirmed = []
         this.context.previous.processed = []
         // Set parent information.
         this.context._parent_parameter = {
